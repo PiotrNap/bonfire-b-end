@@ -10,22 +10,27 @@ export class AuthController {
   @Get("login")
   async login(@Res() response: Response): Promise<any> {
     // do username and password, typically
+    const currentTime = Math.floor(Date.now());
     const userID = uuidv4(); // if userID was userDiD we'd need a DiD resolution method
     const payload = { userID: userID }; // no sensitive data in the payload!!
     const token = this.jwtService.sign(payload);
-    const exp = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7);
-
+    const validityPeriod = currentTime + 1000 * 60; // equates to a 60s validity period
+    const validFor = (validityPeriod - currentTime) / 1000
+    const tokenExpiry = new Date(validityPeriod);
+    console.log(`${currentTime}\n${tokenExpiry}`);
     response
       .cookie("access_token", token, {
         httpOnly: true,
         secure: true,
         sameSite: true,
         domain: "localhost", // for now...
-        expires: exp,
+        expires: tokenExpiry,
       })
       .send({
         success: true,
-        expires: exp,
+        validFor: `${validFor}s`,
+        timestamp: new Date(currentTime),
+        tokenExpiry: tokenExpiry,
       });
   }
 
