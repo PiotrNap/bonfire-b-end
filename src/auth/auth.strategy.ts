@@ -7,7 +7,13 @@ export class AuthStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
       jwtFromRequest: (req) => {
-        if (!req || !req.cookies) return null;
+        if (!req || !req.cookies || req.cookies['access_token'] === undefined) {
+          console.log(req.cookies)
+          console.log('uh oh!')
+          return null
+        };
+        console.log('great!')
+        console.log(req.cookies)
         return req.cookies['access_token'];
       },
       ignoreExpiration: false,
