@@ -17,19 +17,19 @@ export class AuthController {
     const validityPeriod = currentTime + 1000 * 60; // equates to a 60s validity period
     const validFor = (validityPeriod - currentTime) / 1000
     const tokenExpiry = new Date(validityPeriod);
-    console.log(`${currentTime}\n${tokenExpiry}`);
     response
       .cookie("access_token", token, {
         httpOnly: true,
         secure: true,
-        sameSite: true,
+        sameSite: 'lax',
         domain: "localhost", // for now...
         expires: tokenExpiry,
       })
       .send({
         success: true,
+        token: token,
         validFor: `${validFor}s`,
-        timestamp: new Date(currentTime),
+        currentTime: new Date(currentTime),
         tokenExpiry: tokenExpiry,
       });
   }
