@@ -9,5 +9,6 @@ We leave it to the developer to install `nvm` or implement another method which 
 cd conex && 
 nvm use &&
 yarn && 
-yarn start:debug
+yarn start:debug &&
+chrome localhost:1337
 ```
