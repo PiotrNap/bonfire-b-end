@@ -21,8 +21,8 @@ export class AuthController {
       .cookie("access_token", token, {
         httpOnly: true,
         secure: true,
-        sameSite: 'lax',
-        domain: "localhost", // for now...
+        sameSite: true,
+        domain: 'localhost', // for now...
         expires: tokenExpiry,
       })
       .send({
