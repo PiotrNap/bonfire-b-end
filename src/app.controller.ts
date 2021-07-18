@@ -1,12 +1,93 @@
-import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
+import { Controller, Get, Post, Res, Request, UseGuards, Req } from "@nestjs/common";
+import { AuthService } from "./auth/auth.service";
+import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard";
+import { LocalAuthGuard } from "./auth/guards/local-auth.guard";
+import { v4 as uuidv4 } from "uuid";
 
+const currentTime = Math.floor(Date.now());
+const validityPeriod = currentTime + 1000 * 60; // equates to a 60s validity period
+const validFor = (validityPeriod - currentTime) / 1000;
+const tokenExpiry = new Date(validityPeriod);
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(private readonly authService: AuthService) {}
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @UseGuards(LocalAuthGuard)
+  @Post("auth/login")
+  async updateRes(@Res() response, @Req() req) {
+    const token = await this.login(req)
+    response
+      .cookie("access_token", token.access_token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: true,
+        domain: "localhost", // for now...
+        expires: tokenExpiry,
+      })
+      .send({
+        success: true,
+        validFor: `${validFor}s`,
+        currentTime: new Date(currentTime),
+        tokenExpiry: tokenExpiry,
+        jwt: token.access_token,
+      });
   }
+  async login(@Request() req) {
+    return this.authService.login(req.user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get("profile")
+  getProfile(@Request() req) {
+    console.log(req.user);
+    return req.user;
+  }
+  @Get("events")
+  @UseGuards(JwtAuthGuard)
+  async devices(): Promise<any> {
+    const events = [
+      {
+        date: new Date(currentTime + 1000 * 60 * 60 * 24 * 1),
+        description: "Super event 1",
+      },
+      {
+        date: new Date(currentTime + 1000 * 60 * 60 * 24 * 2),
+        description: "Super event 2",
+      },
+      {
+        date: new Date(currentTime + 1000 * 60 * 60 * 24 * 3),
+        description: "Super event 3",
+      },
+      {
+        date: new Date(currentTime + 1000 * 60 * 60 * 24 * 4),
+        description: "Super event 4",
+      },
+    ];
+    return events;
+  }
+
+  /* 
+# Guarded objects
+- User's Google calendar availability data
+- 
+
+I will need to be able to pull CIDs from IPFS, DAT
+check txids on bitcoin, cardano and ethereum networks, etc etc.
+
+Pull google calendar events
+
+
+
+organizer needs to create an event, with a description, avatar, etc.
+
+Should specify the length of the event and the availabilty within that window
+
+query his calendar to see his listed events and based on this data we can show to potential 
+attendee on which days the organizer is offering, updated in real time? rxjs??
+
+event registry should be considered
+graphql traversal of the event registry needs to be protected endpoint
+
+*/
 }
+
