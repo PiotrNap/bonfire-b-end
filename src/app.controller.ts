@@ -25,8 +25,6 @@ export class AppController {
   @UseGuards(LocalAuthGuard)
   @Post("auth/login")
   async updateRes(@Res() response, @Req() req) {
-    //console.log(response)
-    console.log(req.user);
     const token = await this.login(req);
 
     response
@@ -46,14 +44,12 @@ export class AppController {
       });
   }
   async login(@Request() req) {
-    console.log(req.user);
     return this.authService.login(req.user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get("profile")
   getProfile(@Request() req) {
-    console.log(req.user);
     return req.user;
   }
   @Get("events")
