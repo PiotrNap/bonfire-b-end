@@ -10,7 +10,9 @@ import {
 import { AuthService } from "./auth/auth.service";
 import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard";
 import { LocalAuthGuard } from "./auth/guards/local-auth.guard";
-import { v4 as uuidv4 } from "uuid";
+import { GoogleService } from "./auth/services/google/google.service";
+import { Redirect } from "@nestjs/common";
+import { Query } from "@nestjs/common";
 
 const currentTime = Math.floor(Date.now());
 const validityPeriod = currentTime + 1000 * 60; // equates to a 60s validity period
@@ -85,7 +87,7 @@ export class AppController {
     ];
     return events;
   }
-
+}
   /* 
 # Guarded objects
 - User's Google calendar availability data
@@ -95,9 +97,64 @@ I will need to be able to pull CIDs from IPFS, DAT
 check txids on bitcoin, cardano and ethereum networks, etc etc.
 
 Pull google calendar events
+*/
+
+@Controller('auth/google')
+export class AuthController {
+  constructor(private readonly googleService: GoogleService) {}
+
+  @Get()
+  @Redirect('exp://127.0.0.1:19000/--/expo-auth-session')
+  async oauthGoogleCallback(@Query() query: any) {
+    if (query.error != null && query.error === 'access_denied') {
+      // handle error message
+      return { statusCode: 500 };
+    }
+    console.log(query);
+    const { code } = query;
+    const accessToken = await this.googleService.getUserAccessToken(code);
+
+    console.log(accessToken);
+    return;
+  }
+}
+
+@Controller('auth/google/url')
+export class AuthGoogleController {
+  constructor(private readonly googleService: GoogleService) {}
+
+  @Get()
+  getGoogleAuthUrl(@Query() query: { scopes: string }) {
+    const { scopes } = query;
+
+    const authUrl = this.googleService.generateAuthUrl(scopes);
+
+    if (authUrl) {
+      return { authUrl };
+    } else {
+      throw new Error('Something went wrong while creating the url');
+    }
+  }
+}
+
+@Controller('auth/google/events')
+export class AuthGoogleEventsController {
+  constructor(private readonly googleService: GoogleService) {}
+
+  @Get()
+  getGoogleCalendarEvents() {
+    const events = this.googleService.getUserCalendarEvents();
+
+    if (events) {
+      return { events };
+    } else {
+      throw new Error('Something went wrong while receiving events');
+    }
+  }
+}
 
 
-
+/*
 organizer needs to create an event, with a description, avatar, etc.
 
 Should specify the length of the event and the availabilty within that window
@@ -109,4 +166,3 @@ event registry should be considered
 graphql traversal of the event registry needs to be protected endpoint
 
 */
-}
