@@ -21,14 +21,14 @@ export class UsersService {
       },
       {
         userId: 2,
-        username: 'chris',
-        password: 'secret',
+        username: 'ocg',
+        password: 'code.is.law',
         x: ['a list', 'of things', 'i am good at']
       },
       {
         userId: 3,
-        username: 'maria',
-        password: 'guess',
+        username: 'randall',
+        password: 'm@n1nth3h@t',
         x: ['a list', 'of things', 'i am good at']
       },
     ];
