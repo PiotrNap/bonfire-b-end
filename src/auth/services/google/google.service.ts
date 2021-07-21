@@ -1,19 +1,20 @@
-import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
-import { google } from 'googleapis';
+import { HttpService } from "@nestjs/axios";
+import { Injectable } from "@nestjs/common";
+import { google } from "googleapis";
+import { Random } from "../../../common/utils/random";
 
-const fs = require('fs');
+const fs = require("fs");
 
 @Injectable()
 export class GoogleService {
   constructor(private http: HttpService) {}
 
   private _refreshToken = null;
-  private googleOauthEndPoint = 'https://oauth2.googleapis.com/token?';
+  private googleOauthEndPoint = "https://oauth2.googleapis.com/token?";
   private oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    `${process.env.SERVER_APP_URL}/auth/google`,
+    `${process.env.SERVER_APP_URL}/auth/google`
   );
 
   /**
@@ -21,35 +22,35 @@ export class GoogleService {
    */
   public async getUserCalendarEvents() {
     const calendar = google.calendar({
-      version: 'v3',
+      version: "v3",
       auth: this.oauth2Client,
     });
 
-    await fs.readFile('userTokens.json', (err, content) => {
-      if (err) return new Error('Error while reading userTokens.json');
+    await fs.readFile("userTokens.json", (err, content) => {
+      if (err) return new Error("Error while reading userTokens.json");
       this.oauth2Client.setCredentials(JSON.parse(content));
     });
 
     // just for testing purposes, return events from current month
     calendar.events.list(
       {
-        calendarId: 'primary',
+        calendarId: "primary",
         timeMin: new Date(
           new Date().getFullYear(),
-          new Date().getMonth(),
+          new Date().getMonth()
         ).toISOString(),
         timeMax: new Date(
           new Date().getFullYear(),
-          new Date().getMonth() + 1,
+          new Date().getMonth() + 1
         ).toISOString(),
-        orderBy: 'startTime',
+        orderBy: "startTime",
       },
       (err, res) => {
-        console.log('res', res);
-        if (err) return new Error('There was an error retrieving events');
+        console.log("res", res);
+        if (err) return new Error("There was an error retrieving events");
         const events = res.data.items;
         return events;
-      },
+      }
     );
   }
 
@@ -78,34 +79,36 @@ export class GoogleService {
    */
   public generateAuthUrl(scopes?: string): string {
     const scope = [
-      'email',
-      'profile',
-      'openid',
-      'https://www.googleapis.com/auth/userinfo.email',
-      'https://www.googleapis.com/auth/userinfo.profile',
-      ...(scopes ? scopes.split(' ') : []),
+      "email",
+      "profile",
+      "openid",
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile",
+      ...(scopes ? scopes.split(" ") : []),
     ];
 
     const url = this.oauth2Client.generateAuthUrl({
-      access_type: 'offline',
+      access_type: "offline",
       client_id: process.env.GOOGLE_CLIENT_ID,
       redirect_uri: `${process.env.SERVER_APP_URL}/auth/google`,
       scope,
       include_granted_scopes: true,
-      // code_challenge_method: 'S256',
+      state: new Random().generateRandomString(10),
     });
+
+    console.log("url", url);
 
     // google.calendar({version: 'v3',
 
-    this.oauth2Client.on('tokens', (tokens) => {
+    this.oauth2Client.on("tokens", (tokens) => {
       //@TODO Store the token in db?
       if (tokens.refresh_token) {
-        fs.writeFile('userTokens.json', JSON.stringify(tokens), (err) => {
-          if (err) return console.log('There was an error writing file');
-          console.log('New userTokens.json created');
+        fs.writeFile("userTokens.json", JSON.stringify(tokens), (err) => {
+          if (err) return console.log("There was an error writing file");
+          console.log("New userTokens.json created");
         });
 
-        console.log('New refresh token!');
+        console.log("New refresh token!");
         this._refreshToken = tokens.refresh_token;
       } else {
         console.log(tokens);
