@@ -22,5 +22,5 @@ You can start the psql database server with `yarn start:dev:db`
 
 ```code
 yarn start:dev:db &&
-yarn start:debug
+yarn start:dev
 ```
