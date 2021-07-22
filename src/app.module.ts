@@ -10,9 +10,12 @@ import { AuthModule } from "./auth/auth.module";
 import { GoogleService } from "./auth/services/google/google.service";
 import { logger } from "./common/middleware/logger.middleware";
 import { UsersModule } from "./users/users.module";
-
+//import { CryptoModule } from "./crypto/crypto.module";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { configService } from "./config/config.service";
 @Module({
-  imports: [AuthModule, UsersModule, HttpModule],
+  imports: [AuthModule, UsersModule, HttpModule, /*CryptoModule*/,
+  TypeOrmModule.forRoot(configService.getTypeOrmConfig())],
   controllers: [
     AppController,
     AuthGoogleController,

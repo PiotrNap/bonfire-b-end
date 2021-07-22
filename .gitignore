@@ -4,3 +4,8 @@ dist
 yarn-error.log*
 yarn.lock
 package-lock.json
+
+
+# ignore auto-generated files
+migration/
+ormconfig.json
