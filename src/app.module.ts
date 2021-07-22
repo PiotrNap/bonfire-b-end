@@ -14,7 +14,7 @@ import { UsersModule } from "./users/users.module";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { configService } from "./config/config.service";
 @Module({
-  imports: [AuthModule, UsersModule, HttpModule, /*CryptoModule*/,
+  imports: [AuthModule, UsersModule, HttpModule,
   TypeOrmModule.forRoot(configService.getTypeOrmConfig())],
   controllers: [
     AppController,

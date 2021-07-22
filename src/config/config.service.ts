@@ -1,14 +1,3 @@
-/**
- * Please update your .env with the following values.  Set password and database to match values in /scripts/start-db.sh
- * POSTGRES_HOST=127.0.0.1
- * POSTGRES_PORT=5432
- * POSTGRES_USER=postgres
- * POSTGRES_PASSWORD=c0n3xd@ta!
- * POSTGRES_DATABASE=conexdb
- * PORT=3000
- * MODE=DEV
- * RUN_MIGRATIONS=<0|1>
- */
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import * as dotenv from 'dotenv'
 dotenv.config();
@@ -39,7 +28,17 @@ class ConfigService {
     const mode = this.getValue('MODE', false);
     return mode != 'DEV';
   }
-
+/**
+ * Please update your .env with the following values.  Set password and database to match values in /scripts/start-db.sh
+ * POSTGRES_HOST=127.0.0.1
+ * POSTGRES_PORT=5432
+ * POSTGRES_USER=postgres
+ * POSTGRES_PASSWORD=c0n3xd@ta!
+ * POSTGRES_DATABASE=conexdb
+ * PORT=3000
+ * MODE=DEV
+ * RUN_MIGRATIONS=<0|1>
+ */
   public getTypeOrmConfig(): TypeOrmModuleOptions {
     return {
       type: 'postgres',
@@ -50,11 +49,11 @@ class ConfigService {
       password: this.getValue('POSTGRES_PASSWORD'),
       database: this.getValue('POSTGRES_DATABASE'),
 
-      entities: ['**/*.entity{.ts,.js}'],
+      entities: ['dist/model/*.entity.js'],
 
       migrationsTableName: 'migration',
 
-      migrations: ['src/migration/*.ts'],
+      migrations: ['dist/migration/*.js'],
 
       cli: {
         migrationsDir: 'src/migration',
