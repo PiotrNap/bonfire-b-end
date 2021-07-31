@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# These variables can be anything as they only apply to the docker container
+# These variables can be anything as they only apply to the docker container; pw and db should match your .env
 CONTAINER="conex-db-container"
 PW="c0n3xd@ta!";
 DB="conexdb";
