@@ -1,12 +1,12 @@
 import { Entity, Column } from 'typeorm';
 import { BaseEntity } from './base.entity';
 
-@Entity({ name: 'item' })
-export class ItemEntity extends BaseEntity {
+@Entity({ name: 'user' })
+export class UserEntity extends BaseEntity {
 
   @Column({ type: 'varchar', length: 300 })
   name: string;
 
   @Column({ type: 'varchar', length: 300 })
-  description: string;
+  id: string;
 }
