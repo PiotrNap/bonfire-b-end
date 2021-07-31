@@ -8,6 +8,7 @@ import {
   Req,
 } from "@nestjs/common";
 import { AuthService } from "./auth/auth.service";
+import { CryptoService } from "./crypto/crypto.service";
 import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard";
 import { LocalAuthGuard } from "./auth/guards/local-auth.guard";
 import { GoogleService } from "./auth/services/google/google.service";
@@ -20,8 +21,15 @@ const validFor = (validityPeriod - currentTime) / 1000;
 const tokenExpiry = new Date(validityPeriod);
 @Controller()
 export class AppController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly cryptoService: CryptoService
+    ) {}
 
+  @Get("/btc")
+  async btc() {
+    return this.cryptoService.getBlockchainInfo
+  }
   @UseGuards(LocalAuthGuard)
   @Post("auth/login")
   async updateRes(@Res() response, @Req() req) {
@@ -84,7 +92,7 @@ export class AppController {
     return events;
   }
 }
-  /* 
+/* 
 # Guarded objects
 - User's Google calendar availability data
 - 
@@ -95,14 +103,14 @@ check txids on bitcoin, cardano and ethereum networks, etc etc.
 Pull google calendar events
 */
 
-@Controller('auth/google')
+@Controller("auth/google")
 export class AuthController {
   constructor(private readonly googleService: GoogleService) {}
 
   @Get()
-  @Redirect('exp://127.0.0.1:19000/--/expo-auth-session')
+  @Redirect("exp://127.0.0.1:19000/--/expo-auth-session")
   async oauthGoogleCallback(@Query() query: any) {
-    if (query.error != null && query.error === 'access_denied') {
+    if (query.error != null && query.error === "access_denied") {
       // handle error message
       return { statusCode: 500 };
     }
@@ -115,7 +123,7 @@ export class AuthController {
   }
 }
 
-@Controller('auth/google/url')
+@Controller("auth/google/url")
 export class AuthGoogleController {
   constructor(private readonly googleService: GoogleService) {}
 
@@ -128,12 +136,12 @@ export class AuthGoogleController {
     if (authUrl) {
       return { authUrl };
     } else {
-      throw new Error('Something went wrong while creating the url');
+      throw new Error("Something went wrong while creating the url");
     }
   }
 }
 
-@Controller('auth/google/events')
+@Controller("auth/google/events")
 export class AuthGoogleEventsController {
   constructor(private readonly googleService: GoogleService) {}
 
@@ -144,11 +152,10 @@ export class AuthGoogleEventsController {
     if (events) {
       return { events };
     } else {
-      throw new Error('Something went wrong while receiving events');
+      throw new Error("Something went wrong while receiving events");
     }
   }
 }
-
 
 /*
 organizer needs to create an event, with a description, avatar, etc.

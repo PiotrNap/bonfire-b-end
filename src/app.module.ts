@@ -13,15 +13,30 @@ import { UsersModule } from "./users/users.module";
 //import { CryptoModule } from "./crypto/crypto.module";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { configService } from "./config/config.service";
+// import { ItemController } from './item/item.controller';
+// import { ItemService } from './item/item.service';
+// import { ItemModule } from './item/item.module';
+// import { DbService } from './db/db.service';
+// import { DbModule } from './db/db.module';
 @Module({
-  imports: [AuthModule, UsersModule, HttpModule,
-  TypeOrmModule.forRoot(configService.getTypeOrmConfig())],
+  imports: [
+    HttpModule,
+    AuthModule, 
+    UsersModule, 
+    //ItemModule,
+    TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
+    //DbModule
+  ],
   controllers: [
     AppController,
     AuthGoogleController,
     AuthGoogleEventsController,
   ],
-  providers: [AppService, GoogleService],
+  providers: [
+    AppService, 
+    GoogleService, 
+    //DbService,
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
