@@ -37,7 +37,6 @@
     "@transmute/openpgpsignature2019": "^0.2.6",
     "axios": "^0.21.1",
     "bignumber.js": "^9.0.1",
-    "cardano-js": "^0.4.7",
     "cbor": "^7.0.6",
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
