@@ -10,3 +10,5 @@ package-lock.json
 ormconfig.json
 # ignore migrations for now
 src/migration/*.ts
+*.swp
+*.ts.test
