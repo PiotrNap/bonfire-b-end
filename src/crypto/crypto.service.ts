@@ -1,40 +1,38 @@
 import { Injectable } from "@nestjs/common";
-import * as utils from "../common/utils/utils";
-import * as RpcClient from "bitcoind-rpc";
-
-const bitcoindConfig = {
-  protocol: "http",
-  user: "ocg",
-  pass: "test",
-  host: "127.0.0.1",
-  port: "8332",
-};
-const rpc = new RpcClient(bitcoindConfig);
+import { HttpService } from "@nestjs/axios";
+import { Observable } from "rxjs";
+import { AxiosResponse } from "axios";
+ 
 
 @Injectable()
-export class CryptoService {
+export class BTCService {
+  constructor(private httpService: HttpService) {}
+  data = {
+    protocol: "http",
+    user: "ocg",
+    pass: "test",
+    host: "127.0.0.1",
+    port: "8332",
+  };
+  getBlockCount(): Observable<AxiosResponse<any>> {
+    return this.httpService.post("http://127.0.0.1:8332",this.data);
+  }
+  requestBlockCount() {};
   getBestBlockHash() {
-    return rpc.getbestblockhash();
+    return "blockhash";
   }
-  getBlock() {
-    return rpc.getblock();
-  }
-  getBlockchainInfo() {
-    return rpc.getblockchaininfo;
-  }
-  getBlockCount() {
-    return rpc.getblockcount;
-  }
-  getBlockFilter() {
-    return rpc.getblockfilter();
-  }
-  getBlockHash(i) {
-    return rpc.getblockhash(i);
-  }
-  getBlockHeader(i) {
-    return rpc.getblockheader(i);
-  }
-  getBlockStats(i) {
-    return rpc.getblockstats(i);
-  }
+  getConnectionCount() {}
+  getDifficulty() {}
+  getBlockchainInfo() {}
+  getMiningInfo() {}
+  getPeerInfo() {}
+  getRawMempool() {}
+  getBlockByHash() {}
+  getBlockHash() {}
+  getRawTxID() {}
+  decodeRawTxHex() {}
 }
+@Injectable()
+export class ETHService {}
+@Injectable()
+export class ADAService {}

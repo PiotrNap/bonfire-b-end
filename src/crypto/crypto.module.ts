@@ -1,7 +1,13 @@
 import { Module } from '@nestjs/common';
-import { CryptoService } from './crypto.service';
+import { HttpModule } from '@nestjs/axios';
+import { BTCService, ETHService, ADAService } from './crypto.service';
 
 @Module({
-  providers: [CryptoService]
+  imports: [HttpModule],
+  providers: [
+    BTCService,
+    ETHService,
+    ADAService
+  ]
 })
 export class CryptoModule {}
