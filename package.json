@@ -42,12 +42,6 @@
     "@nestjs/swagger": "^5.0.4",
     "@nestjs/typeorm": "^8.0.1",
     "axios": "^0.21.1",
-<<<<<<< HEAD
-=======
-    "bignumber.js": "^9.0.1",
-    "bitcoind-rpc": "^0.8.1",
-    "cbor": "^7.0.6",
->>>>>>> 4876ce8c00662e1c4b84e8afb367f18a042dc447
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
     "cookie-parser": "^1.4.5",
