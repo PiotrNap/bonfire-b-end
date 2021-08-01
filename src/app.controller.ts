@@ -8,7 +8,6 @@ import {
   Req,
 } from "@nestjs/common";
 import { AuthService } from "./auth/auth.service";
-import { CryptoService } from "./crypto/crypto.service";
 import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard";
 import { LocalAuthGuard } from "./auth/guards/local-auth.guard";
 import { GoogleService } from "./auth/services/google/google.service";
@@ -22,14 +21,9 @@ const tokenExpiry = new Date(validityPeriod);
 @Controller()
 export class AppController {
   constructor(
-    private readonly authService: AuthService,
-    private readonly cryptoService: CryptoService
+    private readonly authService: AuthService
     ) {}
 
-  @Get("/btc")
-  async btc() {
-    return this.cryptoService.getBlockchainInfo
-  }
   @UseGuards(LocalAuthGuard)
   @Post("auth/login")
   async updateRes(@Res() response, @Req() req) {

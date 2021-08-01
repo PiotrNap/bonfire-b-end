@@ -1,41 +1,45 @@
-import { HttpModule } from "@nestjs/axios";
-import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import {
   AppController,
   AuthGoogleController,
   AuthGoogleEventsController,
 } from "./app.controller";
+
 import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import { GoogleService } from "./auth/services/google/google.service";
 import { logger } from "./common/middleware/logger.middleware";
 import { UsersModule } from "./users/users.module";
-//import { CryptoModule } from "./crypto/crypto.module";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { configService } from "./config/config.service";
-// import { ItemController } from './item/item.controller';
-// import { ItemService } from './item/item.service';
-// import { ItemModule } from './item/item.module';
-// import { DbService } from './db/db.service';
-// import { DbModule } from './db/db.module';
+import { BTCService, ETHService, ADAService } from './crypto/crypto.service';
+import { CryptoModule } from './crypto/crypto.module';
+import { HttpModule } from "@nestjs/axios";
+import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
+import { BTCController, ETHController, ADAController } from './crypto/crypto.controller';
+
 @Module({
   imports: [
+    CryptoModule,
     HttpModule,
     AuthModule, 
     UsersModule, 
-    //ItemModule,
     TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
-    //DbModule
+    
   ],
   controllers: [
     AppController,
     AuthGoogleController,
     AuthGoogleEventsController,
+    BTCController,
+    ETHController,
+    ADAController
   ],
   providers: [
     AppService, 
     GoogleService, 
-    //DbService,
+    BTCService,
+    ETHService,
+    ADAService
   ],
 })
 export class AppModule implements NestModule {
