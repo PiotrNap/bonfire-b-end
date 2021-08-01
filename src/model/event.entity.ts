@@ -7,7 +7,7 @@ export class Event {
     id: string; // this should be a uuidv4 or uuidv5
 
     @Column('text')
-    description: string;
+    description?: string;
 
     @Column()
     place?: string
@@ -39,4 +39,8 @@ export class Attendee {
 
     @Column()
     userName?: string;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 4876ce8c00662e1c4b84e8afb367f18a042dc447

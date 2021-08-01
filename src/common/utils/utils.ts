@@ -1,5 +1,8 @@
 export const unixTime = Math.floor(Date.now());
+<<<<<<< HEAD
 export function localTimeStamp(){ return new Date(Math.floor(Date.now()))};
+=======
+>>>>>>> 4876ce8c00662e1c4b84e8afb367f18a042dc447
 export const isoTime = new Date(Math.floor(Date.now())).toISOString();
 export const expiry = new Date(Math.floor(Date.now()) + 1000 * 3600);
 export const expirationTime = expiry.toLocaleTimeString();
