@@ -10,19 +10,19 @@ export class Event {
     description: string;
 
     @Column()
-    place: any
+    place?: string
 
     @Column()
-    time: any
+    time?: string
 
     @Column()
-    url: any
+    url?: string
 
     @Column()
-    organizer: any
+    organizer?: string
 
     @Column()
-    attendees: []
+    attendees?: string
 
 }
 export class Organizer {
@@ -30,7 +30,7 @@ export class Organizer {
     id: string; // this should be a uuidv4 or uuidv5
 
     @Column()
-    userName: string;
+    userName?: string;
 }
 
 export class Attendee {
@@ -38,5 +38,5 @@ export class Attendee {
     id: string; // this should be a uuidv4 or uuidv5
 
     @Column()
-    userName: string;
+    userName?: string;
 }
