@@ -5,8 +5,5 @@ import { BaseEntity } from './base.entity';
 export class UserEntity extends BaseEntity {
 
   @Column({ type: 'varchar', length: 300 })
-  name: string;
-
-  @Column({ type: 'varchar', length: 300 })
-  id: string;
+  gimbalID: string;
 }
