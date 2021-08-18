@@ -18,7 +18,9 @@ You may need to edit `src/scripts/start-db.sh` depending on your operating syste
 ![Alt text](https://4.bp.blogspot.com/-iy-_fn5n-ZI/V2IVw34C8YI/AAAAAAAAlHE/tXUlW2AYnqYwVgsjKikqqu8SvnGoKxMtwCLcB/s1600/may-the-force-be-with-you.JPG)
 
 
-### Generate the schema and migration  
+### Generating the schema and migration  
+
+This only needs to be done when updates to the typeorm configurations occur.
 
 ```code
 yarn typeorm:migration:generate -- init  # init can be any migration name
