@@ -12,3 +12,5 @@ ormconfig.json
 src/migration/*.ts
 *.swp
 *.ts.test
+
+devDb/
