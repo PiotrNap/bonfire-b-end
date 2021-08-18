@@ -30,3 +30,7 @@ yarn typeorm:migration:run
 ```code
 yarn start:dev
 ```
+
+### Resources 
+
+[https://danielkummer.github.io/git-flow-cheatsheet/](https://danielkummer.github.io/git-flow-cheatsheet/)
