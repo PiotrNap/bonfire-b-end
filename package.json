@@ -1,14 +1,14 @@
 {
   "name": "conex",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "",
   "contributors": [
-     {
-       "name":"@oldcryptogeek",
-       "email":"kodex.data@gmail.com",
-       "url":"https://keybase.io/team/kodexdata"
-     }
-   ],
+    {
+      "name": "@oldcryptogeek",
+      "email": "kodex.data@gmail.com",
+      "url": "https://keybase.io/team/kodexdata"
+    }
+  ],
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
@@ -29,7 +29,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "pretypeorm": "(rm ormconfig.json || :) && ts-node -r tsconfig-paths/register src/scripts/write-typeorm.ts",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
-    "typeorm:migration:generate": "npm run typeorm -- migration:generate -n",
+    "typeorm:migration:generate": "npm run typeorm -- migration:generate -n migration",
     "typeorm:migration:run": "npm run typeorm -- migration:run"
   },
   "dependencies": {
@@ -50,6 +50,7 @@
     "ethr-did-resolver": "^4.3.4",
     "fernet": "^0.3.1",
     "googleapis": "^82.0.0",
+    "ipld": "^0.30.1",
     "mysql": "^2.18.1",
     "node-forge": "^0.10.0",
     "passport": "^0.4.1",
@@ -58,7 +59,7 @@
     "pg": "^8.6.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.2.0",
+    "rxjs": "^7.3.0",
     "swagger-ui-express": "^4.1.6",
     "typeorm": "^0.2.34",
     "uuid": "^8.3.2",
