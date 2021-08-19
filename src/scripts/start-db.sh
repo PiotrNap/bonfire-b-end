@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -ex
 
 # These variables can be anything as they only apply to the docker container; pw and db should match your .env
