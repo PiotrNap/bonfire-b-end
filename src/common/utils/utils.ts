@@ -1,7 +1,6 @@
 import { getConnectionOptions, getConnection } from "typeorm";
 import * as bcrypt from "bcrypt";
-import { Logger } from "@nestjs/common";
-
+import { jwtVerify } from 'jose/jwt/verify'
 // string decoder
 export const { StringDecoder } = require("string_decoder");
 export const utf8Decoder = new StringDecoder("utf8");
@@ -104,4 +103,8 @@ export const runDbMigrations = async (connectionName: string = "default") => {
 
 export const comparePasswords = async (userPassword, currentPassword) => {
   return await bcrypt.compare(currentPassword, userPassword);
+};
+
+export const validateChallenge = async (jwt, key) => {
+  return await jwtVerify(jwt, key);
 };
