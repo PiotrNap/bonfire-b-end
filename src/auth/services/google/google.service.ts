@@ -96,10 +96,6 @@ export class GoogleService {
       state: new Random().generateRandomString(10),
     });
 
-    console.log("url", url);
-
-    // google.calendar({version: 'v3',
-
     this.oauth2Client.on("tokens", (tokens) => {
       //@TODO Store the token in db?
       if (tokens.refresh_token) {
