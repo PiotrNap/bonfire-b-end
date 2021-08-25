@@ -6,7 +6,7 @@ import { UserEntity } from "../model/user.entity";
 import { toUserDto } from "../common/mapper";
 import { CreateUserDto } from "./dto/user.create.dto";
 import { LoginUserDto } from "./dto/user-login.dto";
-import { comparePasswords, validateChallenge } from "../common/utils/utils";
+import { comparePasswords, validateChallenge } from "../common/utils";
 import { ChallengeResponseDTO } from "./dto/challenge-response.dto";
 
 @Injectable()
