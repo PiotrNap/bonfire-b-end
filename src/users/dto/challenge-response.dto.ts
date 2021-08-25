@@ -4,8 +4,8 @@ export class ChallengeResponseDTO {
   @IsNotEmpty()
   username: string;
   @IsNotEmpty()
-  challenge: string;
+  jwt: string;
   @IsNotEmpty()
-  signature: string;
+  publicKey: string;
 }
 

@@ -23,16 +23,14 @@ export class UsersService {
 
   async challengeLogin({
     username,
-    challenge,
-    signature,
+    jwt,
+    publicKey,
   }: ChallengeResponseDTO): Promise<UserDto> {
-    const user = await this.userRepo.findOne({ where: { username, challenge, signature } });
+    const user = await this.userRepo.findOne({ where: { username, jwt, publicKey } });
     if (!user) {
       throw new HttpException("User not found", HttpStatus.UNAUTHORIZED);
     }
-    let jwt = {}; // TODO
-    let key = ""; // TODO
-    const valid = await validateChallenge(jwt, key);
+    const valid = await validateChallenge(jwt, publicKey);
     if (!valid) {
       throw new HttpException("Invalid credentials", HttpStatus.UNAUTHORIZED);
     }
