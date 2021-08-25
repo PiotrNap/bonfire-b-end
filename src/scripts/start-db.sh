@@ -8,8 +8,8 @@ DB="conexdb"
 
 mkdir -p $(pwd)/devDb
 echo "echo stop & remove old docker [$CONTAINER] and starting new fresh instance of [$CONTAINER]"
-(docker kill $CONTAINER || :) &&
-  (docker rm $CONTAINER || :) &&
+#(docker kill $CONTAINER || :) &&
+#  (docker rm $CONTAINER || :) &&
   docker ps | grep $CONTAINER || (
     docker run \
       -d \
@@ -23,7 +23,7 @@ echo "echo stop & remove old docker [$CONTAINER] and starting new fresh instance
 
 # wait for pg to start
 echo "sleep wait for pg-server [$CONTAINER] to start"
-sleep 20 # you may need to increase the sleep period if you get a psql error complaining that you can't connect to the server.
+sleep 10 # you may need to increase the sleep period if you get a psql error complaining that you can't connect to the server.
 
 # create the db
 echo "CREATE DATABASE $DB ENCODING 'UTF-8';" | docker exec -i $CONTAINER psql -U postgres
