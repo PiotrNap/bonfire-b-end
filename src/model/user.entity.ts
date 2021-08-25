@@ -25,7 +25,7 @@ export class UserEntity extends BaseEntity {
       type: 'varchar', 
       nullable: false 
   }) 
-  
+  publicKey: string;
   email: string;
   @BeforeInsert()  async hashPassword() {
       this.password = await bcrypt.hash(this.password, 10);  

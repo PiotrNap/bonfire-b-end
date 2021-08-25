@@ -26,7 +26,7 @@ export class UsersService {
     challenge,
     signature,
   }: ChallengeResponseDTO): Promise<UserDto> {
-    const user = await this.userRepo.findOne({ where: { username } });
+    const user = await this.userRepo.findOne({ where: { username, challenge, signature } });
     if (!user) {
       throw new HttpException("User not found", HttpStatus.UNAUTHORIZED);
     }
