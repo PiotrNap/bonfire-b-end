@@ -1,0 +1,1 @@
+[https://auth0.com/blog/5-steps-to-add-modern-authentication-to-legacy-apps-using-jwts/](https://auth0.com/blog/5-steps-to-add-modern-authentication-to-legacy-apps-using-jwts/)
