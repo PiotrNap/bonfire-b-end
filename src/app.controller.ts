@@ -30,7 +30,7 @@ export class AppController {
     const token = await this.login(req);
 
     response
-      .cookie("access_token", token.access_token, {
+      .cookie("access_token", token.accessToken, {
         httpOnly: true,
         secure: true,
         sameSite: true,
@@ -42,7 +42,7 @@ export class AppController {
         validFor: `${validFor}s`,
         currentTime: new Date(currentTime),
         tokenExpiry: tokenExpiry,
-        jwt: token.access_token,
+        jwt: token.accessToken,
       });
   }
   async login(@Request() req) {
@@ -163,3 +163,17 @@ event registry should be considered
 graphql traversal of the event registry needs to be protected endpoint
 
 */
+
+
+// import { Controller, Get } from '@nestjs/common';
+// import { AppService } from './app.service';
+
+// @Controller()
+// export class AppController {
+//   constructor(private readonly appService: AppService) {}
+
+//   @Get()
+//   getHello(): string {
+//     return this.appService.getHello();
+//   }
+// }

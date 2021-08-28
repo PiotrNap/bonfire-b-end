@@ -5,6 +5,7 @@ import {
 } from "./app.controller";
 
 import { AppService } from "./app.service";
+import { AuthService } from "./auth/auth.service";
 import { AuthModule } from "./auth/auth.module";
 import { GoogleService } from "./auth/services/google/google.service";
 import { logger } from "./common/middleware/logger.middleware";
@@ -16,6 +17,7 @@ import { CryptoModule } from './crypto/crypto.module';
 import { HttpModule } from "@nestjs/axios";
 import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { BTCController, ETHController, ADAController } from './crypto/crypto.controller';
+import { IdTokenModule } from './id-token/id-token.module';
 
 @Module({
   imports: [
@@ -23,23 +25,24 @@ import { BTCController, ETHController, ADAController } from './crypto/crypto.con
     HttpModule,
     AuthModule, 
     UsersModule, 
-    TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
+    TypeOrmModule.forRoot(configService.getTypeOrmConfig()), IdTokenModule,
     
   ],
   controllers: [
     AppController,
-    AuthGoogleController,
-    AuthGoogleEventsController,
-    BTCController,
-    ETHController,
-    ADAController
+    // AuthGoogleController,
+    // AuthGoogleEventsController,
+    // BTCController,
+    // ETHController,
+    // ADAController
   ],
   providers: [
+    AuthService,
     AppService, 
-    GoogleService, 
-    BTCService,
-    ETHService,
-    ADAService
+    // GoogleService, 
+    // BTCService,
+    // ETHService,
+    // ADAService
   ],
 })
 export class AppModule implements NestModule {

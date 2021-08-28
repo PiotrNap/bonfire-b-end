@@ -1,11 +1,11 @@
 import { SetMetadata } from '@nestjs/common';
 
-import { UserEntity } from '../model/user.entity';
+import { UserEntity} from '../model/user.entity';
 
-export const USERS_PROVIDER = 'UsersProvider';
-export class UsersProvider extends UserEntity {
-    provide: 'UsersProvider';
+export const USER_PROVIDER = 'UserProvider';
+export class UserProvider extends UserEntity {
+    provide: 'UserProvider';
     useValue: UserEntity
 }
     
-export const UsersProviderDecorator = () => SetMetadata(USERS_PROVIDER, true);
+export const UserProviderDecorator = () => SetMetadata(USER_PROVIDER, true);

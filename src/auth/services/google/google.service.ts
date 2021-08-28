@@ -1,7 +1,7 @@
 import { HttpService } from "@nestjs/axios";
 import { Injectable } from "@nestjs/common";
 import { google } from "googleapis";
-import { Random } from "../../../common/utils/random";
+import { Random } from "../../../common/utils";
 
 const fs = require("fs");
 
@@ -95,10 +95,6 @@ export class GoogleService {
       include_granted_scopes: true,
       state: new Random().generateRandomString(10),
     });
-
-    console.log("url", url);
-
-    // google.calendar({version: 'v3',
 
     this.oauth2Client.on("tokens", (tokens) => {
       //@TODO Store the token in db?

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { v4 as uuidv4 } from "uuid";
 let eventID = uuidv4();
-import { unixTime, localTimeStamp } from "../utils/utils";
+import { unixTime, localTimeStamp } from "../utils";
 
 let bob = localTimeStamp
 
