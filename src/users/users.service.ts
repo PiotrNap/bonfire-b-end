@@ -5,8 +5,6 @@ import { UserDto } from "./dto/user.dto";
 import { UserEntity } from "../model/user.entity";
 import { toUserDto } from "../common/mapper";
 import { CreateUserDto } from "./dto/user.create.dto";
-import { LoginUserDto } from "./dto/user-login.dto";
-import { comparePasswords, validateChallenge } from "../common/utils";
 import { ChallengeResponseDTO } from "./dto/challenge-response.dto";
 
 @Injectable()
@@ -21,33 +19,15 @@ export class UsersService {
     return toUserDto(user);
   }
 
-  async challengeLogin({
-    username,
-    jwt,
-    publicKey,
-  }: ChallengeResponseDTO): Promise<UserDto> {
-    const user = await this.userRepo.findOne({ where: { username, jwt, publicKey } });
+  async challengeLogin(response: ChallengeResponseDTO): Promise<UserDto> {
+    const user = await this.userRepo.findOne({
+      where: { username: response.username },
+    });
     if (!user) {
       throw new HttpException("User not found", HttpStatus.UNAUTHORIZED);
     }
-    const valid = await validateChallenge(jwt, publicKey);
+    const valid = await response.validate(user);
     if (!valid) {
-      throw new HttpException("Invalid credentials", HttpStatus.UNAUTHORIZED);
-    }
-
-    return toUserDto(user);
-  }
-  async findByLogin({ username, password }: LoginUserDto): Promise<UserDto> {
-    const user = await this.userRepo.findOne({ where: { username } });
-
-    if (!user) {
-      throw new HttpException("User not found", HttpStatus.UNAUTHORIZED);
-    }
-
-    // compare passwords
-    const areEqual = await comparePasswords(user.password, password);
-
-    if (!areEqual) {
       throw new HttpException("Invalid credentials", HttpStatus.UNAUTHORIZED);
     }
 
@@ -58,8 +38,8 @@ export class UsersService {
     return await this.findOne({ where: { username } });
   }
 
-  async create(userDto: CreateUserDto): Promise<UserDto> {
-    const { username, password, email } = userDto;
+  async create(newUserDto: CreateUserDto): Promise<UserDto> {
+    const { username, publicKey } = newUserDto;
 
     // check if the user exists in the db
     const userInDb = await this.userRepo.findOne({ where: { username } });
@@ -69,8 +49,7 @@ export class UsersService {
 
     const user: UserEntity = await this.userRepo.create({
       username,
-      password,
-      email,
+      publicKey,
     });
 
     await this.userRepo.save(user);
@@ -78,8 +57,8 @@ export class UsersService {
     return toUserDto(user);
   }
 
-  private _sanitizeUser(user: UserEntity) {
-    delete user.password;
-    return user;
-  }
+  // private _sanitizeUser(user: UserEntity) {
+  //   delete user.password;
+  //   return user;
+  // }
 }
