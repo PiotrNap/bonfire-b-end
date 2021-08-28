@@ -1,6 +1,6 @@
 import { Entity, Column, TableInheritance, BeforeInsert } from "typeorm";
 import { BaseEntity } from "./base.entity";
-import bcrypt from 'bcrypt'
+import bcrypt from "bcrypt";
 @Entity({ name: "user" })
 @TableInheritance({ column: { type: "varchar", name: "userType" } })
 export class UserEntity extends BaseEntity {
@@ -16,23 +16,34 @@ export class UserEntity extends BaseEntity {
   // @Column({ type: "varchar", length: 65535 })
   // didDocument?: string; // reference to did-document
 
+  @Column({
+    name: "username",
+    type: "varchar",
+    nullable: false,
+  })
   username: string;
-  @Column({ 
-      type: 'varchar', 
-      nullable: false 
-  }) 
-  password: string;  @Column({ 
-      type: 'varchar', 
-      nullable: false 
-  }) 
+  
+  @Column({
+    name: "publicKey",
+    type: "varchar",
+    nullable: false,
+  })
   publicKey: string;
-  email: string;
-  @BeforeInsert()  async hashPassword() {
-      this.password = await bcrypt.hash(this.password, 10);  
-  }
+
+  @Column({
+    name: "calendarToken",
+    type: "varchar",
+    nullable: false,
+  })
+  calendarToken: string;
+
+  @Column({
+    name: "refreshToken",
+    type: "varchar",
+    nullable: false,
+  })
+  refreshToken: string;
 
   // @Column({ type: 'varchar', length: 65535 })
   // profileSettings?: string; // profile settings
 }
-
-
