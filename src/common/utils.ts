@@ -140,6 +140,7 @@ export const comparePasswords = async (userPassword, currentPassword) => {
   return await bcrypt.compare(currentPassword, userPassword);
 };
 
-export const validateChallenge = async (jwt, key) => {
-  return await jwtVerify(jwt, key);
+
+export const validateChallenge = async (username, password) => {
+
 };
