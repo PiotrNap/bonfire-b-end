@@ -7,6 +7,8 @@ import { LoginUserDto } from '../users/dto/user-login.dto';
 import { UserDto } from '../users/dto/user.dto';
 import { JwtPayload } from './interfaces/payload.interface';
 import { JwtService } from '@nestjs/jwt';
+import { ChallengeResponseDTO } from 'src/users/dto/challenge-response.dto';
+import { ChallengeDTO } from 'src/users/dto/challenge.dto';
 
 @Injectable()
 export class AuthService {
@@ -33,9 +35,13 @@ export class AuthService {
     return status;
   }
 
-  async login(loginUserDto: LoginUserDto): Promise<LoginStatus> {
+  async challenge(userid: string): Promise<ChallengeDTO> {
+    return new ChallengeDTO(userid)
+  }
+
+  async login(challengeResponse: ChallengeResponseDTO): Promise<LoginStatus> {
     // find user in db
-    const user = await this.usersService.findByLogin(loginUserDto);
+    const user = await this.usersService.challengeLogin(challengeResponse);
 
     // generate and sign token
     const token = this._createToken(user);
