@@ -6,3 +6,5 @@
 - [https://github.com/jaredhanson/passport-http-bearer](https://github.com/jaredhanson/passport-http-bearer)
 - [https://github.com/awais786327/oauth2orize-openid-examples](https://github.com/awais786327/oauth2orize-openid-examples)
 - [http://openid.net/specs/openid-connect-core-1_0.html](http://openid.net/specs/openid-connect-core-1_0.html)
+
+[https://www.nerd.vision/post/nestjs-third-party-oauth2-authentication](https://www.nerd.vision/post/nestjs-third-party-oauth2-authentication)
