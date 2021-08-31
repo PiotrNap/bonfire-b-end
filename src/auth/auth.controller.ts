@@ -39,9 +39,7 @@ export class AuthController {
   }
 
   @Get(":id/challenge")
-  public async challenge(
-    @Param() params 
-  ): Promise<ChallengeDTO> {
+  public async challenge(@Param() params): Promise<ChallengeDTO> {
     return await this.authService.challenge(params.id);
   }
 
@@ -58,4 +56,3 @@ export class AuthController {
     return req.user;
   }
 }
-  

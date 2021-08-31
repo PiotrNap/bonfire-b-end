@@ -20,9 +20,7 @@ const validFor = (validityPeriod - currentTime) / 1000;
 const tokenExpiry = new Date(validityPeriod);
 @Controller()
 export class AppController {
-  constructor(
-    private readonly authService: AuthService
-    ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @UseGuards(LocalAuthGuard)
   @Post("auth/login")
@@ -163,7 +161,6 @@ event registry should be considered
 graphql traversal of the event registry needs to be protected endpoint
 
 */
-
 
 // import { Controller, Get } from '@nestjs/common';
 // import { AppService } from './app.service';

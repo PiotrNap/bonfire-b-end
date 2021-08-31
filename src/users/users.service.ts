@@ -39,7 +39,7 @@ export class UsersService {
   }
 
   async create(newUserDto: CreateUserDto): Promise<UserDto> {
-    const { username, publicKey } = newUserDto;
+    const { name, username, publicKey } = newUserDto;
 
     // check if the user exists in the db
     const userInDb = await this.userRepo.findOne({ where: { username } });
