@@ -1,9 +1,9 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty } from "class-validator";
 export class UserDto {
   id: string;
   username: string;
   publicKey: string;
   createdOn?: Date;
-  calendarToken?: string;
-  refreshToken?: string;
+  calendarToken?: string | null;
+  refreshToken?: string | null;
 }
