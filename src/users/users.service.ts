@@ -38,23 +38,38 @@ export class UsersService {
     return await this.findOne({ where: { username } });
   }
 
-  async create(newUserDto: CreateUserDto): Promise<UserDto> {
+  async registerUser(newUserDto: CreateUserDto): Promise<UserDto> {
     const { name, username, publicKey } = newUserDto;
 
-    // check if the user exists in the db
-    const userInDb = await this.userRepo.findOne({ where: { username } });
-    if (userInDb) {
+    // check if user doesn't exists yet
+    const user = await this.userRepo.findOne({ username });
+
+    if (user) {
       throw new HttpException("User already exists", HttpStatus.BAD_REQUEST);
     }
 
-    const user: UserEntity = await this.userRepo.create({
-      username,
-      publicKey,
-    });
+    try {
+      const newUser = new UserEntity();
+      newUser.name = name;
+      newUser.username = username;
+      newUser.publicKey = publicKey;
 
-    await this.userRepo.save(user);
+      await this.userRepo.save(newUser);
 
-    return toUserDto(user);
+      const userDto = new CreateUserDto(
+        newUser.name,
+        newUser.username,
+        newUser.publicKey,
+        newUser.id
+      );
+
+      return userDto;
+    } catch (e) {
+      throw new HttpException(
+        "Something went wrong while creating new user",
+        HttpStatus.BAD_REQUEST
+      );
+    }
   }
 
   // private _sanitizeUser(user: UserEntity) {
