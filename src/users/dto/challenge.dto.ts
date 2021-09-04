@@ -1,5 +1,6 @@
 import { IsNotEmpty } from "class-validator";
 import { sha256 } from "js-sha256";
+
 export class ChallengeDTO {
   constructor(userid: string) {
     let time = new Date().getTime();

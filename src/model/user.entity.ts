@@ -1,6 +1,5 @@
-import { Entity, Column, TableInheritance, BeforeInsert } from "typeorm";
+import { Entity, Column, TableInheritance } from "typeorm";
 import { BaseEntity } from "./base.entity";
-import bcrypt from "bcrypt";
 
 @Entity({ name: "user" })
 @TableInheritance({ column: { type: "varchar", name: "userType" } })
@@ -47,6 +46,12 @@ export class UserEntity extends BaseEntity {
 
   @Column({ name: "id", type: "varchar", nullable: false })
   id: string;
+
+  @Column({ name: "profileType", type: "varchar", nullable: false })
+  profileType: string;
+
+  @Column({ name: "currChallenge", type: "varchar", nullable: true })
+  currChallenge: string;
 
   // @Column({ type: 'varchar', length: 65535 })
   // profileSettings?: string; // profile settings
