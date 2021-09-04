@@ -1,6 +1,6 @@
 import { getConnectionOptions, getConnection } from "typeorm";
 import * as bcrypt from "bcrypt";
-import { jwtVerify } from 'jose/jwt/verify'
+import { jwtVerify } from "jose/jwt/verify";
 import * as crypto from "crypto";
 
 export class Random {
@@ -140,7 +140,7 @@ export const comparePasswords = async (userPassword, currentPassword) => {
   return await bcrypt.compare(currentPassword, userPassword);
 };
 
-
-export const validateChallenge = async (username, password) => {
-
+export const base64ToUint8Array = (val: string): Uint8Array => {
+  const buff = Buffer.from(val);
+  return new Uint8Array(buff);
 };
