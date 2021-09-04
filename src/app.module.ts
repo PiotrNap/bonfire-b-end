@@ -12,21 +12,25 @@ import { logger } from "./common/middleware/logger.middleware";
 import { UsersModule } from "./users/users.module";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { configService } from "./config/config.service";
-import { BTCService, ETHService, ADAService } from './crypto/crypto.service';
-import { CryptoModule } from './crypto/crypto.module';
+import { BTCService, ETHService, ADAService } from "./crypto/crypto.service";
+import { CryptoModule } from "./crypto/crypto.module";
 import { HttpModule } from "@nestjs/axios";
 import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
-import { BTCController, ETHController, ADAController } from './crypto/crypto.controller';
-import { IdTokenModule } from './id-token/id-token.module';
+import {
+  BTCController,
+  ETHController,
+  ADAController,
+} from "./crypto/crypto.controller";
+import { IdTokenModule } from "./id-token/id-token.module";
 
 @Module({
   imports: [
     CryptoModule,
     HttpModule,
-    AuthModule, 
-    UsersModule, 
-    TypeOrmModule.forRoot(configService.getTypeOrmConfig()), IdTokenModule,
-    
+    AuthModule,
+    UsersModule,
+    TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
+    IdTokenModule,
   ],
   controllers: [
     AppController,
@@ -38,8 +42,8 @@ import { IdTokenModule } from './id-token/id-token.module';
   ],
   providers: [
     AuthService,
-    AppService, 
-    // GoogleService, 
+    AppService,
+    // GoogleService,
     // BTCService,
     // ETHService,
     // ADAService

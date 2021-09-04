@@ -106,11 +106,9 @@ export class AuthController {
       // handle error message
       return { statusCode: 500 };
     }
-    console.log(query);
     const { code } = query;
     const accessToken = await this.googleService.getUserAccessToken(code);
 
-    console.log(accessToken);
     return;
   }
 }

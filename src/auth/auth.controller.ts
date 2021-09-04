@@ -13,9 +13,9 @@ import { LoginStatus } from "./interfaces/login-status.interface";
 import { JwtPayload } from "./interfaces/payload.interface";
 import { AuthGuard } from "@nestjs/passport";
 import { ChallengeResponseDTO } from "src/users/dto/challenge-response.dto";
-import { ChallengeDTO } from "src/users/dto/challenge.dto";
 import { UsersService } from "src/users/users.service";
 import { UserDto } from "src/users/dto/user.dto";
+import { ChallengeDTO } from "src/users/dto/challenge.dto";
 
 @Controller("auth")
 export class AuthController {
@@ -34,15 +34,25 @@ export class AuthController {
   }
 
   @Get(":id/challenge")
-  public async challenge(@Param() param: string): Promise<ChallengeDTO> {
-    return await this.authService.challenge(param);
+  public async challenge(
+    @Param() param: { id: string }
+  ): Promise<ChallengeDTO> {
+    const challengeDTO = await this.authService.challenge(param.id);
+
+    // return base64 string for ease of use in RN
+    challengeDTO.challengeString = Buffer.from(
+      challengeDTO.challengeString
+    ).toString("base64");
+
+    return challengeDTO;
   }
 
-  @Post("login")
+  @Post(":id/login")
   public async login(
-    @Body() challengeResponse: ChallengeResponseDTO
+    @Body() challengeResponse: ChallengeResponseDTO,
+    @Param() params: { id: string }
   ): Promise<LoginStatus> {
-    return await this.authService.login(challengeResponse);
+    return await this.authService.login(challengeResponse, params.id);
   }
 
   @Get("whoami")

@@ -38,15 +38,23 @@ export class AuthService {
     return new ChallengeDTO(userid);
   }
 
-  async login(challengeResponse: ChallengeResponseDTO): Promise<LoginStatus> {
+  // async validateChallenge(userDto: string): Promise<boolean | void> {
+  //     // const user =
+  // }
+
+  async login(
+    challengeResponse: ChallengeResponseDTO,
+    id?: string
+  ): Promise<LoginStatus> {
     // find user in db
-    const user = await this.usersService.challengeLogin(challengeResponse);
+    const user = await this.usersService.challengeLogin(challengeResponse, id);
 
     // generate and sign token
     const token = this._createToken(user);
 
     return {
       username: user.username,
+      id: user.id,
       ...token,
     };
   }
@@ -60,10 +68,11 @@ export class AuthService {
   }
 
   private _createToken({ username }: UserDto): any {
-    const expiresIn = process.env.EXPIRESIN;
+    const expiresIn = process.env.EXPIRES_IN;
 
     const user: JwtPayload = { username };
     const accessToken = this.jwtService.sign(user);
+
     return {
       expiresIn,
       accessToken,
