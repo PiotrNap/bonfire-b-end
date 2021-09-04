@@ -7,6 +7,16 @@
       "name": "@oldcryptogeek",
       "email": "kodex.data@gmail.com",
       "url": "https://keybase.io/team/kodexdata"
+    },
+    {
+      "name": "@PiotrNap",
+      "email": "piotr.napierala94@gmail.com",
+      "url": "https://piotrnap.com"
+    },
+    {
+      "name": "andygar89",
+      "email": "agar210@yahoo.com",
+      "url": "https://keybase.io/andygar89"
     }
   ],
   "private": true,
@@ -35,6 +45,7 @@
   "dependencies": {
     "@nestjs/axios": "^0.0.1",
     "@nestjs/common": "^8.0.4",
+    "@nestjs/config": "^1.0.1",
     "@nestjs/core": "^8.0.4",
     "@nestjs/jwt": "^8.0.0",
     "@nestjs/mapped-types": "*",
