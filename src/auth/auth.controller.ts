@@ -12,10 +12,10 @@ import { AuthService } from "./auth.service";
 import { LoginStatus } from "./interfaces/login-status.interface";
 import { JwtPayload } from "./interfaces/payload.interface";
 import { AuthGuard } from "@nestjs/passport";
-import { ChallengeResponseDTO } from "src/users/dto/challenge-response.dto";
 import { UsersService } from "src/users/users.service";
 import { UserDto } from "src/users/dto/user.dto";
 import { ChallengeDTO } from "src/users/dto/challenge.dto";
+import { ChallengeRequestDTO } from "src/users/dto/challenge-request.dto";
 
 @Controller("auth")
 export class AuthController {
@@ -37,7 +37,7 @@ export class AuthController {
   public async challenge(
     @Param() param: { id: string }
   ): Promise<ChallengeDTO> {
-    const challengeDTO = await this.authService.challenge(param.id);
+    const challengeDTO = await this.authService.createChallenge(param.id);
 
     // return base64 string for ease of use in RN
     challengeDTO.challengeString = Buffer.from(
@@ -49,10 +49,10 @@ export class AuthController {
 
   @Post(":id/login")
   public async login(
-    @Body() challengeResponse: ChallengeResponseDTO,
+    @Body() challengeRequestDTO: ChallengeRequestDTO,
     @Param() params: { id: string }
   ): Promise<LoginStatus> {
-    return await this.authService.login(challengeResponse, params.id);
+    return await this.authService.loginById(challengeRequestDTO, params.id);
   }
 
   @Get("whoami")

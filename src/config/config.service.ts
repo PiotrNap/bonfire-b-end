@@ -37,6 +37,9 @@ class ConfigService {
       password: this.getValue("POSTGRES_PASSWORD"),
       database: this.getValue("POSTGRES_DATABASE"),
 
+      //@TODO: remove for production
+      synchronize: true,
+
       entities: ["dist/model/*.entity.js"],
 
       migrationsTableName: "migration",

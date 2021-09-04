@@ -6,8 +6,8 @@ import { LoginStatus } from "./interfaces/login-status.interface";
 import { UserDto } from "../users/dto/user.dto";
 import { JwtPayload } from "./interfaces/payload.interface";
 import { JwtService } from "@nestjs/jwt";
-import { ChallengeResponseDTO } from "src/users/dto/challenge-response.dto";
 import { ChallengeDTO } from "src/users/dto/challenge.dto";
+import { ChallengeRequestDTO } from "src/users/dto/challenge-request.dto";
 
 @Injectable()
 export class AuthService {
@@ -34,7 +34,7 @@ export class AuthService {
     return status;
   }
 
-  async challenge(userid: string): Promise<ChallengeDTO> {
+  async createChallenge(userid: string): Promise<ChallengeDTO> {
     return new ChallengeDTO(userid);
   }
 
@@ -42,8 +42,8 @@ export class AuthService {
   //     // const user =
   // }
 
-  async login(
-    challengeResponse: ChallengeResponseDTO,
+  async loginById(
+    challengeResponse: ChallengeRequestDTO,
     id?: string
   ): Promise<LoginStatus> {
     // find user in db

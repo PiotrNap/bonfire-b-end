@@ -6,6 +6,7 @@ import { UserEntity } from "../model/user.entity";
 import { toUserDto } from "../common/mapper";
 import { CreateUserDto } from "./dto/user.create.dto";
 import { ChallengeResponseDTO } from "./dto/challenge-response.dto";
+import { ChallengeRequestDTO } from "./dto/challenge-request.dto";
 
 @Injectable()
 export class UsersService {
@@ -19,15 +20,28 @@ export class UsersService {
     return toUserDto(user);
   }
 
+  async updateUser(key: string, value: any, id: string): Promise<boolean> {
+    try {
+      let user = await this.userRepo.findOne({ where: { id } });
+      user[`${key}`] = value;
+
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
+  }
+
   async challengeLogin(
-    response: ChallengeResponseDTO,
-    id?: string
+    challengeRequestDTO: ChallengeRequestDTO,
+    id?: string,
+    username?: string
   ): Promise<UserDto> {
     var user: UserEntity;
 
     if (id == null) {
       user = await this.userRepo.findOne({
-        where: { username: response.username },
+        where: { username },
       });
     } else {
       user = await this.userRepo.findOne({
@@ -38,7 +52,13 @@ export class UsersService {
     if (!user) {
       throw new HttpException("User not found", HttpStatus.UNAUTHORIZED);
     }
-    const valid = await new ChallengeResponseDTO().validate(user);
+
+    const { signature, challenge } = challengeRequestDTO;
+    const valid = new ChallengeResponseDTO().validate(
+      user,
+      signature,
+      challenge
+    );
 
     if (!valid) {
       throw new HttpException("Invalid credentials", HttpStatus.UNAUTHORIZED);

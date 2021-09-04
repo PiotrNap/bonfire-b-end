@@ -22,30 +22,30 @@ const tokenExpiry = new Date(validityPeriod);
 export class AppController {
   constructor(private readonly authService: AuthService) {}
 
-  @UseGuards(LocalAuthGuard)
-  @Post("auth/login")
-  async updateRes(@Res() response, @Req() req) {
-    const token = await this.login(req);
+  // @UseGuards(LocalAuthGuard)
+  // @Post("auth/login")
+  // async updateRes(@Res() response, @Req() req) {
+  //   const token = await this.login(req);
 
-    response
-      .cookie("access_token", token.accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: true,
-        domain: "localhost", // for now...
-        expires: tokenExpiry,
-      })
-      .send({
-        success: true,
-        validFor: `${validFor}s`,
-        currentTime: new Date(currentTime),
-        tokenExpiry: tokenExpiry,
-        jwt: token.accessToken,
-      });
-  }
-  async login(@Request() req) {
-    return this.authService.login(req.user);
-  }
+  //   response
+  //     .cookie("access_token", token.accessToken, {
+  //       httpOnly: true,
+  //       secure: true,
+  //       sameSite: true,
+  //       domain: "localhost", // for now...
+  //       expires: tokenExpiry,
+  //     })
+  //     .send({
+  //       success: true,
+  //       validFor: `${validFor}s`,
+  //       currentTime: new Date(currentTime),
+  //       tokenExpiry: tokenExpiry,
+  //       jwt: token.accessToken,
+  //     });
+  // }
+  // async login(@Request() req) {
+  //   return this.authService.login(req.user);
+  // }
 
   @UseGuards(JwtAuthGuard)
   @Get("profile")
