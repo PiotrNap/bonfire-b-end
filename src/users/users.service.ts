@@ -19,14 +19,27 @@ export class UsersService {
     return toUserDto(user);
   }
 
-  async challengeLogin(response: ChallengeResponseDTO): Promise<UserDto> {
-    const user = await this.userRepo.findOne({
-      where: { username: response.username },
-    });
+  async challengeLogin(
+    response: ChallengeResponseDTO,
+    id?: string
+  ): Promise<UserDto> {
+    var user: UserEntity;
+
+    if (id == null) {
+      user = await this.userRepo.findOne({
+        where: { username: response.username },
+      });
+    } else {
+      user = await this.userRepo.findOne({
+        where: { id },
+      });
+    }
+
     if (!user) {
       throw new HttpException("User not found", HttpStatus.UNAUTHORIZED);
     }
-    const valid = await response.validate(user);
+    const valid = await new ChallengeResponseDTO().validate(user);
+
     if (!valid) {
       throw new HttpException("Invalid credentials", HttpStatus.UNAUTHORIZED);
     }
@@ -39,7 +52,7 @@ export class UsersService {
   }
 
   async registerUser(newUserDto: CreateUserDto): Promise<UserDto> {
-    const { name, username, publicKey } = newUserDto;
+    const { name, username, publicKey, profileType } = newUserDto;
 
     // check if user doesn't exists yet
     const user = await this.userRepo.findOne({ username });
@@ -53,6 +66,7 @@ export class UsersService {
       newUser.name = name;
       newUser.username = username;
       newUser.publicKey = publicKey;
+      newUser.profileType = profileType;
 
       await this.userRepo.save(newUser);
 
@@ -60,7 +74,8 @@ export class UsersService {
         newUser.name,
         newUser.username,
         newUser.publicKey,
-        newUser.id
+        newUser.id,
+        newUser.profileType
       );
 
       return userDto;
