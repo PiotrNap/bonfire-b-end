@@ -141,6 +141,14 @@ export const comparePasswords = async (userPassword, currentPassword) => {
 };
 
 export const base64ToUint8Array = (val: string): Uint8Array => {
-  const buff = Buffer.from(val);
+  const buff = Buffer.from(val, "base64");
   return new Uint8Array(buff);
+};
+
+export const base64ToUTF8 = (val: string) => {
+  return Buffer.from(val, "base64").toString("utf-8");
+};
+
+export const utf8ToBase64 = (val: string) => {
+  return Buffer.from(val, "utf-8").toString("base64");
 };
