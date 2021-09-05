@@ -4,7 +4,6 @@ export class UserDto {
   publicKey: string;
   profileType: string;
   createdOn?: Date;
-  currChallenge?: string | null;
   calendarToken?: string | null;
   refreshToken?: string | null;
 }

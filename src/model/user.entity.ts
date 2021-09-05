@@ -4,11 +4,8 @@ import { BaseEntity } from "./base.entity";
 @Entity({ name: "user" })
 @TableInheritance({ column: { type: "varchar", name: "userType" } })
 export class UserEntity extends BaseEntity {
-  @Column({ type: "varchar", length: 300 })
+  @Column({ type: "varchar", length: 100, nullable: true })
   name?: string; // real name
-
-  // @Column({ type: "varchar", length: 300 })
-  // handle?: string; // username or alias or "@"
 
   // @Column({ type: "varchar", length: 65535 })
   // profileImage?: string; //base encoded png 512x512
@@ -19,7 +16,8 @@ export class UserEntity extends BaseEntity {
   @Column({
     name: "username",
     type: "varchar",
-    nullable: false,
+    nullable: true,
+    length: 100,
   })
   username: string;
 
@@ -47,11 +45,8 @@ export class UserEntity extends BaseEntity {
   @Column({ name: "id", type: "varchar", nullable: false })
   id: string;
 
-  @Column({ name: "profileType", type: "varchar", nullable: false })
+  @Column({ name: "profileType", type: "varchar", nullable: true })
   profileType: string;
-
-  @Column({ name: "currChallenge", type: "varchar", nullable: true })
-  currChallenge: string;
 
   // @Column({ type: 'varchar', length: 65535 })
   // profileSettings?: string; // profile settings
