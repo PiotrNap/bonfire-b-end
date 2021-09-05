@@ -13,12 +13,6 @@
     "incremental": true,
     "skipLibCheck": true
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "**/*.spec.ts",
-    "**/*.dev.ts"
-  ]
+  "include": ["src/**/*", "src/index.d.ts"],
+  "exclude": ["node_modules", "**/*.spec.ts", "**/*.dev.ts"]
 }
