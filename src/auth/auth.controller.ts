@@ -6,6 +6,7 @@ import {
   Req,
   UseGuards,
   Param,
+  ParseUUIDPipe,
 } from "@nestjs/common";
 import { CreateUserDto } from "../users/dto/user.create.dto";
 import { AuthService } from "./auth.service";
@@ -35,9 +36,9 @@ export class AuthController {
 
   @Get(":id/challenge")
   public async challenge(
-    @Param() param: { id: string }
+    @Param("id", ParseUUIDPipe) id: string
   ): Promise<ChallengeDTO> {
-    const challengeDTO = await this.authService.createChallenge(param.id);
+    const challengeDTO = await this.authService.createChallenge(id);
 
     // return base64 string for ease of use in RN
     challengeDTO.challengeString = Buffer.from(
@@ -50,9 +51,9 @@ export class AuthController {
   @Post(":id/login")
   public async login(
     @Body() challengeRequestDTO: ChallengeRequestDTO,
-    @Param() params: { id: string }
+    @Param("id", ParseUUIDPipe) id: string
   ): Promise<LoginStatus> {
-    return await this.authService.loginById(challengeRequestDTO, params.id);
+    return await this.authService.loginById(challengeRequestDTO, id);
   }
 
   @Get("whoami")
