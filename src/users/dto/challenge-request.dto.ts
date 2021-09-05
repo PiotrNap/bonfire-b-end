@@ -1,8 +1,11 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, IsString } from "class-validator";
 
 export class ChallengeRequestDTO {
-  @IsNotEmpty()
+  @IsNotEmpty({ message: "Challenge cannot be empty" })
+  @IsString()
   challenge: string;
-  @IsNotEmpty()
+
+  @IsNotEmpty({ message: "Signature cannot be empty" })
+  @IsString()
   signature: string;
 }

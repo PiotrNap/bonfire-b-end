@@ -1,32 +1,48 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, IsString } from "class-validator";
 import { UserEntity } from "src/model/user.entity";
-import { base64ToUint8Array } from "src/common/utils";
-import nacl from "tweetnacl";
+import { base64ToUint8Array, base64ToUTF8 } from "src/common/utils";
+import { sha256 } from "js-sha256";
+import * as nacl from "tweetnacl";
 
 export class ChallengeResponseDTO {
-  validate(user: UserEntity, signature: string, challenge: string): boolean {
-    // var { currChallenge, publicKey } = user;
-    // var currChallengeArr: string[] = currChallenge.split("-");
-    // var TTL = 30000; // time to live 30 seconds
-    // var passedTime = new Date().getTime() - Number(currChallengeArr[1]);
+  public validate(
+    user: UserEntity,
+    signature: string,
+    challenge: string
+  ): boolean {
+    console.log(challenge);
+    var { id, publicKey } = user;
+    var TTL = 30000; // time to live 30 seconds
 
-    // // challenge hasn't been changed and the 30 sec time span hasn't been reached
-    // if (challenge === currChallenge && passedTime < TTL) {
-    //   return nacl.sign.detached.verify(
-    //     base64ToUint8Array(challenge),
-    //     base64ToUint8Array(signature),
-    //     base64ToUint8Array(publicKey)
-    //   );
-    // }
-    // return false;
-    return true;
+    var challArray = base64ToUTF8(challenge).split("_");
+    var [challengeUserId, challengeTime, challengeHash] = challArray;
+
+    var passedTime = new Date().getTime() - Number(challengeTime);
+    var newHash = sha256(
+      challengeUserId + challengeTime + process.env.JWT_SECRET
+    );
+
+    if (challengeUserId !== id || passedTime > TTL || challengeHash !== newHash)
+      return false;
+
+    // challenge hasn't been changed and the 30 sec time span hasn't been reached
+    return nacl.sign.detached.verify(
+      base64ToUint8Array(challenge),
+      base64ToUint8Array(signature),
+      base64ToUint8Array(publicKey)
+    );
   }
 
-  @IsNotEmpty()
+  @IsNotEmpty({ message: "Id cannot be empty" })
+  @IsString({ message: "Id must be a string" })
   id: string;
-  @IsNotEmpty()
+
+  @IsNotEmpty({ message: "Jwt cannot be empty" })
+  @IsString({ message: "Jwt must be a string" })
   jwt: string;
-  @IsNotEmpty()
+
+  @IsNotEmpty({ message: "Public key cannot be empty" })
+  @IsString({ message: "Public key must be a string" })
   publicKey: string;
 
   /**
