@@ -31,4 +31,6 @@ export class CreateUserDto {
 
   @IsNotEmpty({ message: "Id cannot be empty" })
   id: string;
+
+  // Organizer specific values
 }

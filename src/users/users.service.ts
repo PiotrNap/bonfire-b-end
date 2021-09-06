@@ -20,15 +20,27 @@ export class UsersService {
     return toUserDto(user);
   }
 
-  async updateUser(key: string, value: any, id: string): Promise<boolean> {
+  async updateUser(values: any, id: string): Promise<any> {
     try {
       let user = await this.userRepo.findOne({ where: { id } });
-      user[`${key}`] = value;
+      console.log(values);
+      if (typeof values === "object")
+        for (let key in values) {
+          user[`${key}`] = values[key];
+        }
+      console.log("new user record: ", user);
+      await this.userRepo.save(user);
 
-      return true;
+      return {
+        status: 201,
+        message: "User record updated successfully.",
+      };
     } catch (e) {
       console.error(e);
-      return false;
+      throw new HttpException(
+        "Could not update the record",
+        HttpStatus.BAD_REQUEST
+      );
     }
   }
 
@@ -71,7 +83,7 @@ export class UsersService {
     return await this.findOne({ where: { username } });
   }
 
-  async registerUser(newUserDto: CreateUserDto): Promise<UserDto> {
+  async register(newUserDto: any): Promise<UserDto> {
     const { name, username, publicKey, profileType } = newUserDto;
 
     // check if user doesn't exists yet
@@ -82,7 +94,7 @@ export class UsersService {
     }
 
     try {
-      const newUser = new UserEntity();
+      let newUser = new UserEntity();
       newUser.name = name;
       newUser.username = username;
       newUser.publicKey = publicKey;
@@ -97,6 +109,7 @@ export class UsersService {
         newUser.id,
         newUser.profileType
       );
+      console.log(newUser);
 
       return userDto;
     } catch (e) {

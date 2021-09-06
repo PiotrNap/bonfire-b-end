@@ -16,26 +16,33 @@ export class AuthService {
     private readonly jwtService: JwtService
   ) {}
 
-  async register(userDto: CreateUserDto): Promise<RegistrationStatus> {
-    let status: RegistrationStatus = {
-      success: true,
-      message: "user registered",
-    };
+  // async register(userDto: CreateUserDto): Promise<RegistrationStatus> {
+  //   let status: RegistrationStatus = {
+  //     success: true,
+  //     message: "user registered",
+  //   };
 
-    try {
-      await this.usersService.registerUser(userDto);
-    } catch (err) {
-      status = {
-        success: false,
-        message: err,
-      };
-    }
+  //   try {
+  //     await this.usersService.registerUser(userDto);
+  //   } catch (err) {
+  //     status = {
+  //       success: false,
+  //       message: err,
+  //     };
+  //   }
 
-    return status;
-  }
+  //   return status;
+  // }
 
   async createChallenge(userid: string): Promise<ChallengeDTO> {
-    return new ChallengeDTO(userid);
+    var challengeDTO = new ChallengeDTO(userid);
+
+    // return base64 string for ease of use in RN
+    challengeDTO.challengeString = Buffer.from(
+      challengeDTO.challengeString
+    ).toString("base64");
+
+    return challengeDTO;
   }
 
   // async validateChallenge(userDto: string): Promise<boolean | void> {
@@ -67,10 +74,10 @@ export class AuthService {
     return user;
   }
 
-  private _createToken({ username }: UserDto): any {
+  private _createToken({ username, id }: UserDto): any {
     const expiresIn = process.env.EXPIRES_IN;
 
-    const user: JwtPayload = { username };
+    const user: JwtPayload = { username, sub: id };
     const accessToken = this.jwtService.sign(user);
 
     return {

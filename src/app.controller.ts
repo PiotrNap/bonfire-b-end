@@ -13,6 +13,7 @@ import { LocalAuthGuard } from "./auth/guards/local-auth.guard";
 import { GoogleService } from "./auth/services/google/google.service";
 import { Redirect } from "@nestjs/common";
 import { Query } from "@nestjs/common";
+import { Public } from "./common/decorators/public.decorator";
 
 const currentTime = Math.floor(Date.now());
 const validityPeriod = currentTime + 1000 * 60; // equates to a 60s validity period
@@ -46,6 +47,12 @@ export class AppController {
   // async login(@Request() req) {
   //   return this.authService.login(req.user);
   // }
+
+  @Get()
+  @Public()
+  sayHi() {
+    return "hi!";
+  }
 
   @UseGuards(JwtAuthGuard)
   @Get("profile")

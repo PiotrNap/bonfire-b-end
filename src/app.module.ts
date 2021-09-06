@@ -22,6 +22,8 @@ import {
   ADAController,
 } from "./crypto/crypto.controller";
 import { IdTokenModule } from "./id-token/id-token.module";
+import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard";
+import { APP_GUARD } from "@nestjs/core";
 
 @Module({
   imports: [
@@ -43,6 +45,10 @@ import { IdTokenModule } from "./id-token/id-token.module";
   providers: [
     AuthService,
     AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
     // GoogleService,
     // BTCService,
     // ETHService,
