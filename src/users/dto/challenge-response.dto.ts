@@ -15,14 +15,15 @@ export class ChallengeResponseDTO {
     var TTL = 30000; // time to live 30 seconds
 
     var challArray = base64ToUTF8(challenge).split("_");
-    var [challengeUserId, challengeTime, challengeHash] = challArray;
+    console.log(challArray);
+    var [challengeUUID, challengeTime, challengeHash] = challArray;
 
     var passedTime = new Date().getTime() - Number(challengeTime);
     var newHash = sha256(
-      challengeUserId + challengeTime + process.env.JWT_SECRET
+      challengeUUID + challengeTime + process.env.JWT_SECRET
     );
 
-    if (challengeUserId !== id || passedTime > TTL || challengeHash !== newHash)
+    if (challengeUUID !== id || passedTime > TTL || challengeHash !== newHash)
       return false;
 
     // challenge hasn't been changed and the 30 sec time span hasn't been reached
