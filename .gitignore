@@ -7,7 +7,11 @@ package-lock.json
 
 # ignore auto-generated files
 ormconfig.json
-*.swp
 *.ts.test
+
+# ignore temp files from editors
+*.swp
+*~
+
 
 devDb/
