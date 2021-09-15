@@ -1,5 +1,5 @@
 import { IsNotEmpty, MaxLength } from "class-validator";
-import { CreateUserDto } from "./user.create.dto";
+import { CreateUserDto } from "./user-create.dto";
 import { OrganizerEntity } from "../../model/organizer.entity";
 
 export class CreateOrganizerDto extends CreateUserDto {
