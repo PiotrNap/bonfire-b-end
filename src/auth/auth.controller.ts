@@ -19,19 +19,20 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
-  @Get(":id/challenge")
+  @Get(":uuid/challenge")
   public async challenge(
-    @Param("id", ParseUUIDPipe) id: string
+    @Param("uuid", ParseUUIDPipe) uuid: string
   ): Promise<ChallengeDTO> {
-    return await this.authService.createChallenge(id);
+    return await this.authService.createChallenge(uuid);
   }
 
-  @Post(":id/login")
+  @Public()
+  @Post(":uuid/login")
   public async login(
     @Body() challengeRequestDTO: ChallengeRequestDTO,
-    @Param("id", ParseUUIDPipe) id: string
+    @Param("uuid", ParseUUIDPipe) uuid: string
   ): Promise<LoginStatus> {
-    return await this.authService.loginById(challengeRequestDTO, id);
+    return await this.authService.loginById(challengeRequestDTO, uuid);
   }
 
   @Get("whoami")

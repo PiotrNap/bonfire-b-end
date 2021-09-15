@@ -1,5 +1,11 @@
-import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
-import { CreateUserDto } from "../users/dto/user.create.dto";
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  forwardRef,
+  Inject,
+} from "@nestjs/common";
+import { CreateUserDto } from "../users/dto/user-create.dto";
 import { RegistrationStatus } from "../auth/interfaces/registration-status.interface";
 import { UsersService } from "../users/users.service";
 import { LoginStatus } from "./interfaces/login-status.interface";
@@ -12,27 +18,10 @@ import { ChallengeRequestDTO } from "src/users/dto/challenge-request.dto";
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService
   ) {}
-
-  // async register(userDto: CreateUserDto): Promise<RegistrationStatus> {
-  //   let status: RegistrationStatus = {
-  //     success: true,
-  //     message: "user registered",
-  //   };
-
-  //   try {
-  //     await this.usersService.registerUser(userDto);
-  //   } catch (err) {
-  //     status = {
-  //       success: false,
-  //       message: err,
-  //     };
-  //   }
-
-  //   return status;
-  // }
 
   async createChallenge(userid: string): Promise<ChallengeDTO> {
     var challengeDTO = new ChallengeDTO(userid);
@@ -44,10 +33,6 @@ export class AuthService {
 
     return challengeDTO;
   }
-
-  // async validateChallenge(userDto: string): Promise<boolean | void> {
-  //     // const user =
-  // }
 
   async loginById(
     challengeResponse: ChallengeRequestDTO,
@@ -74,10 +59,10 @@ export class AuthService {
     return user;
   }
 
-  private _createToken({ username, id }: UserDto): any {
+  private _createToken({ username, id, profileType }: UserDto): any {
     const expiresIn = process.env.EXPIRES_IN;
 
-    const user: JwtPayload = { username, sub: id };
+    const user: JwtPayload = { username, sub: id, profileType };
     const accessToken = this.jwtService.sign(user);
 
     return {
