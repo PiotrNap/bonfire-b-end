@@ -1,10 +1,10 @@
 import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { FindManyOptions, Repository } from "typeorm";
 import { UserDto } from "./dto/user.dto";
 import { UserEntity } from "../model/user.entity";
 import { toUserDto } from "../common/mapper";
-import { CreateUserDto } from "./dto/user.create.dto";
+import { CreateUserDto } from "./dto/user-create.dto";
 import { ChallengeResponseDTO } from "./dto/challenge-response.dto";
 import { ChallengeRequestDTO } from "./dto/challenge-request.dto";
 
@@ -15,15 +15,17 @@ export class UsersService {
     private readonly userRepo: Repository<UserEntity>
   ) {}
 
-  async findOne(options?: object): Promise<UserDto> {
+  async findOne(options?: object, toDto?: boolean): Promise<UserDto> {
     const user = await this.userRepo.findOne(options);
-    return toUserDto(user);
+
+    if (toDto) return toUserDto(user);
+
+    return user;
   }
 
   async updateUser(values: any, id: string): Promise<any> {
     try {
       let user = await this.userRepo.findOne({ where: { id } });
-      console.log(values);
       if (typeof values === "object")
         for (let key in values) {
           user[`${key}`] = values[key];
@@ -31,9 +33,12 @@ export class UsersService {
       console.log("new user record: ", user);
       await this.userRepo.save(user);
 
+      const newUser = await this.userRepo.findOne({ where: { id } });
+
       return {
         status: 201,
         message: "User record updated successfully.",
+        record: newUser,
       };
     } catch (e) {
       console.error(e);
@@ -109,15 +114,23 @@ export class UsersService {
         newUser.id,
         newUser.profileType
       );
-      console.log(newUser);
 
       return userDto;
     } catch (e) {
+      console.error(e);
       throw new HttpException(
         "Something went wrong while creating new user",
         HttpStatus.BAD_REQUEST
       );
     }
+  }
+
+  async getAll(options?: FindManyOptions<UserEntity>): Promise<UserEntity[]> {
+    try {
+      const users = await this.userRepo.find(options);
+
+      return users;
+    } catch (e) {}
   }
 
   // private _sanitizeUser(user: UserEntity) {
