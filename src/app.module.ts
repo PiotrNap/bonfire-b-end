@@ -24,6 +24,8 @@ import {
 import { IdTokenModule } from "./id-token/id-token.module";
 import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard";
 import { APP_GUARD } from "@nestjs/core";
+import { EventsModule } from "./events/events.module";
+import { RolesGuard } from "./auth/roles/roles.guard";
 
 @Module({
   imports: [
@@ -31,8 +33,9 @@ import { APP_GUARD } from "@nestjs/core";
     HttpModule,
     AuthModule,
     UsersModule,
-    TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
+    EventsModule,
     IdTokenModule,
+    TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
   ],
   controllers: [
     AppController,
@@ -43,11 +46,14 @@ import { APP_GUARD } from "@nestjs/core";
     // ADAController
   ],
   providers: [
-    AuthService,
     AppService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     },
     // GoogleService,
     // BTCService,

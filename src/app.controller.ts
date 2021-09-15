@@ -54,42 +54,42 @@ export class AppController {
     return "hi!";
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get("profile")
-  getProfile(@Request() req) {
-    return req.user;
-  }
-  @Get("events")
-  @UseGuards(JwtAuthGuard)
-  async devices(@Req() req): Promise<any> {
-    const events = [
-      {
-        date: new Date(currentTime + 1000 * 60 * 60 * 24 * 1),
-        description: "Super event 1",
-        keywords: [
-          "spoken word",
-          "iambic pentameter",
-          "finger snapping good times",
-        ],
-      },
-      {
-        date: new Date(currentTime + 1000 * 60 * 60 * 24 * 2),
-        description: "Super event 2",
-        keywords: ["concert", "music", "festival"],
-      },
-      {
-        date: new Date(currentTime + 1000 * 60 * 60 * 24 * 3),
-        description: "Super event 3",
-        keywords: ["bluegrass", "folk", "jazz"],
-      },
-      {
-        date: new Date(currentTime + 1000 * 60 * 60 * 24 * 4),
-        description: "Super event 4",
-        keywords: ["theater", "comedy", "drama"],
-      },
-    ];
-    return events;
-  }
+  // @UseGuards(JwtAuthGuard)
+  // @Get("profile")
+  // getProfile(@Request() req) {
+  //   return req.user;
+  // }
+  // @UseGuards(JwtAuthGuard)
+  // @Get("events")
+  // async devices(@Req() req): Promise<any> {
+  //   const events = [
+  //     {
+  //       date: new Date(currentTime + 1000 * 60 * 60 * 24 * 1),
+  //       description: "Super event 1",
+  //       keywords: [
+  //         "spoken word",
+  //         "iambic pentameter",
+  //         "finger snapping good times",
+  //       ],
+  //     },
+  //     {
+  //       date: new Date(currentTime + 1000 * 60 * 60 * 24 * 2),
+  //       description: "Super event 2",
+  //       keywords: ["concert", "music", "festival"],
+  //     },
+  //     {
+  //       date: new Date(currentTime + 1000 * 60 * 60 * 24 * 3),
+  //       description: "Super event 3",
+  //       keywords: ["bluegrass", "folk", "jazz"],
+  //     },
+  //     {
+  //       date: new Date(currentTime + 1000 * 60 * 60 * 24 * 4),
+  //       description: "Super event 4",
+  //       keywords: ["theater", "comedy", "drama"],
+  //     },
+  //   ];
+  //   return events;
+  // }
 }
 /* 
 # Guarded objects
