@@ -1,40 +1,44 @@
-import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
+import { EventAvailability, SelectedDays } from "src/events/events.interface";
+import { Entity, Column } from "typeorm";
+import { BaseEntity } from "./base.entity";
+
+export interface EventUser {
+  id: string; // this should be a uuidv4 or uuidv5
+  userName?: string;
+}
 
 @Entity()
-export class Event {
-  @PrimaryGeneratedColumn()
-  id: string; // this should be a uuidv4 or uuidv5
+export class EventEntity extends BaseEntity {
+  @Column({ type: "varchar", length: 150, nullable: false })
+  description: string;
 
-  @Column("text")
-  description?: string;
+  @Column({ type: "varchar", length: 40, nullable: false })
+  title: string;
 
-  @Column()
-  place?: string;
+  @Column({ type: "jsonb" })
+  availabilities: EventAvailability[];
 
-  @Column()
-  time?: string;
+  @Column({ type: "jsonb" })
+  selectedDays: SelectedDays;
 
-  @Column()
-  url?: string;
+  @Column({ type: "simple-array" })
+  tags: string[];
 
-  @Column()
-  organizer?: string;
+  @Column({ type: "int" })
+  hourlyRate: number;
 
-  @Column()
-  attendees?: string;
-}
-export class Organizer {
-  @PrimaryGeneratedColumn()
-  id: string; // this should be a uuidv4 or uuidv5
+  @Column({ type: "varchar" })
+  imageURI: string;
 
-  @Column()
-  userName?: string;
-}
+  @Column({ type: "boolean" })
+  privateEvent: boolean;
 
-export class Attendee {
-  @PrimaryGeneratedColumn()
-  id: string; // this should be a uuidv4 or uuidv5
+  @Column({ type: "varchar" })
+  eventCardColor: string;
 
-  @Column()
-  userName?: string;
+  @Column({ type: "jsonb" })
+  organizer: EventUser;
+
+  @Column({ type: "jsonb", default: [] })
+  attendees: EventUser[] = [];
 }
