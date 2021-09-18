@@ -8,4 +8,8 @@ export class ChallengeRequestDTO {
   @IsNotEmpty({ message: "Signature cannot be empty" })
   @IsString()
   signature: string;
+
+  // this is used to lookup user in db
+  @IsNotEmpty()
+  userCredential: { [index: string]: any };
 }

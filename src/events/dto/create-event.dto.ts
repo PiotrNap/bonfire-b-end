@@ -44,7 +44,4 @@ export class CreateEventDto {
 
   @IsObject()
   organizer: EventUser;
-
-  @IsArray()
-  attendees: EventUser[] = [];
 }

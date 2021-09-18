@@ -10,12 +10,10 @@ export class ChallengeResponseDTO {
     signature: string,
     challenge: string
   ): boolean {
-    console.log(challenge);
     var { id, publicKey } = user;
     var TTL = 30000; // time to live 30 seconds
 
     var challArray = base64ToUTF8(challenge).split("_");
-    console.log(challArray);
     var [challengeUUID, challengeTime, challengeHash] = challArray;
 
     var passedTime = new Date().getTime() - Number(challengeTime);
