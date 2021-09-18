@@ -11,6 +11,7 @@ import {
 } from "@nestjs/common";
 import { roles, Roles } from "src/auth/roles/roles.decorator";
 import { CreateEventDto } from "./dto/create-event.dto";
+import { EventBookingDto } from "./dto/event-booking.dto";
 import { EventsService } from "./events.service";
 
 @Controller("events")
@@ -47,8 +48,34 @@ export class EventsController {
   @Delete(":uuid")
   @Roles(roles.organizer)
   public async removeEvent(
-    @Param("uuid", new ParseUUIDPipe()) uuid: string
+    @Param("uuid", new ParseUUIDPipe()) uuid: string,
+    @Req() req: any
   ): Promise<any> {
-    return await this.eventsService.remove(uuid);
+    const { userId } = req.user;
+    return await this.eventsService.remove(uuid, userId);
+  }
+
+  // @TODO specify booking dto
+  @Post("booking/:uuid")
+  public async bookEvent(
+    @Param("uuid", new ParseUUIDPipe()) uuid: string,
+    @Body() eventBookingDto: EventBookingDto,
+    @Req() req: any
+  ) {
+    const { user } = req;
+    return await this.eventsService.bookEvent(uuid, user, eventBookingDto);
+  }
+
+  @Put("booking/:uuid")
+  public async updateBooking(
+    @Param("uuid", new ParseUUIDPipe()) uuid: string,
+    @Body() body: EventBookingDto
+  ) {
+    return `Event with id ${uuid} updated with a payload of ${body}`;
+  }
+
+  @Delete("booking/:uuid")
+  public async removeBooking(@Param("uuid", new ParseUUIDPipe()) uuid: string) {
+    return `Event schedule with id ${uuid} removed successfully`;
   }
 }
