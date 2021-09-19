@@ -6,19 +6,26 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
 } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "../users/dto/user-create.dto";
 import { UserDto } from "./dto/user.dto";
 import { Public } from "src/common/decorators/public.decorator";
 import { UpdateUserDto } from "./dto/user-update.dto";
+import { PaginationRequestDto, PaginationResult } from "src/pagination";
+import { UserEntity } from "src/model/user.entity";
 
 @Controller("users")
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  async getUsers() {
+  async getUsers(
+    @Query() query: PaginationRequestDto
+  ): Promise<PaginationResult<UserEntity> | UserEntity[] | void> {
+    if (query !== undefined)
+      return await this.usersService.getAllWithPagination(query);
     return await this.usersService.getAll();
   }
 
@@ -31,9 +38,16 @@ export class UsersController {
   }
 
   @Get("organizers")
-  public async getOrganizers(): Promise<any> {
+  public async getOrganizers(
+    @Query() query: PaginationRequestDto
+  ): Promise<any> {
+    if (query !== undefined)
+      return await this.usersService.getAllWithPagination(query, {
+        where: { profileType: "organizer" },
+      });
     return await this.usersService.getAll({
       where: { profileType: "organizer" },
+      relations: [],
     });
   }
 

@@ -7,6 +7,7 @@ import { toUserDto } from "../common/mapper";
 import { CreateUserDto } from "./dto/user-create.dto";
 import { ChallengeResponseDTO } from "./dto/challenge-response.dto";
 import { ChallengeRequestDTO } from "./dto/challenge-request.dto";
+import { PaginationRequestDto, PaginationResult } from "src/pagination";
 
 @Injectable()
 export class UsersService {
@@ -15,7 +16,7 @@ export class UsersService {
     private readonly userRepo: Repository<UserEntity>
   ) {}
 
-  async findOne(options?: object, toDto?: boolean): Promise<UserDto> {
+  async findOne(options: any, toDto?: boolean): Promise<UserDto> {
     const user = await this.userRepo.findOne(options);
 
     if (toDto) return toUserDto(user);
@@ -30,7 +31,6 @@ export class UsersService {
         for (let key in values) {
           user[`${key}`] = values[key];
         }
-      console.log("new user record: ", user);
       await this.userRepo.save(user);
 
       const newUser = await this.userRepo.findOne({ where: { id } });
@@ -50,31 +50,23 @@ export class UsersService {
   }
 
   async challengeLogin(
-    challengeRequestDTO: ChallengeRequestDTO,
-    id?: string,
-    username?: string
+    challengeRequestDTO: ChallengeRequestDTO
   ): Promise<UserDto> {
-    var user: UserEntity;
-
-    if (id == null) {
-      user = await this.userRepo.findOne({
-        where: { username },
-      });
-    } else {
-      user = await this.userRepo.findOne({
-        where: { id },
-      });
-    }
+    console.log("challengeRequestDTO: ", challengeRequestDTO);
+    const { signature, challenge, userCredential } = challengeRequestDTO;
+    var user: UserEntity = await this.userRepo.findOne({
+      where: userCredential,
+    });
 
     if (!user) {
       throw new HttpException("User not found", HttpStatus.UNAUTHORIZED);
     }
 
-    const { signature, challenge } = challengeRequestDTO;
     const valid = new ChallengeResponseDTO().validate(
       user,
       signature,
-      challenge
+      challenge,
+      userCredential
     );
 
     if (!valid) {
@@ -127,10 +119,46 @@ export class UsersService {
 
   async getAll(options?: FindManyOptions<UserEntity>): Promise<UserEntity[]> {
     try {
-      const users = await this.userRepo.find(options);
+      const users = await this.userRepo.find({ ...options, skip: 1 });
 
       return users;
     } catch (e) {}
+  }
+
+  async getAllWithPagination(
+    paginationRequestDto: PaginationRequestDto,
+    options?: FindManyOptions<UserEntity>
+  ): Promise<PaginationResult<UserEntity> | void> {
+    try {
+      let { limit, page } = paginationRequestDto;
+      page = Math.abs(Number(page));
+      limit = Math.abs(Number(limit));
+      if (limit < 10) limit = 10;
+      let skip = (page - 1) * limit;
+
+      const results = await this.userRepo.findAndCount({
+        take: limit,
+        skip,
+        order: {
+          createDateTime: "ASC",
+        },
+        // default cache time = 1s
+        cache: true,
+        ...options,
+      });
+
+      if (results == null) throw new Error();
+
+      return {
+        result: results[0],
+        count: results[1],
+        limit,
+        page,
+      };
+    } catch (e) {
+      console.error(e);
+      throw new HttpException("Something went wrong", HttpStatus.BAD_REQUEST);
+    }
   }
 
   // private _sanitizeUser(user: UserEntity) {
