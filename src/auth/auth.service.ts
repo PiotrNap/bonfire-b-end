@@ -5,8 +5,6 @@ import {
   forwardRef,
   Inject,
 } from "@nestjs/common";
-import { CreateUserDto } from "../users/dto/user-create.dto";
-import { RegistrationStatus } from "../auth/interfaces/registration-status.interface";
 import { UsersService } from "../users/users.service";
 import { LoginStatus } from "./interfaces/login-status.interface";
 import { UserDto } from "../users/dto/user.dto";
@@ -23,23 +21,24 @@ export class AuthService {
     private readonly jwtService: JwtService
   ) {}
 
-  async createChallenge(userid: string): Promise<ChallengeDTO> {
-    var challengeDTO = new ChallengeDTO(userid);
+  async createChallenge(credential: string): Promise<ChallengeDTO> {
+    try {
+      if (credential == null) this.badCredentialsError();
+      var challengeDTO = new ChallengeDTO(credential);
 
-    // return base64 string for ease of use in RN
-    challengeDTO.challengeString = Buffer.from(
-      challengeDTO.challengeString
-    ).toString("base64");
+      // return base64 string for ease of use in RN
+      challengeDTO.challengeString = Buffer.from(
+        challengeDTO.challengeString
+      ).toString("base64");
 
-    return challengeDTO;
+      return challengeDTO;
+    } catch (e) {
+      if (e.message && e.status) throw new HttpException(e.message, e.status);
+    }
   }
 
-  async loginById(
-    challengeResponse: ChallengeRequestDTO,
-    id?: string
-  ): Promise<LoginStatus> {
-    // find user in db
-    const user = await this.usersService.challengeLogin(challengeResponse, id);
+  async login(challengeRequest: ChallengeRequestDTO): Promise<LoginStatus> {
+    const user = await this.usersService.challengeLogin(challengeRequest);
 
     // generate and sign token
     const token = this._createToken(user);
@@ -67,7 +66,15 @@ export class AuthService {
 
     return {
       expiresIn,
+      expiresAt: new Date().getTime() + expiresIn,
       accessToken,
     };
+  }
+
+  private badCredentialsError() {
+    throw new HttpException(
+      "Invalid credential provided.",
+      HttpStatus.BAD_REQUEST
+    );
   }
 }

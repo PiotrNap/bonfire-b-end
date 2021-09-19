@@ -8,20 +8,26 @@ export class ChallengeResponseDTO {
   public validate(
     user: UserEntity,
     signature: string,
-    challenge: string
+    challenge: string,
+    userCredential: { [index: string]: any }
   ): boolean {
-    var { id, publicKey } = user;
+    var { publicKey } = user;
     var TTL = 30000; // time to live 30 seconds
 
     var challArray = base64ToUTF8(challenge).split("_");
-    var [challengeUUID, challengeTime, challengeHash] = challArray;
+    console.log(challArray);
+    var [challengeCredential, challengeTime, challengeHash] = challArray;
 
     var passedTime = new Date().getTime() - Number(challengeTime);
     var newHash = sha256(
-      challengeUUID + challengeTime + process.env.JWT_SECRET
+      challengeCredential + challengeTime + process.env.JWT_SECRET
     );
 
-    if (challengeUUID !== id || passedTime > TTL || challengeHash !== newHash)
+    if (
+      challengeCredential !== user[Object.keys(userCredential)[0]] ||
+      passedTime > TTL ||
+      challengeHash !== newHash
+    )
       return false;
 
     // challenge hasn't been changed and the 30 sec time span hasn't been reached

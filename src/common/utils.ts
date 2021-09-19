@@ -29,7 +29,6 @@ export class Random {
 
     for (let i = 0; i < buffer.byteLength; i++) {
       const index = buffer[i] % this.CHARSET.length;
-      console.log(buffer[i]);
       charsArr.push(this.CHARSET[index]);
     }
     return charsArr.join("");
