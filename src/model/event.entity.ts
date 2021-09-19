@@ -1,6 +1,8 @@
 import { EventAvailability, SelectedDays } from "src/events/events.interface";
-import { Entity, Column } from "typeorm";
+import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from "typeorm";
 import { BaseEntity } from "./base.entity";
+import { BookingSlotEntity } from "./bookingSlot.entity";
+import { UserEntity } from "./user.entity";
 
 export interface EventUser {
   id: string; // this should be a uuidv4 or uuidv5
@@ -15,14 +17,16 @@ export class EventEntity extends BaseEntity {
   @Column({ type: "varchar", length: 40, nullable: false })
   title: string;
 
+  // in which time slots the event is available
   @Column({ type: "jsonb" })
   availabilities: EventAvailability[];
 
+  // on which days the event is available
   @Column({ type: "jsonb" })
   selectedDays: SelectedDays;
 
   @Column({ type: "simple-array" })
-  tags: string[];
+  tags?: string[];
 
   @Column({ type: "int" })
   hourlyRate: number;
@@ -36,9 +40,20 @@ export class EventEntity extends BaseEntity {
   @Column({ type: "varchar" })
   eventCardColor: string;
 
-  @Column({ type: "jsonb" })
-  organizer: EventUser;
+  @Column("int", { nullable: true })
+  organizerId: string;
 
-  @Column({ type: "jsonb", default: [] })
-  attendees: EventUser[] = [];
+  @ManyToOne(() => UserEntity, (user: UserEntity) => user.events)
+  @JoinColumn({ name: "organizerId" })
+  organizer: UserEntity;
+
+  // time slots wich are booked by other users
+  @OneToMany(
+    () => BookingSlotEntity,
+    (bookingSlot: BookingSlotEntity) => bookingSlot.event,
+    {
+      cascade: true,
+    }
+  )
+  bookedSlots: BookingSlotEntity[];
 }

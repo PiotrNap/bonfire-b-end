@@ -1,5 +1,7 @@
-import { Entity, Column, TableInheritance } from "typeorm";
+import { Entity, Column, TableInheritance, OneToMany } from "typeorm";
 import { BaseEntity } from "./base.entity";
+import { BookingSlotEntity } from "./bookingSlot.entity";
+import { EventEntity } from "./event.entity";
 
 @Entity({ name: "user" })
 @TableInheritance({ column: { type: "varchar", name: "userType" } })
@@ -68,6 +70,25 @@ export class UserEntity extends BaseEntity {
 
   @Column({ type: "simple-array", nullable: true })
   tags?: string[] | null;
+
+  /**
+   * Organizer should be able to fetch events that he's hosting,
+   * and see how many attendees are registered for those events.
+   */
+
+  // hosted events (events for sale)
+  @OneToMany(() => EventEntity, (event: EventEntity) => event.organizer)
+  events: EventEntity[];
+
+  // scheduled events (as an attendee)
+  @OneToMany(
+    () => BookingSlotEntity,
+    (bookingSlot: BookingSlotEntity) => bookingSlot.event,
+    {
+      cascade: true,
+    }
+  )
+  bookedEvents: BookingSlotEntity[];
 
   // @Column({ type: 'varchar', length: 65535 })
   // profileSettings?: string; // profile settings
