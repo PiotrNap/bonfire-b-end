@@ -4,7 +4,8 @@ import { SuccessMessage } from "src/auth/interfaces/payload.interface";
 import { BookingSlotEntity } from "src/model/bookingSlot.entity";
 import { EventEntity } from "src/model/event.entity";
 import { UserEntity } from "src/model/user.entity";
-import { Repository } from "typeorm";
+import { PaginationRequestDto, PaginationResult } from "src/pagination";
+import { FindManyOptions, Repository } from "typeorm";
 import { CreateEventDto } from "./dto/create-event.dto";
 import { EventBookingDto } from "./dto/event-booking.dto";
 import { UpdateEventDto } from "./dto/update-event.dto";
@@ -70,6 +71,42 @@ export class EventsService {
       return events;
     } catch (e) {
       throw new Error(e);
+    }
+  }
+
+  async findAllWithPagination(
+    paginationRequestDto: PaginationRequestDto,
+    options?: FindManyOptions<EventEntity>
+  ): Promise<PaginationResult<EventEntity> | void> {
+    try {
+      let { limit, page } = paginationRequestDto;
+      page = Math.abs(Number(page));
+      limit = Math.abs(Number(limit));
+      if (limit < 10) limit = 10;
+      let skip = (page - 1) * limit;
+
+      const results = await this.eventsRepository.findAndCount({
+        take: limit,
+        skip,
+        order: {
+          createDateTime: "ASC",
+        },
+        // default cache time = 1s
+        cache: true,
+        ...options,
+      });
+
+      if (results == null) throw new Error();
+
+      return {
+        result: results[0],
+        count: results[1],
+        limit,
+        page,
+      };
+    } catch (e) {
+      console.error(e);
+      throw new HttpException("Something went wrong", HttpStatus.BAD_REQUEST);
     }
   }
 

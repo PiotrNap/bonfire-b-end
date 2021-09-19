@@ -7,9 +7,11 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
   Req,
 } from "@nestjs/common";
 import { roles, Roles } from "src/auth/roles/roles.decorator";
+import { PaginationRequestDto } from "src/pagination";
 import { CreateEventDto } from "./dto/create-event.dto";
 import { EventBookingDto } from "./dto/event-booking.dto";
 import { EventsService } from "./events.service";
@@ -19,8 +21,9 @@ export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
   @Get()
-  public async getEvents(@Req() req: any) {
-    console.log(req);
+  public async getEvents(@Query() query: PaginationRequestDto) {
+    if (query !== undefined)
+      return this.eventsService.findAllWithPagination(query);
     return this.eventsService.findAll();
   }
 
