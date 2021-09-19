@@ -31,8 +31,8 @@ export class EventsGateway {
   //   return this.eventsService.update(updateEventDto.id, updateEventDto);
   // }
 
-  @SubscribeMessage("removeEvent")
-  remove(@MessageBody() id: string) {
-    return this.eventsService.remove(id);
-  }
+  // @SubscribeMessage("removeEvent")
+  // remove(@MessageBody() id: string) {
+  //   return this.eventsService.remove(id);
+  // }
 }

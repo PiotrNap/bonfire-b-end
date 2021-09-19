@@ -19,7 +19,8 @@ export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
   @Get()
-  public async getEvents() {
+  public async getEvents(@Req() req: any) {
+    console.log(req);
     return this.eventsService.findAll();
   }
 
