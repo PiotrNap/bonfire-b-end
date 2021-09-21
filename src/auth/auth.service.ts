@@ -46,6 +46,7 @@ export class AuthService {
     return {
       username: user.username,
       id: user.id,
+      profileType: user.profileType,
       ...token,
     };
   }
@@ -66,7 +67,7 @@ export class AuthService {
 
     return {
       expiresIn,
-      expiresAt: new Date().getTime() + expiresIn,
+      expiresAt: new Date().getTime() + Number(expiresIn),
       accessToken,
     };
   }

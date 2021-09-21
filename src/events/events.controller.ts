@@ -22,7 +22,7 @@ export class EventsController {
 
   @Get()
   public async getEvents(@Query() query: PaginationRequestDto) {
-    if (query !== undefined)
+    if (query.limit !== undefined)
       return this.eventsService.findAllWithPagination(query);
     return this.eventsService.findAll();
   }

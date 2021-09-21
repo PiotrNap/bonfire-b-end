@@ -54,7 +54,7 @@ export class UserEntity extends BaseEntity {
    * Organizer specific
    */
   @Column({ name: "bio", type: "varchar", length: 250, nullable: true })
-  bio: string;
+  bio?: string;
 
   @Column({ name: "profession", type: "varchar", length: 100, nullable: true })
   profession?: string | string[];
@@ -66,7 +66,7 @@ export class UserEntity extends BaseEntity {
   skills?: string | string[];
 
   @Column({ name: "hourlyRate", type: "integer", nullable: true })
-  hourlyRate: number | null;
+  hourlyRate?: number | null;
 
   @Column({ type: "simple-array", nullable: true })
   tags?: string[] | null;

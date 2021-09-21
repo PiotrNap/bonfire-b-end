@@ -58,6 +58,7 @@ export class EventsService {
         eventID: event.id,
       };
     } catch (e) {
+      console.error(e);
       throw new HttpException(
         "Something went wrong while adding new event.",
         HttpStatus.BAD_REQUEST
@@ -88,6 +89,16 @@ export class EventsService {
       const results = await this.eventsRepository.findAndCount({
         take: limit,
         skip,
+        select: [
+          "id",
+          "description",
+          "title",
+          "privateEvent",
+          "eventCardColor",
+          "imageURI",
+          "organizerId",
+          "selectedDays",
+        ],
         order: {
           createDateTime: "ASC",
         },
@@ -146,8 +157,8 @@ export class EventsService {
   async remove(id: string, userId: string): Promise<SuccessMessage | void> {
     try {
       let event = await this.eventsRepository.findOne({ where: { id } });
-      if (event == undefined) this.noEventError();
-      if (event.organizerId !== userId) this.notAllowedError();
+      // if (event == undefined) this.noEventError();
+      // if (event.organizerId !== userId) this.notAllowedError();
 
       await this.eventsRepository.remove(event);
 
