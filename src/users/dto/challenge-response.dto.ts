@@ -12,7 +12,7 @@ export class ChallengeResponseDTO {
     userCredential: { [index: string]: any }
   ): boolean {
     var { publicKey } = user;
-    var TTL = 30000; // time to live 30 seconds
+    var TTL = 600000; // time to live 10 minutes
 
     var challArray = base64ToUTF8(challenge).split("_");
     console.log(challArray);
@@ -30,7 +30,7 @@ export class ChallengeResponseDTO {
     )
       return false;
 
-    // challenge hasn't been changed and the 30 sec time span hasn't been reached
+    // challenge hasn't been changed and the 10 min time span hasn't been reached
     return nacl.sign.detached.verify(
       base64ToUint8Array(challenge),
       base64ToUint8Array(signature),
