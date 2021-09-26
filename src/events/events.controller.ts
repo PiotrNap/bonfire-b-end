@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   ParseUUIDPipe,
   Post,
@@ -11,6 +12,7 @@ import {
   Req,
 } from "@nestjs/common";
 import { roles, Roles } from "src/auth/roles/roles.decorator";
+import { Public } from "src/common/decorators/public.decorator";
 import { PaginationRequestDto } from "src/pagination";
 import { CreateEventDto } from "./dto/create-event.dto";
 import { EventBookingDto } from "./dto/event-booking.dto";
@@ -21,16 +23,34 @@ export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
   @Get()
+  @Public()
   public async getEvents(@Query() query: PaginationRequestDto) {
-    if (query.limit !== undefined)
-      return this.eventsService.findAllWithPagination(query);
-    return this.eventsService.findAll();
+    let events: any;
+
+    if (query.limit !== undefined) {
+      events = await this.eventsService.findAllWithPagination(query);
+    } else {
+      events = await this.eventsService.findAll();
+    }
+
+    if (!events) {
+      throw new NotFoundException();
+    }
+    return events;
   }
 
-  @Post()
-  @Roles(roles.organizer)
-  public async createEvent(@Body() createEventDto: CreateEventDto) {
-    return this.eventsService.create(createEventDto);
+  @Get("results")
+  public async getResults(@Query() query: any) {
+    const { search_query } = query;
+    try {
+      const result = await this.eventsService.getResults(search_query);
+
+      return {
+        result,
+      };
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   @Get(":uuid")
@@ -38,25 +58,10 @@ export class EventsController {
     return this.eventsService.findOne(uuid);
   }
 
-  @Put(":uuid")
+  @Post()
   @Roles(roles.organizer)
-  public async updateEvent(
-    @Param("uuid", new ParseUUIDPipe()) uuid: string,
-    @Body() body: any,
-    @Req() req: any
-  ) {
-    const { userId } = req.user;
-    return await this.eventsService.update(uuid, userId, body);
-  }
-
-  @Delete(":uuid")
-  @Roles(roles.organizer)
-  public async removeEvent(
-    @Param("uuid", new ParseUUIDPipe()) uuid: string,
-    @Req() req: any
-  ): Promise<any> {
-    const { userId } = req.user;
-    return await this.eventsService.remove(uuid, userId);
+  public async createEvent(@Body() createEventDto: CreateEventDto) {
+    return this.eventsService.create(createEventDto);
   }
 
   // @TODO specify booking dto
@@ -67,7 +72,19 @@ export class EventsController {
     @Req() req: any
   ) {
     const { user } = req;
-    return await this.eventsService.bookEvent(uuid, user, eventBookingDto);
+    return `Event with id ${uuid} booked successfully`;
+    // return await this.eventsService.bookEvent(uuid, user, eventBookingDto);
+  }
+
+  @Put(":uuid")
+  @Roles(roles.organizer)
+  public async updateEvent(
+    @Param("uuid", new ParseUUIDPipe()) uuid: string,
+    @Body() body: any,
+    @Req() req: any
+  ) {
+    const { id } = req.user;
+    return await this.eventsService.update(uuid, id, body);
   }
 
   @Put("booking/:uuid")
@@ -75,7 +92,17 @@ export class EventsController {
     @Param("uuid", new ParseUUIDPipe()) uuid: string,
     @Body() body: EventBookingDto
   ) {
-    return `Event with id ${uuid} updated with a payload of ${body}`;
+    return `Event with id ${uuid} updated successfully.`;
+  }
+
+  @Delete(":uuid")
+  @Roles(roles.organizer)
+  public async removeEvent(
+    @Param("uuid", new ParseUUIDPipe()) uuid: string,
+    @Req() req: any
+  ): Promise<any> {
+    const { userId } = req.user;
+    return await this.eventsService.remove(uuid, userId);
   }
 
   @Delete("booking/:uuid")

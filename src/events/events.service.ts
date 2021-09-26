@@ -5,7 +5,7 @@ import { BookingSlotEntity } from "src/model/bookingSlot.entity";
 import { EventEntity } from "src/model/event.entity";
 import { UserEntity } from "src/model/user.entity";
 import { PaginationRequestDto, PaginationResult } from "src/pagination";
-import { FindManyOptions, Repository } from "typeorm";
+import { FindManyOptions, ILike, Repository } from "typeorm";
 import { CreateEventDto } from "./dto/create-event.dto";
 import { EventBookingDto } from "./dto/event-booking.dto";
 import { UpdateEventDto } from "./dto/update-event.dto";
@@ -66,13 +66,8 @@ export class EventsService {
     }
   }
 
-  async findAll(): Promise<EventEntity[]> {
-    try {
-      const events: EventEntity[] = await this.eventsRepository.find();
-      return events;
-    } catch (e) {
-      throw new Error(e);
-    }
+  async findAll(): Promise<EventEntity[] | null> {
+    return this.eventsRepository.find();
   }
 
   async findAllWithPagination(
@@ -202,6 +197,19 @@ export class EventsService {
         HttpStatus.BAD_REQUEST
       );
     }
+  }
+
+  public getResults(searchQuery: string) {
+    return this.eventsRepository.find({
+      where: [
+        {
+          title: ILike(`%${searchQuery}%`),
+        },
+        {
+          description: ILike(`%${searchQuery}%`),
+        },
+      ],
+    });
   }
 
   private noEventError() {
