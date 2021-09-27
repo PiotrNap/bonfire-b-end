@@ -102,57 +102,21 @@ check txids on bitcoin, cardano and ethereum networks, etc etc.
 Pull google calendar events
 */
 
-@Controller("auth/google")
-export class AuthController {
-  constructor(private readonly googleService: GoogleService) {}
+// @Controller("auth/google/events")
+// export class AuthGoogleEventsController {
+//   constructor(private readonly googleService: GoogleService) {}
 
-  @Get()
-  @Redirect("exp://127.0.0.1:19000/--/expo-auth-session")
-  async oauthGoogleCallback(@Query() query: any) {
-    if (query.error != null && query.error === "access_denied") {
-      // handle error message
-      return { statusCode: 500 };
-    }
-    const { code } = query;
-    const accessToken = await this.googleService.getUserAccessToken(code);
+//   @Get()
+//   getGoogleCalendarEvents() {
+//     const events = this.googleService.getUserCalendarEvents();
 
-    return;
-  }
-}
-
-@Controller("auth/google/url")
-export class AuthGoogleController {
-  constructor(private readonly googleService: GoogleService) {}
-
-  @Get()
-  getGoogleAuthUrl(@Query() query: { scopes: string }) {
-    const { scopes } = query;
-
-    const authUrl = this.googleService.generateAuthUrl(scopes);
-
-    if (authUrl) {
-      return { authUrl };
-    } else {
-      throw new Error("Something went wrong while creating the url");
-    }
-  }
-}
-
-@Controller("auth/google/events")
-export class AuthGoogleEventsController {
-  constructor(private readonly googleService: GoogleService) {}
-
-  @Get()
-  getGoogleCalendarEvents() {
-    const events = this.googleService.getUserCalendarEvents();
-
-    if (events) {
-      return { events };
-    } else {
-      throw new Error("Something went wrong while receiving events");
-    }
-  }
-}
+//     if (events) {
+//       return { events };
+//     } else {
+//       throw new Error("Something went wrong while receiving events");
+//     }
+//   }
+// }
 
 /*
 organizer needs to create an event, with a description, avatar, etc.
@@ -166,16 +130,3 @@ event registry should be considered
 graphql traversal of the event registry needs to be protected endpoint
 
 */
-
-// import { Controller, Get } from '@nestjs/common';
-// import { AppService } from './app.service';
-
-// @Controller()
-// export class AppController {
-//   constructor(private readonly appService: AppService) {}
-
-//   @Get()
-//   getHello(): string {
-//     return this.appService.getHello();
-//   }
-// }

@@ -1,4 +1,12 @@
-import { Controller, Body, Post, Get, Req } from "@nestjs/common";
+import {
+  Controller,
+  Body,
+  Post,
+  Get,
+  Req,
+  Redirect,
+  Query,
+} from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LoginStatus } from "./interfaces/login-status.interface";
 import { JwtPayload } from "./interfaces/payload.interface";
@@ -45,5 +53,31 @@ export class AuthController {
   @Get("whoami")
   public async testAuth(@Req() req: any): Promise<JwtPayload> {
     return req.user;
+  }
+
+  @Get("google-oauth-callback")
+  @Redirect("exp://127.0.0.1:19000/--/expo-auth-session")
+  public async oauthGoogleCallback(@Query() query: any) {
+    if (query.error != null && query.error === "access_denied") {
+      // handle error message
+      return { statusCode: 500 };
+    }
+    const { code } = query;
+    const accessToken = await this.authService.getUserAccessToken(code);
+
+    return accessToken;
+  }
+
+  @Get("google-oauth-url")
+  getGoogleAuthUrl(@Query() query: { scopes: string }) {
+    const { scopes } = query;
+
+    const authUrl = this.authService.generateAuthUrl(scopes);
+
+    if (authUrl) {
+      return { authUrl };
+    } else {
+      throw new Error("Something went wrong while creating the url");
+    }
   }
 }
