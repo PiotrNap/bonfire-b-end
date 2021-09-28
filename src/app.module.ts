@@ -14,6 +14,7 @@ import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard";
 import { APP_GUARD } from "@nestjs/core";
 import { EventsModule } from "./events/events.module";
 import { RolesGuard } from "./auth/roles/roles.guard";
+import { ConfigModule } from "@nestjs/config";
 
 @Module({
   imports: [
@@ -24,6 +25,9 @@ import { RolesGuard } from "./auth/roles/roles.guard";
     EventsModule,
     IdTokenModule,
     TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
+    ConfigModule.forRoot({
+      envFilePath: ".env.dev",
+    }),
   ],
   controllers: [AppController],
   providers: [
