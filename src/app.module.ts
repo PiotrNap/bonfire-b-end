@@ -18,6 +18,10 @@ import { ConfigModule } from "@nestjs/config";
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: ".env.dev",
+      isGlobal: true,
+    }),
     CryptoModule,
     HttpModule,
     AuthModule,
@@ -25,9 +29,6 @@ import { ConfigModule } from "@nestjs/config";
     EventsModule,
     IdTokenModule,
     TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
-    ConfigModule.forRoot({
-      envFilePath: ".env.dev",
-    }),
   ],
   controllers: [AppController],
   providers: [

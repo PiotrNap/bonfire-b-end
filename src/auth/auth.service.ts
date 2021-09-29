@@ -14,8 +14,8 @@ import { ChallengeDTO } from "src/users/dto/challenge.dto";
 import { ChallengeRequestDTO } from "src/users/dto/challenge-request.dto";
 import { google } from "googleapis";
 import { Random } from "../common/utils";
-
-const fs = require("fs");
+import { to } from "../common/to";
+import { readFile, readFileSync, writeFileSync } from "fs";
 
 @Injectable()
 export class AuthService {
@@ -24,6 +24,8 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService
   ) {}
+
+  private googleOauthEndPoint = "https://oauth2.googleapis.com/token?";
 
   async createChallenge(credential: string): Promise<ChallengeDTO> {
     try {
@@ -83,64 +85,71 @@ export class AuthService {
     );
   }
 
-  private _refreshToken = null;
-  private googleOauthEndPoint = "https://oauth2.googleapis.com/token?";
-  private oauth2Client = new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-    `${process.env.SERVER_APP_URL}/auth/google`
-  );
+  private generateOAuthClient() {
+    return new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      `${process.env.SERVER_APP_URL}/auth/google-oauth-callback`
+    );
+  }
 
   /**
    * @description Call Google Calendar API and get user events
    */
   public async getUserCalendarEvents() {
-    const calendar = google.calendar({
-      version: "v3",
-      auth: this.oauth2Client,
-    });
+    try {
+      let auth = this.generateOAuthClient();
 
-    await fs.readFile("userTokens.json", (err, content) => {
-      if (err) return new Error("Error while reading userTokens.json");
-      this.oauth2Client.setCredentials(JSON.parse(content));
-    });
+      const content = readFileSync("userTokens.json", "utf8");
+      const { refresh_token, access_token } = JSON.parse(content);
 
-    // just for testing purposes, return events from current month
-    calendar.events.list(
-      {
-        calendarId: "primary",
-        timeMin: new Date(
-          new Date().getFullYear(),
-          new Date().getMonth()
-        ).toISOString(),
-        timeMax: new Date(
-          new Date().getFullYear(),
-          new Date().getMonth() + 1
-        ).toISOString(),
-        orderBy: "startTime",
-      },
-      (err, res) => {
-        console.log("res", res);
-        if (err) return new Error("There was an error retrieving events");
-        const events = res.data.items;
-        return events;
-      }
-    );
+      auth.setCredentials({
+        refresh_token,
+        access_token,
+      });
+
+      const calendar = google.calendar({
+        version: "v3",
+        auth,
+      });
+
+      // just for testing purposes, return events from current month
+      const events = await calendar.events.list(
+        {
+          calendarId: "primary",
+          timeMin: new Date().toISOString(),
+          singleEvents: true,
+          maxResults: 10,
+          orderBy: "startTime",
+        },
+        (err, res) => {
+          if (err) return new Error("There was an error retrieving events");
+          const events = res.data.items;
+          console.log("events are finally: ", events);
+          return events;
+        }
+      );
+    } catch (e) {
+      throw new Error(e);
+    }
+    // get user refresh token from DB!!!
   }
 
   /**
-   * @description Exchange the user code for access_token and refresh_token
+   * @description Exchange the user code for access_token and refresh_token.
+   *              The refresh_token will only be returned once after
+   *              first authorization (or after user revoking app permissions).
    * @param code (string)
    */
-  public async getUserAccessToken(code: string): Promise<boolean> {
+  public async getUserAccessToken(code: string): Promise<any> {
     try {
-      const { tokens } = await this.oauth2Client.getToken(code);
+      const auth = this.generateOAuthClient();
+      const { tokens } = await auth.getToken(code);
 
       if (tokens.access_token && tokens.refresh_token) {
-        //@TODO Store refresh token and access token on the server
+        // @TODO Store refresh token and access token on the server
+        writeFileSync("userTokens.json", JSON.stringify(tokens));
         return true;
-      } else {
-        return false;
       }
     } catch (err) {
       return false;
@@ -153,35 +162,27 @@ export class AuthService {
    */
   public generateAuthUrl(scopes?: string): string {
     const scope = [
-      "email",
-      "profile",
-      "openid",
-      "https://www.googleapis.com/auth/userinfo.email",
-      "https://www.googleapis.com/auth/userinfo.profile",
+      "https://www.googleapis.com/auth/calendar.events.readonly",
       ...(scopes ? scopes.split(" ") : []),
     ];
-
-    const url = this.oauth2Client.generateAuthUrl({
+    const auth = this.generateOAuthClient();
+    const url = auth.generateAuthUrl({
       access_type: "offline",
       client_id: process.env.GOOGLE_CLIENT_ID,
-      redirect_uri: `${process.env.SERVER_APP_URL}/auth/google`,
+      redirect_uri: `${process.env.SERVER_APP_URL}/auth/google-oauth-callback`,
       scope,
       include_granted_scopes: true,
       state: new Random().generateRandomString(10),
     });
 
-    this.oauth2Client.on("tokens", (tokens) => {
+    auth.on("tokens", (tokens) => {
       //@TODO Store the token in db?
-      if (tokens.refresh_token) {
-        fs.writeFile("userTokens.json", JSON.stringify(tokens), (err) => {
-          if (err) return console.log("There was an error writing file");
-          console.log("New userTokens.json created");
-        });
+      // check to which user we should assign the refresh token and access token
+      console.log(tokens);
 
-        console.log("New refresh token!");
-        this._refreshToken = tokens.refresh_token;
+      if (tokens.refresh_token) {
       } else {
-        console.log(tokens);
+        // console.log(tokens);
       }
     });
 
