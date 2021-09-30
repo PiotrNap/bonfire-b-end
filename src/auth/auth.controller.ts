@@ -4,18 +4,18 @@ import {
   Post,
   Get,
   Req,
-  Redirect,
   Query,
-  UnauthorizedException,
   Res,
+  BadRequestException,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LoginStatus } from "./interfaces/login-status.interface";
 import { JwtPayload } from "./interfaces/payload.interface";
+import { ChallengeResponseDTO } from "src/users/dto/challenge-response.dto";
 import { ChallengeDTO } from "src/users/dto/challenge.dto";
-import { ChallengeRequestDTO } from "src/users/dto/challenge-request.dto";
 import { Public } from "src/common/decorators/public.decorator";
-import * as qs from "qs";
+import { roles, Roles } from "./roles/roles.decorator";
+import qs from "qs";
 
 @Controller("auth")
 export class AuthController {
@@ -34,10 +34,8 @@ export class AuthController {
    */
   @Public()
   @Post("challenge")
-  public async getChallangeByPayload(
-    @Body() challengePayload: any
-  ): Promise<ChallengeDTO> {
-    const { credential } = challengePayload;
+  public async getChallangeByPayload(@Body() body: any): Promise<ChallengeDTO> {
+    const { credential } = body;
     return await this.authService.createChallenge(credential);
   }
 
@@ -47,15 +45,8 @@ export class AuthController {
    */
   @Public()
   @Post("login")
-  public async login(
-    @Body() challengeRequestDTO: ChallengeRequestDTO
-  ): Promise<LoginStatus> {
-    return await this.authService.login(challengeRequestDTO);
-  }
-
-  @Get("whoami")
-  public async testAuth(@Req() req: any): Promise<JwtPayload> {
-    return req.user;
+  public async login(@Body() body: ChallengeResponseDTO): Promise<LoginStatus> {
+    return await this.authService.login(body);
   }
 
   @Public()
@@ -92,13 +83,19 @@ export class AuthController {
     }
   }
 
-  @Public()
   @Get("google-calendar-events")
-  public async getEvents() {
-    const events = await this.authService.getUserCalendarEvents();
+  @Roles(roles.organizer)
+  public async getEvents(@Query() query: any) {
+    const events = await this.authService.getUserCalendarEvents(query);
 
-    console.log("events are: ", events);
+    if (!events) throw new BadRequestException();
+
     return events;
+  }
+
+  @Get("whoami")
+  public async testAuth(@Req() req: any): Promise<JwtPayload> {
+    return req.user;
   }
 
   private buildRedirectURL(

@@ -8,14 +8,13 @@ import {
 import { UsersService } from "../users/users.service";
 import { LoginStatus } from "./interfaces/login-status.interface";
 import { UserDto } from "../users/dto/user.dto";
+import { ChallengeDTO } from "src/users/dto/challenge.dto";
+import { ChallengeResponseDTO } from "src/users/dto/challenge-response.dto";
 import { JwtPayload } from "./interfaces/payload.interface";
 import { JwtService } from "@nestjs/jwt";
-import { ChallengeDTO } from "src/users/dto/challenge.dto";
-import { ChallengeRequestDTO } from "src/users/dto/challenge-request.dto";
 import { google } from "googleapis";
 import { Random } from "../common/utils";
-import { to } from "../common/to";
-import { readFile, readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 
 @Injectable()
 export class AuthService {
@@ -24,8 +23,6 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService
   ) {}
-
-  private googleOauthEndPoint = "https://oauth2.googleapis.com/token?";
 
   async createChallenge(credential: string): Promise<ChallengeDTO> {
     try {
@@ -43,8 +40,8 @@ export class AuthService {
     }
   }
 
-  async login(challengeRequest: ChallengeRequestDTO): Promise<LoginStatus> {
-    const user = await this.usersService.challengeLogin(challengeRequest);
+  async login(payload: ChallengeResponseDTO): Promise<LoginStatus> {
+    const user = await this.usersService.challengeLogin(payload);
 
     // generate and sign token
     const token = this._createToken(user);
@@ -96,43 +93,42 @@ export class AuthService {
   /**
    * @description Call Google Calendar API and get user events
    */
-  public async getUserCalendarEvents() {
-    try {
-      let auth = this.generateOAuthClient();
+  public getUserCalendarEvents(query) {
+    let auth = this.generateOAuthClient();
 
-      const content = readFileSync("userTokens.json", "utf8");
-      const { refresh_token, access_token } = JSON.parse(content);
+    const content = readFileSync("userTokens.json", "utf8");
+    const { refresh_token, access_token } = JSON.parse(content);
 
-      auth.setCredentials({
-        refresh_token,
-        access_token,
-      });
+    auth.setCredentials({
+      refresh_token,
+      access_token,
+    });
+    const calendar = google.calendar({
+      version: "v3",
+      auth,
+    });
+    const timeMin = (
+      query?.fromTime ? new Date(Number(query.fromTime)) : new Date()
+    ).toISOString();
+    const timeMax = (
+      query?.toTime ? new Date(Number(query.toTime)) : new Date()
+    ).toISOString();
 
-      const calendar = google.calendar({
-        version: "v3",
-        auth,
-      });
-
-      // just for testing purposes, return events from current month
-      const events = await calendar.events.list(
+    return new Promise((res, rej) => {
+      calendar.events.list(
         {
           calendarId: "primary",
-          timeMin: new Date().toISOString(),
+          timeMin,
+          timeMax,
           singleEvents: true,
-          maxResults: 10,
           orderBy: "startTime",
         },
-        (err, res) => {
-          if (err) return new Error("There was an error retrieving events");
-          const events = res.data.items;
-          console.log("events are finally: ", events);
-          return events;
+        (err, response) => {
+          if (err) rej(new Error("There was an error retrieving events"));
+          res(response.data.items);
         }
       );
-    } catch (e) {
-      throw new Error(e);
-    }
-    // get user refresh token from DB!!!
+    });
   }
 
   /**
@@ -187,5 +183,14 @@ export class AuthService {
     });
 
     return url;
+  }
+
+  private forPromise(fn: any, params: any[]): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      fn(...params, (err, res) => {
+        if (err) reject([null, err]);
+        resolve([res, null]);
+      });
+    });
   }
 }
