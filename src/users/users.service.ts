@@ -5,8 +5,8 @@ import { UserDto } from "./dto/user.dto";
 import { UserEntity } from "../model/user.entity";
 import { toUserDto } from "../common/mapper";
 import { CreateUserDto } from "./dto/user-create.dto";
+import { ChallengeResponseValidation } from "../common/challengeValidation";
 import { ChallengeResponseDTO } from "./dto/challenge-response.dto";
-import { ChallengeRequestDTO } from "./dto/challenge-request.dto";
 import { PaginationRequestDto, PaginationResult } from "src/pagination";
 
 @Injectable()
@@ -49,11 +49,8 @@ export class UsersService {
     }
   }
 
-  async challengeLogin(
-    challengeRequestDTO: ChallengeRequestDTO
-  ): Promise<UserDto> {
-    console.log("challengeRequestDTO: ", challengeRequestDTO);
-    const { signature, challenge, userCredential } = challengeRequestDTO;
+  async challengeLogin(payload: ChallengeResponseDTO): Promise<UserDto> {
+    const { signature, challengeString, userCredential } = payload;
     var user: UserEntity = await this.userRepo.findOne({
       where: userCredential,
     });
@@ -62,10 +59,10 @@ export class UsersService {
       throw new HttpException("User not found", HttpStatus.UNAUTHORIZED);
     }
 
-    const valid = new ChallengeResponseDTO().validate(
+    const valid = new ChallengeResponseValidation().validate(
       user,
       signature,
-      challenge,
+      challengeString,
       userCredential
     );
 
