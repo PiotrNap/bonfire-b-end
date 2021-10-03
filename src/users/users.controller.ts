@@ -11,8 +11,8 @@ import {
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "../users/dto/user-create.dto";
 import { UserDto } from "./dto/user.dto";
-import { Public } from "src/common/decorators/public.decorator";
 import { UpdateUserDto } from "./dto/user-update.dto";
+import { Public } from "src/common/decorators/public.decorator";
 import { PaginationRequestDto, PaginationResult } from "src/pagination";
 import { UserEntity } from "src/model/user.entity";
 

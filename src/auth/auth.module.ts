@@ -6,11 +6,14 @@ import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { ConfigService } from "@nestjs/config";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { UserEntity } from "src/model/user.entity";
 
 @Module({
   imports: [
     forwardRef(() => UsersModule),
     PassportModule,
+    TypeOrmModule.forFeature([UserEntity]),
     // ConfigModule is loaded async, wait for it to load with `registerAsync`
     JwtModule.registerAsync({
       inject: [ConfigService],

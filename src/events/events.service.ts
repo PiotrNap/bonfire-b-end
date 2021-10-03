@@ -1,14 +1,15 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { SuccessMessage } from "src/auth/interfaces/payload.interface";
-import { BookingSlotEntity } from "src/model/bookingSlot.entity";
 import { EventEntity } from "src/model/event.entity";
 import { UserEntity } from "src/model/user.entity";
+import { BookingSlotEntity } from "src/model/bookingSlot.entity";
 import { PaginationRequestDto, PaginationResult } from "src/pagination";
 import { FindManyOptions, ILike, Repository } from "typeorm";
 import { CreateEventDto } from "./dto/create-event.dto";
 import { EventBookingDto } from "./dto/event-booking.dto";
 import { UpdateEventDto } from "./dto/update-event.dto";
+import { OrganizerEntity } from "src/model/organizer.entity";
 
 @Injectable()
 export class EventsService {
@@ -16,7 +17,9 @@ export class EventsService {
     @InjectRepository(EventEntity)
     private readonly eventsRepository: Repository<EventEntity>,
     @InjectRepository(UserEntity)
-    private readonly usersRepository: Repository<UserEntity>
+    private readonly usersRepository: Repository<UserEntity>,
+    @InjectRepository(OrganizerEntity)
+    private readonly organizersRepository: Repository<OrganizerEntity>
   ) {}
 
   async create(createEventDto: CreateEventDto) {
@@ -34,7 +37,7 @@ export class EventsService {
     } = createEventDto;
     try {
       let event: EventEntity = new EventEntity();
-      let user: UserEntity = await this.usersRepository.findOne({
+      let user: OrganizerEntity = await this.organizersRepository.findOne({
         where: { id: organizer.id },
       });
 
@@ -182,7 +185,7 @@ export class EventsService {
         eventBookingDto;
       let bookingSlot = new BookingSlotEntity();
       bookingSlot.event = event;
-      bookingSlot.attendee = user;
+      bookingSlot.attendeeId = user.id;
       bookingSlot.bookedDuration = bookedDuration;
       bookingSlot.bookedDay = bookedDay;
       bookingSlot.bookedTimeSlot = bookedTimeSlot;
