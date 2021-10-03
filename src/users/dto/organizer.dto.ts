@@ -28,7 +28,7 @@ export class CreateOrganizerDto extends CreateUserDto {
   @MaxLength(100)
   bio: string;
 
-  @IsNotEmpty({ message: "Id cannot be empty" })
+  @IsNotEmpty({ message: "Hourly rate cannot be empty" })
   hourlyRate: number;
 
   @MaxLength(100)

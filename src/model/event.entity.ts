@@ -2,6 +2,7 @@ import { EventAvailability, SelectedDays } from "src/events/events.interface";
 import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from "typeorm";
 import { BaseEntity } from "./base.entity";
 import { BookingSlotEntity } from "./bookingSlot.entity";
+import { OrganizerEntity } from "./organizer.entity";
 import { UserEntity } from "./user.entity";
 
 export interface EventUser {
@@ -43,15 +44,18 @@ export class EventEntity extends BaseEntity {
   @Column("int", { nullable: true })
   organizerId: string;
 
-  @ManyToOne(() => UserEntity, (user: UserEntity) => user.events)
-  @JoinColumn({ name: "organizerId" })
-  organizer: UserEntity;
+  @ManyToOne(
+    () => OrganizerEntity,
+    (organizer: OrganizerEntity) => organizer.events
+  )
+  organizer: OrganizerEntity;
 
   // time slots wich are booked by other users
   @OneToMany(
     () => BookingSlotEntity,
     (bookingSlot: BookingSlotEntity) => bookingSlot.event,
     {
+      // this will cascade changes to booked slot
       cascade: true,
     }
   )

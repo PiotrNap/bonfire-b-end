@@ -1,7 +1,5 @@
-import { Entity, Column, TableInheritance, OneToMany } from "typeorm";
+import { Entity, Column, TableInheritance } from "typeorm";
 import { BaseEntity } from "./base.entity";
-import { BookingSlotEntity } from "./bookingSlot.entity";
-import { EventEntity } from "./event.entity";
 
 @Entity({ name: "user" })
 @TableInheritance({ column: { type: "varchar", name: "userType" } })
@@ -31,11 +29,25 @@ export class UserEntity extends BaseEntity {
   publicKey: string;
 
   @Column({
-    name: "calendarToken",
+    name: "accessToken",
     type: "varchar",
     nullable: true,
   })
-  calendarToken?: string;
+  accessToken?: string;
+
+  @Column({
+    name: "scope",
+    type: "varchar",
+    nullable: true,
+  })
+  scope?: string;
+
+  @Column({
+    name: "tokenType",
+    type: "varchar",
+    nullable: true,
+  })
+  tokenType?: string;
 
   @Column({
     name: "refreshToken",
@@ -44,51 +56,17 @@ export class UserEntity extends BaseEntity {
   })
   refreshToken?: string;
 
-  @Column({ name: "id", type: "varchar", nullable: false })
-  id: string;
+  @Column("varchar", {
+    name: "verificationNonce",
+    nullable: true,
+  })
+  verificationNonce?: string;
+
+  @Column("int", { name: "expiryDate", nullable: true })
+  expiryDate: number;
 
   @Column({ name: "profileType", type: "varchar", nullable: true })
   profileType: string;
-
-  /**
-   * Organizer specific
-   */
-  @Column({ name: "bio", type: "varchar", length: 250, nullable: true })
-  bio?: string;
-
-  @Column({ name: "profession", type: "varchar", length: 100, nullable: true })
-  profession?: string | string[];
-
-  @Column({ name: "jobTitle", type: "varchar", length: 100, nullable: true })
-  jobTitle?: string | string[];
-
-  @Column({ name: "skills", type: "varchar", length: 100, nullable: true })
-  skills?: string | string[];
-
-  @Column({ name: "hourlyRate", type: "integer", nullable: true })
-  hourlyRate?: number | null;
-
-  @Column({ type: "simple-array", nullable: true })
-  tags?: string[] | null;
-
-  /**
-   * Organizer should be able to fetch events that he's hosting,
-   * and see how many attendees are registered for those events.
-   */
-
-  // hosted events (events for sale)
-  @OneToMany(() => EventEntity, (event: EventEntity) => event.organizer)
-  events: EventEntity[];
-
-  // scheduled events (as an attendee)
-  @OneToMany(
-    () => BookingSlotEntity,
-    (bookingSlot: BookingSlotEntity) => bookingSlot.event,
-    {
-      cascade: true,
-    }
-  )
-  bookedEvents: BookingSlotEntity[];
 
   // @Column({ type: 'varchar', length: 65535 })
   // profileSettings?: string; // profile settings

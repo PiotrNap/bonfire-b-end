@@ -1,18 +1,20 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import { EventEntity } from "./event.entity";
-import { UserEntity } from "./user.entity";
 
 @Entity()
-export class BookingSlotEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+export class BookingSlotEntity extends BaseEntity {
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
   @Column({ type: "uuid", nullable: false })
   @ManyToOne(() => EventEntity, (event: EventEntity) => event.bookedSlots)
   event: EventEntity;
-
-  @ManyToOne(() => UserEntity, (user: UserEntity) => user.bookedEvents)
-  attendee: UserEntity;
 
   // duration in milliseconds
   @Column({ type: "int", nullable: false })
@@ -23,6 +25,9 @@ export class BookingSlotEntity {
 
   @Column({ type: "int", nullable: false })
   bookedTimeSlot: number;
+
+  @Column({ type: "varchar", nullable: false })
+  attendeeId: string;
 
   // transaction hash (?)
   @Column({ type: "varchar" })
