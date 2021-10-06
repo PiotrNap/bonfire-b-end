@@ -50,8 +50,8 @@ export class AppController {
 
   @Get()
   @Public()
-  sayHi() {
-    return "hi!";
+  sayHi(@Req() req: any) {
+    return "hi!\n";
   }
 
   // @UseGuards(JwtAuthGuard)

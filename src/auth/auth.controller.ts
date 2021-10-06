@@ -7,15 +7,15 @@ import {
   Query,
   Res,
   BadRequestException,
+  UnprocessableEntityException,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LoginStatus } from "./interfaces/login-status.interface";
 import { JwtPayload } from "./interfaces/payload.interface";
-import { ChallengeResponseDTO } from "src/users/dto/challenge-response.dto";
 import { ChallengeDTO } from "src/users/dto/challenge.dto";
+import { ChallengeResponseDTO } from "src/users/dto/challenge-response.dto";
 import { Public } from "src/common/decorators/public.decorator";
 import { roles, Roles } from "./roles/roles.decorator";
-import qs from "qs";
 
 @Controller("auth")
 export class AuthController {
@@ -51,36 +51,35 @@ export class AuthController {
 
   @Public()
   @Get("google-oauth-callback")
-  public async oauthGoogleCallback(@Res() res: any, @Query() query: any) {
-    if (query.error != null && query.error === "access_denied") {
-      return res.redirect(
-        this.buildRedirectURL({ success: false, message: "access denied" })
-      );
+  public async oauthGoogleCallback(@Res() res, @Query() query) {
+    const result = await this.authService.handleGoogleOauthCallback(query);
+
+    if (!result) {
+      throw new UnprocessableEntityException();
     }
-
-    const { code } = query;
-    const accessToken = await this.authService.getUserAccessToken(code);
-
-    if (!accessToken) {
-      return res.redirect(
-        this.buildRedirectURL({ success: false, message: "cannot get token" })
-      );
-    }
-
-    return res.redirect(this.buildRedirectURL({ succcess: true }));
+    return res.redirect(result);
   }
 
   @Get("google-oauth-url")
-  getGoogleAuthUrl(@Query() query: { scopes: string }) {
+  public async getGoogleAuthUrl(
+    @Req() req: any,
+    @Query() query: { scopes: string }
+  ): Promise<any> {
     const { scopes } = query;
-
-    const authUrl = this.authService.generateAuthUrl(scopes);
+    const { user } = req;
+    const authUrl = await this.authService.generateAuthUrl(user, scopes);
 
     if (authUrl) {
       return { authUrl };
     } else {
-      throw new Error("Something went wrong while creating the url");
+      throw new BadRequestException();
     }
+  }
+
+  @Get("google-oauth-valid")
+  public async checkForValidGoogleOauth(@Req() req: any) {
+    const { user } = req;
+    return await this.authService.checkValidOauth(user);
   }
 
   @Get("google-calendar-events")
@@ -96,16 +95,5 @@ export class AuthController {
   @Get("whoami")
   public async testAuth(@Req() req: any): Promise<JwtPayload> {
     return req.user;
-  }
-
-  private buildRedirectURL(
-    queryObj: { [key: string]: any },
-    path?: string
-  ): string {
-    const queryString = qs.stringify(queryObj);
-    const base = process.env.MOBILE_APP_SCHEMA;
-
-    if (!path) return base + queryString;
-    return base + path + queryString;
   }
 }
