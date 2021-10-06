@@ -15,6 +15,8 @@ export abstract class BaseEntity {
   @Column({ type: "boolean", default: false })
   isArchived: boolean;
 
+  // create and update columns are set automatically, but typescript
+  // cries when they aren't specified
   @CreateDateColumn({ type: "timestamptz", default: () => "CURRENT_TIMESTAMP" })
   createDateTime: Date;
 

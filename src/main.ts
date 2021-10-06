@@ -14,6 +14,6 @@ async function bootstrap() {
   // @TODO: remove before deploying
   app.enableCors();
 
-  await app.listen(3000);
+  await app.listen(8000);
 }
 bootstrap();

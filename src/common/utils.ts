@@ -1,6 +1,6 @@
 import { getConnectionOptions, getConnection } from "typeorm";
 import * as bcrypt from "bcrypt";
-import { jwtVerify } from "jose/jwt/verify";
+import { Buffer } from "buffer";
 import * as crypto from "crypto";
 
 export class Random {

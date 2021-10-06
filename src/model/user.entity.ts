@@ -1,3 +1,4 @@
+import { Credentials } from "src/auth/interfaces/google.interface";
 import { Entity, Column, TableInheritance } from "typeorm";
 import { BaseEntity } from "./base.entity";
 
@@ -29,41 +30,24 @@ export class UserEntity extends BaseEntity {
   publicKey: string;
 
   @Column({
-    name: "accessToken",
-    type: "varchar",
+    name: "googleApiCredentials",
+    type: "json",
     nullable: true,
   })
-  accessToken?: string;
+  googleApiCredentials: string;
 
   @Column({
-    name: "scope",
-    type: "varchar",
+    name: "lastUsedRefreshToken",
+    type: "timestamptz",
     nullable: true,
   })
-  scope?: string;
-
-  @Column({
-    name: "tokenType",
-    type: "varchar",
-    nullable: true,
-  })
-  tokenType?: string;
-
-  @Column({
-    name: "refreshToken",
-    type: "varchar",
-    nullable: true,
-  })
-  refreshToken?: string;
+  lastUsedRefreshToken: Date;
 
   @Column("varchar", {
     name: "verificationNonce",
     nullable: true,
   })
   verificationNonce?: string;
-
-  @Column("int", { name: "expiryDate", nullable: true })
-  expiryDate: number;
 
   @Column({ name: "profileType", type: "varchar", nullable: true })
   profileType: string;
