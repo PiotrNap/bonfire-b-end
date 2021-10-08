@@ -4,8 +4,8 @@ import { UserEntity } from "./user.entity";
 
 @ChildEntity()
 export class OrganizerEntity extends UserEntity {
-  @Column({ name: "bio", type: "varchar", length: 250, nullable: true })
-  bio?: string;
+  @Column({ name: "bio", type: "varchar", length: 250 })
+  bio: string;
 
   @Column({ name: "profession", type: "varchar", length: 100, nullable: true })
   profession?: string | string[];
@@ -16,8 +16,8 @@ export class OrganizerEntity extends UserEntity {
   @Column({ name: "skills", type: "varchar", length: 100, nullable: true })
   skills?: string | string[];
 
-  @Column({ name: "hourlyRate", type: "integer", nullable: true })
-  hourlyRate?: number | null;
+  @Column({ name: "hourlyRate", type: "integer" })
+  hourlyRate: number | null;
 
   @Column({ type: "simple-array", nullable: true })
   tags?: string[] | null;
@@ -28,6 +28,10 @@ export class OrganizerEntity extends UserEntity {
    */
 
   // hosted events (events for sale)
-  @OneToMany(() => EventEntity, (event: EventEntity) => event.organizer)
+  @OneToMany(() => EventEntity, (event: EventEntity) => event.organizerId)
   events: EventEntity[];
+}
+
+export function isOrganizerEntity(obj: any): obj is OrganizerEntity {
+  return obj.bio != "undefined" && obj.hourlyRate !== "undefined";
 }

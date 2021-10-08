@@ -41,6 +41,9 @@ export class EventEntity extends BaseEntity {
   @Column({ type: "varchar" })
   eventCardColor: string;
 
+  @Column({ type: "varchar" })
+  eventTitleColor: string;
+
   @Column("int", { nullable: true })
   organizerId: string;
 
