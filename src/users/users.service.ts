@@ -2,12 +2,14 @@ import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { FindManyOptions, Repository } from "typeorm";
 import { UserDto } from "./dto/user.dto";
-import { UserEntity } from "../model/user.entity";
+import { isUserEntity, UserEntity } from "../model/user.entity";
 import { toUserDto } from "../common/mapper";
 import { CreateUserDto } from "./dto/user-create.dto";
 import { ChallengeResponseValidation } from "../common/challengeValidation";
 import { ChallengeResponseDTO } from "./dto/challenge-response.dto";
 import { PaginationRequestDto, PaginationResult } from "src/pagination";
+import { isOrganizerEntity, OrganizerEntity } from "src/model/organizer.entity";
+import { CreateOrganizerDto } from "./dto/organizer.dto";
 
 @Injectable()
 export class UsersService {
@@ -77,10 +79,10 @@ export class UsersService {
     return await this.findOne({ where: { username } });
   }
 
-  async register(newUserDto: any): Promise<UserDto> {
-    const { name, username, publicKey, profileType } = newUserDto;
-
-    // check if user doesn't exists yet
+  async register(
+    newUserDto: CreateUserDto | CreateOrganizerDto
+  ): Promise<UserDto> {
+    const { username, profileType } = newUserDto;
     const user = await this.userRepo.findOne({ username });
 
     if (user) {
@@ -88,11 +90,27 @@ export class UsersService {
     }
 
     try {
-      let newUser = new UserEntity();
+      let newUser: any;
+      const { name, publicKey } = newUserDto;
+      newUser = new UserEntity();
       newUser.name = name;
       newUser.username = username;
       newUser.publicKey = publicKey;
       newUser.profileType = profileType;
+
+      // if (isOrganizerEntity(newUserDto)) {
+      //   newUser = new OrganizerEntity();
+      //   newUser.name = name;
+      //   newUser.username = username;
+      //   newUser.publicKey = publicKey;
+      //   newUser.profileType = profileType;
+      //   newUser.bio = newUserDto.bio;
+      //   newUser.hourlyRate = newUserDto.hourlyRate;
+      //   newUser.profession = newUserDto?.profession;
+      //   newUser.jobTitle = newUserDto?.jobTitle;
+      //   newUser.skills = newUserDto?.skills;
+      // } else if (isUserEntity(newUserDto)) {
+      // }
 
       await this.userRepo.save(newUser);
 
@@ -157,6 +175,13 @@ export class UsersService {
       throw new HttpException("Something went wrong", HttpStatus.BAD_REQUEST);
     }
   }
+
+  // public async getUserEvents(query?: any) {
+  //     if(!query){
+  //         return
+  //     }
+
+  // }
 
   // private _sanitizeUser(user: UserEntity) {
   //   delete user.password;

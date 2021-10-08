@@ -55,3 +55,11 @@ export class UserEntity extends BaseEntity {
   // @Column({ type: 'varchar', length: 65535 })
   // profileSettings?: string; // profile settings
 }
+
+export function isUserEntity(obj: any): obj is UserEntity {
+  return (
+    obj.name != "undefined" &&
+    obj.username !== "undefined" &&
+    obj.publicKey !== "undefined"
+  );
+}
