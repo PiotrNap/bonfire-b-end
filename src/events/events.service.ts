@@ -16,10 +16,8 @@ export class EventsService {
   constructor(
     @InjectRepository(EventEntity)
     private readonly eventsRepository: Repository<EventEntity>,
-    @InjectRepository(UserEntity)
-    private readonly usersRepository: Repository<UserEntity>,
     @InjectRepository(OrganizerEntity)
-    private readonly organizersRepository: Repository<OrganizerEntity>
+    private readonly organizerRepository: Repository<OrganizerEntity>
   ) {}
 
   async create(createEventDto: CreateEventDto) {
@@ -33,11 +31,12 @@ export class EventsService {
       imageURI,
       privateEvent,
       eventCardColor,
+      eventTitleColor,
       organizer,
     } = createEventDto;
     try {
       let event: EventEntity = new EventEntity();
-      let user: OrganizerEntity = await this.organizersRepository.findOne({
+      let user: OrganizerEntity = await this.organizerRepository.findOne({
         where: { id: organizer.id },
       });
 
@@ -50,10 +49,13 @@ export class EventsService {
       event.imageURI = imageURI;
       event.privateEvent = privateEvent;
       event.eventCardColor = eventCardColor;
+      event.eventTitleColor = eventTitleColor;
       event.organizer = user;
 
       event = await this.eventsRepository.save(event);
-      console.log("New event added: ", event);
+      // console.log("New event added: ", event);
+      console.log(user);
+      return;
 
       return {
         status: 201,

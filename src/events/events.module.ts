@@ -4,16 +4,16 @@ import { EventsGateway } from "./events.gateway";
 import { EventsController } from "./events.controller";
 import { EventEntity } from "src/model/event.entity";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { UserEntity } from "src/model/user.entity";
 import { BookingSlotEntity } from "src/model/bookingSlot.entity";
 import { OrganizerEntity } from "src/model/organizer.entity";
+import { AttendeeEntity } from "src/model/attendee.entity";
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       EventEntity,
-      UserEntity,
       OrganizerEntity,
+      AttendeeEntity,
       BookingSlotEntity,
     ]),
   ],

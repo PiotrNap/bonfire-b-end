@@ -42,6 +42,9 @@ export class CreateEventDto {
   @IsString()
   eventCardColor: string;
 
+  @IsString()
+  eventTitleColor: string;
+
   @IsObject()
   organizer: EventUser;
 }
