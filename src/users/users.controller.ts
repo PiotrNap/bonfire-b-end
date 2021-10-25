@@ -2,12 +2,12 @@ import {
   Body,
   Controller,
   Get,
+  NotFoundException,
   Param,
   ParseUUIDPipe,
   Post,
   Put,
   Query,
-  Req,
 } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "../users/dto/user-create.dto";
@@ -24,11 +24,25 @@ export class UsersController {
 
   @Get()
   async getUsers(
-    @Query() query: PaginationRequestDto
+    @Query() query: PaginationRequestDto,
+    @Body() body: any
   ): Promise<PaginationResult<UserEntity> | UserEntity[] | void> {
-    if (query !== undefined)
-      return await this.usersService.getAllWithPagination(query);
-    return await this.usersService.getAll();
+    let users: any;
+
+    if (Object.keys(query).length) {
+      users = await this.usersService.getWithPagination(query);
+    }
+
+    if (Object.keys(body).length) {
+      users = await this.usersService.findByPayload(body);
+    }
+
+    // TODO this shouldn't be in production
+    users = await this.usersService.getAll();
+
+    if (!users) throw new NotFoundException();
+
+    return users;
   }
 
   @Public()
@@ -39,44 +53,60 @@ export class UsersController {
     return await this.usersService.register(body);
   }
 
+  @Get("attendees")
+  public async getAttendees(
+    @Query() query: PaginationRequestDto
+  ): Promise<any> {
+    let attendees: any;
+
+    if (Object.keys(query).length) {
+      attendees = this.usersService.getWithPagination(
+        query,
+        undefined,
+        "attendee"
+      );
+    } else {
+      // TODO this shouldn't be in production
+      attendees = await this.usersService.getAllAttendees();
+    }
+
+    if (!attendees) return new NotFoundException();
+
+    return attendees;
+  }
+
   @Get("organizers")
   public async getOrganizers(
     @Query() query: PaginationRequestDto
   ): Promise<any> {
-    if (query !== undefined)
-      return await this.usersService.getAllWithPagination(query, {
-        where: { profileType: "organizer" },
-      });
-    return await this.usersService.getAll({
-      where: { profileType: "organizer" },
-      relations: [],
-    });
+    let organizers: any;
+
+    if (Object.keys(query).length) {
+      organizers = this.usersService.getWithPagination(
+        query,
+        undefined,
+        "organizer"
+      );
+    } else {
+      // TODO this shouldn't be in production
+      organizers = await this.usersService.getAllOrganizers();
+    }
+
+    if (!organizers) return new NotFoundException();
+
+    return organizers;
   }
 
   @Get(":uuid")
-  public async getUserById(
-    @Param("uuid", ParseUUIDPipe) uuid: string,
-    @Req() req: any
-  ) {
-    const { user } = req;
-    return await this.usersService.findOne({ where: { id: uuid } }, false);
+  public async getUserById(@Param("uuid", ParseUUIDPipe) uuid: string) {
+    return await this.usersService.findOne({ id: uuid }, true);
   }
-
-  // @Get(":uuid/event")
-  // public async getUserEvents(
-  //   @Param("uuid", ParseUUIDPipe) uuid: string,
-  //   @Query() query: any
-  // ) {
-  //   return await this.usersService.getUserEvents(query);
-  // }
 
   @Put(":uuid")
   public async updateUser(
     @Body() body: UpdateUserDto,
-    @Req() req: any,
     @Param("uuid", ParseUUIDPipe) uuid: string
   ): Promise<any> {
-    // const { user } = req;
     return await this.usersService.updateUser(body, uuid);
   }
 }
