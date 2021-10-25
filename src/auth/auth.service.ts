@@ -81,10 +81,15 @@ export class AuthService {
   }
 
   async validateUser(payload: JwtPayload): Promise<UserDto> {
-    const user = await this.usersService.findByPayload(payload);
+    const user = await this.usersService.findOne(
+      { id: payload.sub, username: payload.username },
+      true
+    );
+
     if (!user) {
       throw new HttpException("Invalid token", HttpStatus.UNAUTHORIZED);
     }
+
     return user;
   }
 
@@ -167,7 +172,7 @@ export class AuthService {
         user.googleApiCredentials = JSON.stringify(credentials.tokens);
         if (credentials.tokens.refresh_token)
           user.lastUsedRefreshToken = new Date();
-        console.log(user);
+
         await this.userRepo.save(user);
 
         return true;
@@ -191,12 +196,11 @@ export class AuthService {
     const user = await this.userRepo.findOneOrFail(id);
     const validState = validateSecretState(hash, id, user.verificationNonce);
 
-    if (!validState) {
+    if (!validState)
       return this.buildRedirectURL({
         success: false,
         message: "state validation failed",
       });
-    }
 
     const accessToken = await this.getUserAccessToken(code, user);
 
@@ -235,18 +239,6 @@ export class AuthService {
 
     user.verificationNonce = nonce;
     await this.userRepo.save(user);
-
-    //auth.on("tokens", (tokens) => {
-    //  //@TODO Store the token in db?
-    //  // check to which user we should assign the refresh token and access token
-    //  console.log(tokens);
-
-    //  if (tokens.refresh_token) {
-    //  } else {
-    //    // console.log(tokens);
-    //  }
-    //});
-    //console.log("url is: ", url);
 
     return url;
   }
