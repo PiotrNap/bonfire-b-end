@@ -1,9 +1,13 @@
 import { ChildEntity, Column, OneToMany } from "typeorm";
 import { EventEntity } from "./event.entity";
+import { BookingSlotEntity } from "./bookingSlot.entity";
 import { UserEntity } from "./user.entity";
 
 @ChildEntity()
 export class OrganizerEntity extends UserEntity {
+  // @Column("uuid", { name: "organizer_id", nullable: false })
+  // organizerId: string;
+
   @Column({ name: "bio", type: "varchar", length: 250 })
   bio: string;
 
@@ -28,8 +32,24 @@ export class OrganizerEntity extends UserEntity {
    */
 
   // hosted events (events for sale)
-  @OneToMany(() => EventEntity, (event: EventEntity) => event.organizerId)
+  @OneToMany(() => EventEntity, (event: EventEntity) => event.organizer, {
+    cascade: true,
+  })
   events: EventEntity[];
+
+  // scheduled events as an attendee
+  @OneToMany(
+    () => BookingSlotEntity,
+    (bookingSlot: BookingSlotEntity) => bookingSlot.attendee
+  )
+  bookedSlots: BookingSlotEntity[];
+
+  // scheduled events with other attendees (as an organizer)
+  @OneToMany(
+    () => BookingSlotEntity,
+    (bookingSlot: BookingSlotEntity) => bookingSlot.organizer
+  )
+  scheduledSlots: BookingSlotEntity[];
 }
 
 export function isOrganizerEntity(obj: any): obj is OrganizerEntity {

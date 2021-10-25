@@ -1,4 +1,3 @@
-import { Credentials } from "src/auth/interfaces/google.interface";
 import { Entity, Column, TableInheritance } from "typeorm";
 import { BaseEntity } from "./base.entity";
 

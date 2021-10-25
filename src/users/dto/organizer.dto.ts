@@ -23,18 +23,13 @@ export class CreateOrganizerDto extends CreateUserDto {
     this.hourlyRate = hourlyRate;
     this.skills = skills;
   }
-
   @IsNotEmpty({ message: "Bio cannot be empty" })
   @MaxLength(100)
   bio: string;
-
   @IsNotEmpty({ message: "Hourly rate cannot be empty" })
   hourlyRate: number;
-
   @MaxLength(100)
   profession?: string | string[];
-
   jobTitle?: string | string[];
-
   skills?: string | string[];
 }
