@@ -1,9 +1,8 @@
 import { EventAvailability, SelectedDays } from "src/events/events.interface";
-import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from "typeorm";
+import { Entity, Column, ManyToOne, OneToMany } from "typeorm";
 import { BaseEntity } from "./base.entity";
 import { BookingSlotEntity } from "./bookingSlot.entity";
 import { OrganizerEntity } from "./organizer.entity";
-import { UserEntity } from "./user.entity";
 
 export interface EventUser {
   id: string; // this should be a uuidv4 or uuidv5
@@ -26,6 +25,16 @@ export class EventEntity extends BaseEntity {
   @Column({ type: "jsonb" })
   selectedDays: SelectedDays;
 
+  // array used to feed UI calendar component
+  @Column({ type: "jsonb", nullable: true })
+  availableDays: any[];
+
+  @Column({ type: "timestamptz", nullable: true })
+  fromDate: Date;
+
+  @Column({ type: "timestamptz", nullable: true })
+  toDate: Date;
+
   @Column({ type: "simple-array" })
   tags?: string[];
 
@@ -44,8 +53,14 @@ export class EventEntity extends BaseEntity {
   @Column({ type: "varchar" })
   eventTitleColor: string;
 
-  @Column("int", { nullable: true })
+  @Column({ type: "varchar", nullable: false })
   organizerId: string;
+
+  @Column({ type: "varchar", nullable: true })
+  organizerAlias: string;
+
+  @Column("boolean", { default: true })
+  available: boolean;
 
   @ManyToOne(
     () => OrganizerEntity,
@@ -56,11 +71,7 @@ export class EventEntity extends BaseEntity {
   // time slots wich are booked by other users
   @OneToMany(
     () => BookingSlotEntity,
-    (bookingSlot: BookingSlotEntity) => bookingSlot.event,
-    {
-      // this will cascade changes to booked slot
-      cascade: true,
-    }
+    (bookingSlot: BookingSlotEntity) => bookingSlot.event
   )
   bookedSlots: BookingSlotEntity[];
 }
