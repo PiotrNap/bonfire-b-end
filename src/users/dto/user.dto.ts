@@ -7,3 +7,10 @@ export class UserDto {
   calendarToken?: string | null;
   refreshToken?: string | null;
 }
+
+export class JWTUserDto {
+  id: string;
+  username: string;
+  publicKey: string;
+  profileType: string;
+}
