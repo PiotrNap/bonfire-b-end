@@ -11,7 +11,6 @@ import {
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LoginStatus } from "./interfaces/login-status.interface";
-import { JwtPayload } from "./interfaces/payload.interface";
 import { ChallengeDTO } from "src/users/dto/challenge.dto";
 import { ChallengeResponseDTO } from "src/users/dto/challenge-response.dto";
 import { Public } from "src/common/decorators/public.decorator";
@@ -51,7 +50,7 @@ export class AuthController {
 
   @Public()
   @Get("google-oauth-callback")
-  public async oauthGoogleCallback(@Res() res, @Query() query) {
+  public async oauthGoogleCallback(@Res() res: any, @Query() query: any) {
     const result = await this.authService.handleGoogleOauthCallback(query);
 
     if (!result) {
@@ -92,8 +91,8 @@ export class AuthController {
     return events;
   }
 
-  @Get("whoami")
-  public async testAuth(@Req() req: any): Promise<JwtPayload> {
-    return req.user;
-  }
+  // @Get("whoami")
+  // public async testAuth(@Req() req: any): Promise<JwtPayload> {
+  //   return req.user;
+  // }
 }
