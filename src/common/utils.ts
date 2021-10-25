@@ -1,6 +1,7 @@
 import { getConnectionOptions, getConnection } from "typeorm";
-import * as bcrypt from "bcrypt";
 import { Buffer } from "buffer";
+import { months } from "./lib/types";
+import * as bcrypt from "bcrypt";
 import * as crypto from "crypto";
 
 export class Random {
@@ -93,7 +94,6 @@ export const stripValues = (r) => {
 export const stripType = (r) => {
   let res = [];
   for (let i of r) {
-    // console.log(typeof(i))
     res.push(typeof i);
   }
   return res;
@@ -150,4 +150,67 @@ export const base64ToUTF8 = (val: string) => {
 
 export const utf8ToBase64 = (val: string) => {
   return Buffer.from(val, "utf-8").toString("base64");
+};
+
+export const createCalendarDto = (selectedDays: {
+  [index: string]: number;
+}) => {
+  const timesInMill: number[] = Object.values(selectedDays);
+
+  let calendarDtoObject = [];
+  let currentYear, currentMonth, currentDay;
+
+  for (const time of timesInMill) {
+    const year = new Date(time).getFullYear();
+    const month = months[new Date(time).getMonth()];
+    const day = new Date(time).getDate();
+
+    // Case when it's the first time or the year has changed
+    if (year !== currentYear && month !== currentMonth && day !== currentDay) {
+      currentYear = year;
+      currentMonth = month;
+      currentDay = day;
+
+      calendarDtoObject.push({
+        year,
+        months: [{ month, days: [{ day }] }],
+      });
+      continue;
+    }
+
+    // Case when year is the same but month and day has changed
+    if (month !== currentMonth && currentDay !== day) {
+      currentMonth = month;
+      currentDay = day;
+
+      const yearToPushIndex = calendarDtoObject.findIndex(
+        (val) => val.year === year
+      );
+
+      calendarDtoObject[yearToPushIndex].months.push({
+        month,
+        days: [{ day }],
+      });
+      continue;
+    }
+
+    // Case when year and month are the same but day has changed
+    if (currentDay !== day) {
+      currentDay = day;
+
+      const yearToPushIndex = calendarDtoObject.findIndex(
+        (val) => val.year === year
+      );
+      const monthToPushIndex = calendarDtoObject[
+        yearToPushIndex
+      ].months.findIndex((val: any) => val.month === month);
+
+      calendarDtoObject[yearToPushIndex].months[monthToPushIndex].days.push({
+        day,
+      });
+      continue;
+    }
+  }
+
+  return calendarDtoObject;
 };
