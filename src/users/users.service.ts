@@ -2,24 +2,30 @@ import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { FindManyOptions, Repository } from "typeorm";
 import { UserDto } from "./dto/user.dto";
-import { isUserEntity, UserEntity } from "../model/user.entity";
+import { UserEntity } from "../model/user.entity";
 import { toUserDto } from "../common/mapper";
 import { CreateUserDto } from "./dto/user-create.dto";
 import { ChallengeResponseValidation } from "../common/challengeValidation";
 import { ChallengeResponseDTO } from "./dto/challenge-response.dto";
 import { PaginationRequestDto, PaginationResult } from "src/pagination";
-import { isOrganizerEntity, OrganizerEntity } from "src/model/organizer.entity";
+import { OrganizerEntity } from "src/model/organizer.entity";
 import { CreateOrganizerDto } from "./dto/organizer.dto";
+import { AttendeeEntity } from "src/model/attendee.entity";
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
-    private readonly userRepo: Repository<UserEntity>
+    private readonly userRepo: Repository<UserEntity>,
+    @InjectRepository(OrganizerEntity)
+    private readonly organizerRepo: Repository<OrganizerEntity>,
+    @InjectRepository(AttendeeEntity)
+    private readonly attendeeRepo: Repository<AttendeeEntity>
   ) {}
 
-  async findOne(options: any, toDto?: boolean): Promise<UserDto> {
-    const user = await this.userRepo.findOne(options);
+  async findOne(options: any, toDto: boolean = true): Promise<UserDto> {
+    const user = await this.userRepo.findOne({ where: { ...options } });
+    console.log(user);
 
     if (toDto) return toUserDto(user);
 
@@ -75,8 +81,17 @@ export class UsersService {
     return toUserDto(user);
   }
 
-  async findByPayload({ username }: any): Promise<UserDto> {
-    return await this.findOne({ where: { username } });
+  async findByPayload({ payload }: any): Promise<any> {
+    let users: UserEntity[] = await this.userRepo.find({
+      where: { ...payload },
+    });
+
+    users.map((user: UserEntity) => {
+      let userDto: UserDto = toUserDto(user);
+      return userDto;
+    });
+
+    return users;
   }
 
   async register(
@@ -98,21 +113,13 @@ export class UsersService {
       newUser.publicKey = publicKey;
       newUser.profileType = profileType;
 
-      // if (isOrganizerEntity(newUserDto)) {
-      //   newUser = new OrganizerEntity();
-      //   newUser.name = name;
-      //   newUser.username = username;
-      //   newUser.publicKey = publicKey;
-      //   newUser.profileType = profileType;
-      //   newUser.bio = newUserDto.bio;
-      //   newUser.hourlyRate = newUserDto.hourlyRate;
-      //   newUser.profession = newUserDto?.profession;
-      //   newUser.jobTitle = newUserDto?.jobTitle;
-      //   newUser.skills = newUserDto?.skills;
-      // } else if (isUserEntity(newUserDto)) {
-      // }
-
-      await this.userRepo.save(newUser);
+      console.log(newUserDto);
+      if (profileType === "organizer") {
+        await this.organizerRepo.save(newUser);
+      } else if (profileType === "attendee") {
+        console.log("here");
+        await this.attendeeRepo.save(newUser);
+      }
 
       const userDto = new CreateUserDto(
         newUser.name,
@@ -133,17 +140,42 @@ export class UsersService {
   }
 
   async getAll(options?: FindManyOptions<UserEntity>): Promise<UserEntity[]> {
-    try {
-      const users = await this.userRepo.find({ ...options, skip: 1 });
+    const users = await this.userRepo.find();
 
-      return users;
-    } catch (e) {}
+    return users;
   }
 
-  async getAllWithPagination(
+  async getAllOrganizers(): Promise<OrganizerEntity[]> {
+    const organizers = await this.organizerRepo.find({
+      relations: ["events", "bookedSlots", "scheduledSlots"],
+    });
+
+    return organizers;
+  }
+
+  async getAllAttendees(): Promise<AttendeeEntity[]> {
+    const attendees = await this.attendeeRepo.find({
+      relations: ["bookedSlots"],
+    });
+
+    return attendees;
+  }
+
+  async getWithPagination(
     paginationRequestDto: PaginationRequestDto,
-    options?: FindManyOptions<UserEntity>
-  ): Promise<PaginationResult<UserEntity> | void> {
+    options?: FindManyOptions<UserEntity>,
+    repositoryName?: "organizer" | "attendee"
+  ): Promise<PaginationResult<any> | void> {
+    let repo: any;
+
+    if (repositoryName === "organizer") {
+      repo = this.organizerRepo;
+    } else if (repositoryName === "attendee") {
+      repo = this.attendeeRepo;
+    } else {
+      repo = this.userRepo;
+    }
+
     try {
       let { limit, page } = paginationRequestDto;
       page = Math.abs(Number(page));
@@ -151,7 +183,7 @@ export class UsersService {
       if (limit < 10) limit = 10;
       let skip = (page - 1) * limit;
 
-      const results = await this.userRepo.findAndCount({
+      const results = await repo.findAndCount({
         take: limit,
         skip,
         order: {
@@ -175,16 +207,4 @@ export class UsersService {
       throw new HttpException("Something went wrong", HttpStatus.BAD_REQUEST);
     }
   }
-
-  // public async getUserEvents(query?: any) {
-  //     if(!query){
-  //         return
-  //     }
-
-  // }
-
-  // private _sanitizeUser(user: UserEntity) {
-  //   delete user.password;
-  //   return user;
-  // }
 }
