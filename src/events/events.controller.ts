@@ -10,6 +10,7 @@ import {
   Put,
   Query,
   Req,
+  UnprocessableEntityException,
 } from "@nestjs/common";
 import { roles, Roles } from "src/auth/roles/roles.decorator";
 import { Public } from "src/common/decorators/public.decorator";
@@ -53,27 +54,40 @@ export class EventsController {
     }
   }
 
+  @Post("booking")
+  public async bookEvent(
+    @Body() eventBookingDto: EventBookingDto,
+    @Req() req: any
+  ) {
+    const { user } = req;
+    const confirmation = await this.eventsService.bookEvent(
+      user,
+      eventBookingDto
+    );
+
+    if (!confirmation) {
+      throw new UnprocessableEntityException();
+    }
+
+    return confirmation;
+  }
+
   @Get(":uuid")
   public async getEventById(@Param("uuid", new ParseUUIDPipe()) uuid: string) {
-    return this.eventsService.findOne(uuid);
+    const event = await this.eventsService.findOne(uuid);
+    console.log(event);
+
+    if (!event) {
+      throw new NotFoundException();
+    }
+
+    return event;
   }
 
   @Post()
   @Roles(roles.organizer)
   public async createEvent(@Body() createEventDto: CreateEventDto) {
     return this.eventsService.create(createEventDto);
-  }
-
-  // @TODO specify booking dto
-  @Post("booking/:uuid")
-  public async bookEvent(
-    @Param("uuid", new ParseUUIDPipe()) uuid: string,
-    @Body() eventBookingDto: EventBookingDto,
-    @Req() req: any
-  ) {
-    const { user } = req;
-    return `Event with id ${uuid} booked successfully`;
-    // return await this.eventsService.bookEvent(uuid, user, eventBookingDto);
   }
 
   @Put(":uuid")
