@@ -11,10 +11,7 @@ export class EventBookingDto {
   txHash?: string;
 
   @IsNumber()
-  bookedDay: number;
-
-  @IsNumber()
-  bookedTimeSlot: number;
+  bookedDate: Date;
 
   @IsNumber()
   bookedDuration: number;

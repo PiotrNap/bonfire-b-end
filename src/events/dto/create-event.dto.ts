@@ -1,6 +1,7 @@
 import {
   IsArray,
   IsBoolean,
+  IsDate,
   IsJSON,
   IsNumber,
   IsObject,
@@ -25,6 +26,12 @@ export class CreateEventDto {
 
   @IsObject()
   selectedDays: SelectedDays;
+
+  @IsDate()
+  fromDate: Date;
+
+  @IsDate()
+  toDate: Date;
 
   @IsOptional()
   @IsArray()
