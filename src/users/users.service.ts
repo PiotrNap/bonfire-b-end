@@ -1,6 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { FindManyOptions, Repository } from "typeorm";
+import { FindManyOptions, getRepository, Repository } from "typeorm";
 import { UserDto } from "./dto/user.dto";
 import { UserEntity } from "../model/user.entity";
 import { toUserDto } from "../common/mapper";
@@ -11,6 +11,7 @@ import { PaginationRequestDto, PaginationResult } from "src/pagination";
 import { OrganizerEntity } from "src/model/organizer.entity";
 import { CreateOrganizerDto } from "./dto/organizer.dto";
 import { AttendeeEntity } from "src/model/attendee.entity";
+import { BookingSlotEntity } from "src/model/bookingSlot.entity";
 
 @Injectable()
 export class UsersService {
@@ -25,7 +26,6 @@ export class UsersService {
 
   async findOne(options: any, toDto: boolean = true): Promise<UserDto> {
     const user = await this.userRepo.findOne({ where: { ...options } });
-    console.log(user);
 
     if (toDto) return toUserDto(user);
 
@@ -159,6 +159,54 @@ export class UsersService {
     });
 
     return attendees;
+  }
+
+  async getCalendarEvents(
+    id: string,
+    profileType: string,
+    date
+  ): Promise<any | void> {
+    // TODO until the many-to-one fields selection on relationships with find() isn't resolved ...
+    if (profileType === "organizer") {
+      let { bookedSlots, scheduledSlots }: OrganizerEntity =
+        await this.organizerRepo.findOne(id, {
+          relations: ["bookedSlots", "scheduledSlots"],
+        });
+
+      bookedSlots = bookedSlots.filter((slot) => {
+        const searchYear = new Date(date).getFullYear();
+        const searchMonth = new Date(date).getMonth();
+
+        const searchFrom = new Date(searchYear, searchMonth);
+        const searchTo = new Date(searchYear, new Date(date).getMonth() + 1, 0);
+        console.log(searchFrom, searchTo);
+
+        return slot.bookedDate > searchFrom && slot.bookedDate < searchTo;
+      });
+
+      scheduledSlots = scheduledSlots.filter((slot) => {
+        const searchYear = new Date(date).getFullYear();
+        const searchMonth = new Date(date).getMonth();
+
+        const searchFrom = new Date(searchYear, searchMonth);
+        const searchTo = new Date(searchYear, new Date(date).getMonth() + 1, 0);
+
+        return slot.bookedDate > searchFrom && slot.bookedDate < searchTo;
+      });
+
+      return { bookedSlots, scheduledSlots };
+    }
+
+    if (profileType === "attendee") {
+      const { bookedSlots }: AttendeeEntity = await this.attendeeRepo.findOne(
+        id,
+        {
+          relations: ["bookedSlots"],
+        }
+      );
+
+      return bookedSlots;
+    }
   }
 
   async getWithPagination(
