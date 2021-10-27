@@ -3,6 +3,7 @@ import {
   Column,
   UpdateDateColumn,
   CreateDateColumn,
+  DeleteDateColumn,
 } from "typeorm";
 
 export abstract class BaseEntity {
@@ -22,6 +23,9 @@ export abstract class BaseEntity {
 
   @Column({ type: "varchar", length: 300 })
   createdBy: string = "";
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 
   @UpdateDateColumn({ type: "timestamptz", default: () => "CURRENT_TIMESTAMP" })
   lastChangedDateTime: Date;
