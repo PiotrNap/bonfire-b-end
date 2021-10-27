@@ -8,6 +8,9 @@ import {
   Post,
   Put,
   Query,
+  Req,
+  UnauthorizedException,
+  UnprocessableEntityException,
 } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "../users/dto/user-create.dto";
@@ -108,5 +111,26 @@ export class UsersController {
     @Param("uuid", ParseUUIDPipe) uuid: string
   ): Promise<any> {
     return await this.usersService.updateUser(body, uuid);
+  }
+
+  @Get(":uuid/calendar-events")
+  public async getCalendarEvents(
+    @Param("uuid", ParseUUIDPipe) uuid: string,
+    @Query() query: any,
+    @Req() req: any
+  ): Promise<any> {
+    const { user } = req;
+
+    if (user.id !== uuid) throw new UnauthorizedException();
+
+    const events = await this.usersService.getCalendarEvents(
+      uuid,
+      user.profileType,
+      query.date
+    );
+
+    if (!events) throw new UnprocessableEntityException();
+
+    return events;
   }
 }
