@@ -1,10 +1,5 @@
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity } from "./base.entity";
 import { EventEntity } from "./event.entity";
 import { OrganizerEntity } from "./organizer.entity";
 import { UserEntity } from "./user.entity";
@@ -14,9 +9,28 @@ export class BookingSlotEntity extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @ManyToOne(() => EventEntity, (event: EventEntity) => event.bookedSlots, {
-    cascade: true,
-  })
+  @Column("uuid")
+  organizerId: string;
+
+  @Column("varchar")
+  organizerAlias: string;
+
+  @Column("uuid")
+  attendeeId: string;
+
+  @Column("varchar")
+  attendeeAlias: string;
+
+  @Column("uuid")
+  eventId: string;
+
+  @Column("varchar", { nullable: true })
+  eventTitle: string;
+
+  @Column("varchar", { nullable: true })
+  eventDescription: string;
+
+  @ManyToOne(() => EventEntity, (event: EventEntity) => event.bookedSlots)
   event: EventEntity;
 
   @ManyToOne(() => UserEntity, (user: UserEntity) => user.id, { cascade: true })
