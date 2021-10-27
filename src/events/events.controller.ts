@@ -72,6 +72,15 @@ export class EventsController {
     return confirmation;
   }
 
+  @Delete("booking/:uuid")
+  public async removeEventBooking(
+    @Param("uuid", new ParseUUIDPipe()) uuid: string,
+    @Req() req: any
+  ): Promise<any> {
+    const res = this.eventsService.removeBookedEventSlot(uuid, req.user);
+    return res;
+  }
+
   @Get(":uuid")
   public async getEventById(@Param("uuid", new ParseUUIDPipe()) uuid: string) {
     const event = await this.eventsService.findOne(uuid);
@@ -117,10 +126,5 @@ export class EventsController {
   ): Promise<any> {
     const { userId } = req.user;
     return await this.eventsService.remove(uuid, userId);
-  }
-
-  @Delete("booking/:uuid")
-  public async removeBooking(@Param("uuid", new ParseUUIDPipe()) uuid: string) {
-    return `Event schedule with id ${uuid} removed successfully`;
   }
 }
