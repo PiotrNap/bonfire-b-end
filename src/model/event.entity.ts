@@ -26,8 +26,8 @@ export class EventEntity extends BaseEntity {
   selectedDays: SelectedDays;
 
   // array used to feed UI calendar component
-  @Column({ type: "jsonb", nullable: true })
-  availableDays: any[];
+  // @Column({ type: "jsonb", nullable: true })
+  // availableDays: any[];
 
   @Column({ type: "timestamptz", nullable: true })
   fromDate: Date;
@@ -71,7 +71,10 @@ export class EventEntity extends BaseEntity {
   // time slots wich are booked by other users
   @OneToMany(
     () => BookingSlotEntity,
-    (bookingSlot: BookingSlotEntity) => bookingSlot.event
+    (bookingSlot: BookingSlotEntity) => bookingSlot.event,
+    {
+      cascade: true,
+    }
   )
   bookedSlots: BookingSlotEntity[];
 }
