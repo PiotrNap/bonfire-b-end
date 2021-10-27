@@ -10,7 +10,6 @@ import { EventBookingDto } from "./dto/event-booking.dto";
 import { UpdateEventDto } from "./dto/update-event.dto";
 import { OrganizerEntity } from "src/model/organizer.entity";
 import { EventPaginationDto } from "./dto/event-pagination.dto";
-import { createCalendarDto } from "src/common/utils";
 import { JWTUserDto } from "src/users/dto/user.dto";
 import { UserEntity } from "src/model/user.entity";
 
@@ -49,6 +48,8 @@ export class EventsService {
         where: { id: organizer.id },
       });
 
+      console.log(user);
+
       event.description = description;
       event.title = title;
       event.availabilities = availabilities as any;
@@ -63,7 +64,6 @@ export class EventsService {
       event.eventTitleColor = eventTitleColor;
       event.organizer = user;
       event.organizerAlias = user.username;
-      event.availableDays = createCalendarDto(selectedDays);
 
       event = await this.eventsRepository.save(event);
       console.log("New event added: ", event);
@@ -144,7 +144,7 @@ export class EventsService {
         "hourlyRate",
         "tags",
         "availabilities",
-        "availableDays",
+        "selectedDays",
         "organizerAlias",
       ],
     });
@@ -189,6 +189,13 @@ export class EventsService {
     }
   }
 
+  async removeBookedEventSlot(
+    eventBookingId: string,
+    user: UserEntity
+  ): Promise<any | void> {
+    return await this.bookingSlotRepository.softDelete(eventBookingId);
+  }
+
   async bookEvent(
     user: JWTUserDto,
     eventBookingDto: EventBookingDto
@@ -222,12 +229,17 @@ export class EventsService {
           HttpStatus.BAD_REQUEST
         );
 
-      const attendee = await this.userRepository.findOne(user.id);
-
       let bookingSlot = new BookingSlotEntity();
+      console.log(user);
+
       bookingSlot.event = event;
-      bookingSlot.attendee = attendee;
-      bookingSlot.organizer = event.organizer;
+      bookingSlot.eventId = event.id;
+      bookingSlot.eventTitle = event.title;
+      bookingSlot.eventDescription = event.description;
+      bookingSlot.attendeeId = user.id;
+      bookingSlot.attendeeAlias = user.username;
+      bookingSlot.organizerAlias = event.organizer.username;
+      bookingSlot.organizerId = event.organizer.id;
       bookingSlot.bookedDuration = bookedDuration;
       bookingSlot.bookedDate = bookedDate;
       bookingSlot.txHash = txHash;
