@@ -1,32 +1,47 @@
 #!/bin/sh
-set -ex
+set -e
+clear
 
 # These variables can be anything as they only apply to the docker container; pw and db should match your .env
-CONTAINER="conex-db-container"
+CONTAINER="bonfire_db"
 PW="c0n3xd@ta!"
-DB="conexdb"
+DB_DEV="bonfire_db_dev"
+DB_PROD="bonfire_db_prod"
+DBPORT="5436"
+DBVOLUME=$(pwd)/bonfireDb/dev
 
 mkdir -p $(pwd)/devDb
-echo "echo stop & remove old docker [$CONTAINER] and starting new fresh instance of [$CONTAINER]"
-(docker kill $CONTAINER || :) &&
-  (docker rm $CONTAINER || :) &&
-  docker ps | grep $CONTAINER || (
-    docker run \
-      -d \
-      -p 5435:5432 \
-      -e POSTGRES_PASSWORD=$PW \
-      -e PGPASSWORD=$PW \
-      --name $CONTAINER \
-      --mount type=bind,source="$(pwd)"/devDb,target=/var/lib/postgresql/data \
-      postgres
-)
 
-# wait for pg to start
-echo "sleep wait for pg-server [$CONTAINER] to start"
-sleep 10 # you may need to increase the sleep period if you get a psql error complaining that you can't connect to the server.
+[ -z "${RESET:-}" ] || {
+  echo "echo Recreating docker container [$CONTAINER]"
+  (docker kill $CONTAINER || :) &&
+  (docker rm $CONTAINER || :) 
+} || { echo "NO RESET"  ; }
 
-# create the db
-echo "CREATE DATABASE $DB ENCODING 'UTF-8';" | docker exec -i $CONTAINER psql -U postgres
-
-
-echo "\l" | docker exec -i $CONTAINER psql -U postgres
+( docker ps | grep $CONTAINER > /dev/null ) && {
+  echo "$CONTAINER is running"
+  exit
+} || {
+(docker ps -a | grep $CONTAINER > /dev/null) && 
+  echo "Starting $CONTAINER"
+  docker start $CONTAINER
+} || {
+  docker run \
+    -d \
+    -p $DBPORT:5432 \
+    -e POSTGRES_PASSWORD=$PW \
+    -e PGPASSWORD=$PW \
+    --name $CONTAINER \
+    --mount type=bind,source=$DBVOLUME,target=/var/lib/postgresql/data \
+    postgres    
+}    
+echo "WAITING for pg-server [$CONTAINER] to start"
+until echo "\l" | docker exec -i $CONTAINER psql -U postgres ; do { 
+  sleep 1
+} done
+sleep 1
+(
+  echo "CREATE DATABASE $DB_DEV ENCODING 'UTF-8';" 
+  echo "CREATE DATABASE $DB_PROD ENCODING 'UTF-8';" 
+  echo "CREATE DATABASE $MIGRATION_DB ENCODING 'UTF-8';" 
+) | docker exec -i $CONTAINER psql -U postgres
