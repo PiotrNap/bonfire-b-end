@@ -1,545 +1,452 @@
 {
-	"info": {
-		"_postman_id": "afc95baa-9b65-4e6b-9e76-c96a0743017c",
-		"name": "Bonfire API",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"item": [
-		{
-			"name": "auth/login",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBpb3RyIiwic3ViIjoxLCJzZXNzaW9uIjoiZDVlZTAwMDQtZDgwMi00NTAwLWIxMTYtZTkwYWI4YWFlNjJhIiwieHRyYSI6WyJhIGxpc3QiLCJvZiB0aGluZ3MiLCJpIGFtIGdvb2QgYXQiXSwiaWF0IjoxNjI5ODkzMTk1LCJleHAiOjE2Mjk4OTMyNTV9.otD1x-Ps3P5kQhuUis6VSTjJV7Syjy9PmpzDnQaGIDY",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"username\":\"piotr\",\n    \"password\":\"r0ckst@r\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:3000/auth/login",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "3000",
-					"path": [
-						"auth",
-						"login"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "auth/challenge",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBpb3RyIiwic3ViIjoxLCJzZXNzaW9uIjoiZDVlZTAwMDQtZDgwMi00NTAwLWIxMTYtZTkwYWI4YWFlNjJhIiwieHRyYSI6WyJhIGxpc3QiLCJvZiB0aGluZ3MiLCJpIGFtIGdvb2QgYXQiXSwiaWF0IjoxNjI5ODkzMTk1LCJleHAiOjE2Mjk4OTMyNTV9.otD1x-Ps3P5kQhuUis6VSTjJV7Syjy9PmpzDnQaGIDY",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"credential\":\"XUNUHDbu3MnwaG2xvl+IY9j2G3cckhIyexGDuK3ETTQ=\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:{{PORT}}/auth/challenge",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "{{PORT}}",
-					"path": [
-						"auth",
-						"challenge"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "organizers",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "localhost:{{PORT}}/users/organizers",
-					"host": [
-						"localhost"
-					],
-					"port": "{{PORT}}",
-					"path": [
-						"users",
-						"organizers"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "attendees",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "localhost:{{PORT}}/users/attendees",
-					"host": [
-						"localhost"
-					],
-					"port": "{{PORT}}",
-					"path": [
-						"users",
-						"attendees"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "users",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "localhost:{{PORT}}/users",
-					"host": [
-						"localhost"
-					],
-					"port": "{{PORT}}",
-					"path": [
-						"users"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "user (:id)",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "localhost:{{PORT}}/users/22e0c9e3-bc03-4679-a89d-fe0c7ca2aafe",
-					"host": [
-						"localhost"
-					],
-					"port": "{{PORT}}",
-					"path": [
-						"users",
-						"22e0c9e3-bc03-4679-a89d-fe0c7ca2aafe"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "user (:query)",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "localhost:{{PORT}}/users/organizers?limit=8&page=1",
-					"host": [
-						"localhost"
-					],
-					"port": "{{PORT}}",
-					"path": [
-						"users",
-						"organizers"
-					],
-					"query": [
-						{
-							"key": "limit",
-							"value": "8"
-						},
-						{
-							"key": "page",
-							"value": "1"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "users (:id)",
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"bio\": \"Here goes my bio.\",\n    \"hourlyRate\" : 100,\n    \"profileType\" : \"organizer\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "localhost:{{PORT}}/users/b838cafc-7b90-4f27-a18a-88ff2a0d4877",
-					"host": [
-						"localhost"
-					],
-					"port": "{{PORT}}",
-					"path": [
-						"users",
-						"b838cafc-7b90-4f27-a18a-88ff2a0d4877"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "events ?(:id)",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:{{PORT}}/events",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "{{PORT}}",
-					"path": [
-						"events"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "events (:query)",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:{{PORT}}/events?page=1&limit=12",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "{{PORT}}",
-					"path": [
-						"events"
-					],
-					"query": [
-						{
-							"key": "page",
-							"value": "1"
-						},
-						{
-							"key": "limit",
-							"value": "12"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "events (:id)",
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"url": {
-					"raw": "localhost:{{PORT}}/events/ffb4915f-5e80-4c01-84fe-6631a3b621a9",
-					"host": [
-						"localhost"
-					],
-					"port": "{{PORT}}",
-					"path": [
-						"events",
-						"ffb4915f-5e80-4c01-84fe-6631a3b621a9"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "events (:id)",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkhlcmVHb2VzVXNlcm5hbWUiLCJzdWIiOiI2NmRkMDQ0Yi1mZWYwLTRkODItOGFlYi0xNjcwZmZlMzAwNDgiLCJwcm9maWxlVHlwZSI6Im9yZ2FuaXplciIsImlhdCI6MTYzMjI1MzU0NCwiZXhwIjoxNjMyMjUzNTQ0fQ.sxLLV7HsCAQzZT-VnHFwDDsFg4H22yUIz_IU55r3Xzg",
-							"type": "string"
-						}
-					]
-				},
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"privateEvent\": true\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "localhost:{{PORT}}/events/fe19b348-4153-4fb8-8ba5-d0405cb08392",
-					"host": [
-						"localhost"
-					],
-					"port": "{{PORT}}",
-					"path": [
-						"events",
-						"fe19b348-4153-4fb8-8ba5-d0405cb08392"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "events booking (:id)",
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"txHash\":\"32JH324LVHL,B32BFBNAKJHJKLH2RH2H3333FNAMN.233\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "localhost:{{PORT}}/events/booking/fe19b348-4153-4fb8-8ba5-d0405cb08392",
-					"host": [
-						"localhost"
-					],
-					"port": "{{PORT}}",
-					"path": [
-						"events",
-						"booking",
-						"fe19b348-4153-4fb8-8ba5-d0405cb08392"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "events booking (:id)",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"eventId\":\"qwe34iu123pi4u1p2ui34i\",\n  \"attendeeId\":\"3241h234jkhlk3hlkjh3\",\n  \"txHash\":\"1234123123423\",\n  \"bookedDay\":12348912,\n  \"bookedTimeSlot\":12348912,\n  \"bookedDuration\":12341234\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "localhost:{{PORT}}/events/booking/77da2f84-3097-4ae3-9912-e701b2116c57",
-					"host": [
-						"localhost"
-					],
-					"port": "{{PORT}}",
-					"path": [
-						"events",
-						"booking",
-						"77da2f84-3097-4ae3-9912-e701b2116c57"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "events/results (query)",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkhlcmVHb2VzVXNlcm5hbWUiLCJzdWIiOiI2NmRkMDQ0Yi1mZWYwLTRkODItOGFlYi0xNjcwZmZlMzAwNDgiLCJwcm9maWxlVHlwZSI6Im9yZ2FuaXplciIsImlhdCI6MTYzMjI1MzU0NCwiZXhwIjoxNjMyMjUzNTQ0fQ.sxLLV7HsCAQzZT-VnHFwDDsFg4H22yUIz_IU55r3Xzg",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "localhost:{{PORT}}/events/results?search_query=blockchain",
-					"host": [
-						"localhost"
-					],
-					"port": "{{PORT}}",
-					"path": [
-						"events",
-						"results"
-					],
-					"query": [
-						{
-							"key": "search_query",
-							"value": "blockchain"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Google oAuth url",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:{{PORT}}/auth/google-oauth-url",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "{{PORT}}",
-					"path": [
-						"auth",
-						"google-oauth-url"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Google Calendar events (query)",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkhlcmVHb2VzVXNlcm5hbWUiLCJzdWIiOiI2NmRkMDQ0Yi1mZWYwLTRkODItOGFlYi0xNjcwZmZlMzAwNDgiLCJwcm9maWxlVHlwZSI6Im9yZ2FuaXplciIsImlhdCI6MTYzMjI1MzU0NCwiZXhwIjoxNjMyMjUzNTQ0fQ.sxLLV7HsCAQzZT-VnHFwDDsFg4H22yUIz_IU55r3Xzg",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "localhost:{{PORT}}/auth/google-calendar-events?fromTime=1630447200000&toTime=1638313200000",
-					"host": [
-						"localhost"
-					],
-					"port": "{{PORT}}",
-					"path": [
-						"auth",
-						"google-calendar-events"
-					],
-					"query": [
-						{
-							"key": "fromTime",
-							"value": "1630447200000"
-						},
-						{
-							"key": "toTime",
-							"value": "1638313200000"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Google oAuth valid",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkBCb2IxIiwic3ViIjoiZWQ5Y2U4MjktZGU0My00M2U0LThjYjgtNzZhYjU5MTJkOGYxIiwicHJvZmlsZVR5cGUiOiJvcmdhbml6ZXIiLCJpYXQiOjE2MzM1MzQwOTcsImV4cCI6MTYzMzUzNDA5N30.skIH3UYP_nz9tA5ctEYI7t6zxJXVT7Be9QLBUHWoyVM",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:{{PORT}}/auth/google-oauth-valid",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "{{PORT}}",
-					"path": [
-						"auth",
-						"google-oauth-valid"
-					]
-				}
-			},
-			"response": []
-		}
-	],
-	"auth": {
-		"type": "bearer",
-		"bearer": [
-			{
-				"key": "token",
-				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkBwaW90ciIsInN1YiI6IjAzYzc2OTE2LWFlMTMtNDk2OC1iNjE0LTE5YjFhNWRhMDEzNiIsInByb2ZpbGVUeXBlIjoib3JnYW5pemVyIiwiaWF0IjoxNjM0OTI0Mjk5LCJleHAiOjE2MzQ5Mjc4OTl9.6yE0SpTIzqeTj2v-3fOzyYNHYZUzsenRYJSEyxVaqao",
-				"type": "string"
-			}
-		]
-	},
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		}
-	],
-	"variable": [
-		{
-			"key": "PORT",
-			"value": "8000"
-		}
-	]
+  "info": {
+    "_postman_id": "afc95baa-9b65-4e6b-9e76-c96a0743017c",
+    "name": "Bonfire API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "auth/login",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBpb3RyIiwic3ViIjoxLCJzZXNzaW9uIjoiZDVlZTAwMDQtZDgwMi00NTAwLWIxMTYtZTkwYWI4YWFlNjJhIiwieHRyYSI6WyJhIGxpc3QiLCJvZiB0aGluZ3MiLCJpIGFtIGdvb2QgYXQiXSwiaWF0IjoxNjI5ODkzMTk1LCJleHAiOjE2Mjk4OTMyNTV9.otD1x-Ps3P5kQhuUis6VSTjJV7Syjy9PmpzDnQaGIDY",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\":\"piotr\",\n    \"password\":\"r0ckst@r\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/auth/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["auth", "login"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "auth/challenge",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBpb3RyIiwic3ViIjoxLCJzZXNzaW9uIjoiZDVlZTAwMDQtZDgwMi00NTAwLWIxMTYtZTkwYWI4YWFlNjJhIiwieHRyYSI6WyJhIGxpc3QiLCJvZiB0aGluZ3MiLCJpIGFtIGdvb2QgYXQiXSwiaWF0IjoxNjI5ODkzMTk1LCJleHAiOjE2Mjk4OTMyNTV9.otD1x-Ps3P5kQhuUis6VSTjJV7Syjy9PmpzDnQaGIDY",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"credential\":\"XUNUHDbu3MnwaG2xvl+IY9j2G3cckhIyexGDuK3ETTQ=\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:{{PORT}}/auth/challenge",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "{{PORT}}",
+          "path": ["auth", "challenge"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "organizers",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:{{PORT}}/users/organizers",
+          "host": ["localhost"],
+          "port": "{{PORT}}",
+          "path": ["users", "organizers"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "attendees",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:{{PORT}}/users/attendees",
+          "host": ["localhost"],
+          "port": "{{PORT}}",
+          "path": ["users", "attendees"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "users",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:{{PORT}}/users",
+          "host": ["localhost"],
+          "port": "{{PORT}}",
+          "path": ["users"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "user (:id)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:{{PORT}}/users/22e0c9e3-bc03-4679-a89d-fe0c7ca2aafe",
+          "host": ["localhost"],
+          "port": "{{PORT}}",
+          "path": ["users", "22e0c9e3-bc03-4679-a89d-fe0c7ca2aafe"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "user (:query)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:{{PORT}}/users/organizers?limit=8&page=1",
+          "host": ["localhost"],
+          "port": "{{PORT}}",
+          "path": ["users", "organizers"],
+          "query": [
+            {
+              "key": "limit",
+              "value": "8"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "users (:id)",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"bio\": \"Here goes my bio.\",\n    \"hourlyRate\" : 100,\n    \"profileType\" : \"organizer\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:{{PORT}}/users/b838cafc-7b90-4f27-a18a-88ff2a0d4877",
+          "host": ["localhost"],
+          "port": "{{PORT}}",
+          "path": ["users", "b838cafc-7b90-4f27-a18a-88ff2a0d4877"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "events ?(:id)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:{{PORT}}/events",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "{{PORT}}",
+          "path": ["events"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "events (:query)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:{{PORT}}/events?page=1&limit=12",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "{{PORT}}",
+          "path": ["events"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "12"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "events (:id)",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "localhost:{{PORT}}/events/ffb4915f-5e80-4c01-84fe-6631a3b621a9",
+          "host": ["localhost"],
+          "port": "{{PORT}}",
+          "path": ["events", "ffb4915f-5e80-4c01-84fe-6631a3b621a9"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "events (:id)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkhlcmVHb2VzVXNlcm5hbWUiLCJzdWIiOiI2NmRkMDQ0Yi1mZWYwLTRkODItOGFlYi0xNjcwZmZlMzAwNDgiLCJwcm9maWxlVHlwZSI6Im9yZ2FuaXplciIsImlhdCI6MTYzMjI1MzU0NCwiZXhwIjoxNjMyMjUzNTQ0fQ.sxLLV7HsCAQzZT-VnHFwDDsFg4H22yUIz_IU55r3Xzg",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"privateEvent\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:{{PORT}}/events/fe19b348-4153-4fb8-8ba5-d0405cb08392",
+          "host": ["localhost"],
+          "port": "{{PORT}}",
+          "path": ["events", "fe19b348-4153-4fb8-8ba5-d0405cb08392"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "events booking (:id)",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"txHash\":\"32JH324LVHL,B32BFBNAKJHJKLH2RH2H3333FNAMN.233\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:{{PORT}}/events/booking/fe19b348-4153-4fb8-8ba5-d0405cb08392",
+          "host": ["localhost"],
+          "port": "{{PORT}}",
+          "path": ["events", "booking", "fe19b348-4153-4fb8-8ba5-d0405cb08392"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "events booking (:id)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"eventId\":\"qwe34iu123pi4u1p2ui34i\",\n  \"attendeeId\":\"3241h234jkhlk3hlkjh3\",\n  \"txHash\":\"1234123123423\",\n  \"bookedDay\":12348912,\n  \"bookedTimeSlot\":12348912,\n  \"bookedDuration\":12341234\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:{{PORT}}/events/booking/77da2f84-3097-4ae3-9912-e701b2116c57",
+          "host": ["localhost"],
+          "port": "{{PORT}}",
+          "path": ["events", "booking", "77da2f84-3097-4ae3-9912-e701b2116c57"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "events/results (query)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkhlcmVHb2VzVXNlcm5hbWUiLCJzdWIiOiI2NmRkMDQ0Yi1mZWYwLTRkODItOGFlYi0xNjcwZmZlMzAwNDgiLCJwcm9maWxlVHlwZSI6Im9yZ2FuaXplciIsImlhdCI6MTYzMjI1MzU0NCwiZXhwIjoxNjMyMjUzNTQ0fQ.sxLLV7HsCAQzZT-VnHFwDDsFg4H22yUIz_IU55r3Xzg",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:{{PORT}}/events/results?search_query=blockchain",
+          "host": ["localhost"],
+          "port": "{{PORT}}",
+          "path": ["events", "results"],
+          "query": [
+            {
+              "key": "search_query",
+              "value": "blockchain"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Google oAuth url",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:{{PORT}}/auth/google-oauth-url",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "{{PORT}}",
+          "path": ["auth", "google-oauth-url"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Google Calendar events (query)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkhlcmVHb2VzVXNlcm5hbWUiLCJzdWIiOiI2NmRkMDQ0Yi1mZWYwLTRkODItOGFlYi0xNjcwZmZlMzAwNDgiLCJwcm9maWxlVHlwZSI6Im9yZ2FuaXplciIsImlhdCI6MTYzMjI1MzU0NCwiZXhwIjoxNjMyMjUzNTQ0fQ.sxLLV7HsCAQzZT-VnHFwDDsFg4H22yUIz_IU55r3Xzg",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:{{PORT}}/auth/google-cal-events?fromTime=1630447200000&toTime=1638313200000",
+          "host": ["localhost"],
+          "port": "{{PORT}}",
+          "path": ["auth", "google-cal-events"],
+          "query": [
+            {
+              "key": "fromTime",
+              "value": "1630447200000"
+            },
+            {
+              "key": "toTime",
+              "value": "1638313200000"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Google oAuth valid",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkBCb2IxIiwic3ViIjoiZWQ5Y2U4MjktZGU0My00M2U0LThjYjgtNzZhYjU5MTJkOGYxIiwicHJvZmlsZVR5cGUiOiJvcmdhbml6ZXIiLCJpYXQiOjE2MzM1MzQwOTcsImV4cCI6MTYzMzUzNDA5N30.skIH3UYP_nz9tA5ctEYI7t6zxJXVT7Be9QLBUHWoyVM",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:{{PORT}}/auth/google-oauth-valid",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "{{PORT}}",
+          "path": ["auth", "google-oauth-valid"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkBwaW90ciIsInN1YiI6IjAzYzc2OTE2LWFlMTMtNDk2OC1iNjE0LTE5YjFhNWRhMDEzNiIsInByb2ZpbGVUeXBlIjoib3JnYW5pemVyIiwiaWF0IjoxNjM0OTI0Mjk5LCJleHAiOjE2MzQ5Mjc4OTl9.6yE0SpTIzqeTj2v-3fOzyYNHYZUzsenRYJSEyxVaqao",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "PORT",
+      "value": "8000"
+    }
+  ]
 }
