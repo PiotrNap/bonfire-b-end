@@ -46,9 +46,8 @@ export class EventsService {
       let event: EventEntity = new EventEntity();
       let user: OrganizerEntity = await this.organizerRepository.findOne({
         where: { id: organizer.id },
+        relations: ["events"],
       });
-
-      console.log(user);
 
       event.description = description;
       event.title = title;
@@ -62,12 +61,11 @@ export class EventsService {
       event.privateEvent = privateEvent;
       event.eventCardColor = eventCardColor;
       event.eventTitleColor = eventTitleColor;
-      event.organizer = user;
       event.organizerAlias = user.username;
+      user.events = [...user.events, event];
 
-      event = await this.eventsRepository.save(event);
+      await this.organizerRepository.save(user);
       console.log("New event added: ", event);
-      console.log(user);
 
       return event.id;
     } catch (e) {

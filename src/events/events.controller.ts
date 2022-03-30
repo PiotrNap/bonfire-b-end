@@ -84,7 +84,6 @@ export class EventsController {
   @Get(":uuid")
   public async getEventById(@Param("uuid", new ParseUUIDPipe()) uuid: string) {
     const event = await this.eventsService.findOne(uuid);
-    console.log(event);
 
     if (!event) {
       throw new NotFoundException();
