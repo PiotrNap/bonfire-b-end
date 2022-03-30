@@ -1,7 +1,7 @@
 import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { FindManyOptions, getRepository, Repository } from "typeorm";
-import { UserDto } from "./dto/user.dto";
+import { JWTUserDto, UserDto } from "./dto/user.dto";
 import { UserEntity } from "../model/user.entity";
 import { toUserDto } from "../common/mapper";
 import { CreateUserDto } from "./dto/user-create.dto";
@@ -12,6 +12,7 @@ import { OrganizerEntity } from "src/model/organizer.entity";
 import { CreateOrganizerDto } from "./dto/organizer.dto";
 import { AttendeeEntity } from "src/model/attendee.entity";
 import { BookingSlotEntity } from "src/model/bookingSlot.entity";
+import { FileUpload } from "src/common/lib/interfaces";
 
 @Injectable()
 export class UsersService {
@@ -117,7 +118,6 @@ export class UsersService {
       if (profileType === "organizer") {
         await this.organizerRepo.save(newUser);
       } else if (profileType === "attendee") {
-        console.log("here");
         await this.attendeeRepo.save(newUser);
       }
 
@@ -164,37 +164,39 @@ export class UsersService {
   async getCalendarEvents(
     id: string,
     profileType: string,
-    date
+    date: Date
   ): Promise<any | void> {
-    // TODO until the many-to-one fields selection on relationships with find() isn't resolved ...
     if (profileType === "organizer") {
-      let { bookedSlots, scheduledSlots }: OrganizerEntity =
+      let { bookedSlots, scheduledSlots, events }: OrganizerEntity =
         await this.organizerRepo.findOne(id, {
-          relations: ["bookedSlots", "scheduledSlots"],
+          relations: ["bookedSlots", "scheduledSlots", "events"],
         });
 
-      bookedSlots = bookedSlots.filter((slot) => {
-        const searchYear = new Date(date).getFullYear();
-        const searchMonth = new Date(date).getMonth();
+      const filterByDate = (entities: any[]) => {
+        return entities.filter((entity) => {
+          const searchYear = new Date(date).getFullYear();
+          const searchMonth = new Date(date).getMonth();
 
-        const searchFrom = new Date(searchYear, searchMonth);
-        const searchTo = new Date(searchYear, new Date(date).getMonth() + 1, 0);
-        console.log(searchFrom, searchTo);
+          const searchFrom = new Date(searchYear, searchMonth);
+          const searchTo = new Date(
+            searchYear,
+            new Date(date).getMonth() + 1,
+            0
+          );
+          if (entity.bookedDate)
+            return (
+              entity.bookedDate > searchFrom && entity.bookedDate < searchTo
+            );
 
-        return slot.bookedDate > searchFrom && slot.bookedDate < searchTo;
-      });
+          return entity.fromDate > searchFrom;
+        });
+      };
 
-      scheduledSlots = scheduledSlots.filter((slot) => {
-        const searchYear = new Date(date).getFullYear();
-        const searchMonth = new Date(date).getMonth();
-
-        const searchFrom = new Date(searchYear, searchMonth);
-        const searchTo = new Date(searchYear, new Date(date).getMonth() + 1, 0);
-
-        return slot.bookedDate > searchFrom && slot.bookedDate < searchTo;
-      });
-
-      return { bookedSlots, scheduledSlots };
+      return {
+        bookedSlots: filterByDate(bookedSlots),
+        scheduledSlots: filterByDate(scheduledSlots),
+        events: filterByDate(events),
+      };
     }
 
     if (profileType === "attendee") {
@@ -254,5 +256,17 @@ export class UsersService {
       console.error(e);
       throw new HttpException("Something went wrong", HttpStatus.BAD_REQUEST);
     }
+  }
+
+  async updateUserProfileImage(file: Express.Multer.File, user: JWTUserDto) {
+    const userEntity: UserEntity = await this.userRepo.findOne(user.id);
+
+    userEntity.profileImage = file.buffer;
+
+    return await this.userRepo.save(userEntity);
+  }
+
+  async getUserProfileImage(uuid: string) {
+    return await this.userRepo.findOne(uuid, { select: ["profileImage"] });
   }
 }
