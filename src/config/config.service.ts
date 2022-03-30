@@ -44,7 +44,7 @@ class ConfigService {
         migrationsDir: "src/migration",
       },
       ssl: this.isProduction(),
-      logging: true,
+      logging: !!parseInt(process.env.LOGGING),
     };
   }
 }
