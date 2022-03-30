@@ -10,7 +10,7 @@ type Month =
   | "September"
   | "October"
   | "November"
-  | "December";
+  | "December"
 export const months: Record<number, Month> = {
   0: "January",
   1: "February",
@@ -24,4 +24,4 @@ export const months: Record<number, Month> = {
   9: "October",
   10: "November",
   11: "December",
-};
+}

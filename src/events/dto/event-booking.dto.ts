@@ -1,18 +1,18 @@
-import { IsNumber, IsString, IsUUID } from "class-validator";
+import { IsNumber, IsString, IsUUID } from "class-validator"
 
 export class EventBookingDto {
   @IsUUID()
-  eventId: string;
+  eventId: string
 
   @IsUUID()
-  attendeeId: string;
+  attendeeId: string
 
   @IsString()
-  txHash?: string;
+  txHash?: string
 
   @IsNumber()
-  bookedDate: Date;
+  bookedDate: Date
 
   @IsNumber()
-  bookedDuration: number;
+  bookedDuration: number
 }

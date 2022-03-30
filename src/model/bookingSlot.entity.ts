@@ -1,54 +1,54 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { BaseEntity } from "./base.entity";
-import { EventEntity } from "./event.entity";
-import { OrganizerEntity } from "./organizer.entity";
-import { UserEntity } from "./user.entity";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm"
+import { BaseEntity } from "./base.entity"
+import { EventEntity } from "./event.entity"
+import { OrganizerEntity } from "./organizer.entity"
+import { UserEntity } from "./user.entity"
 
 @Entity()
 export class BookingSlotEntity extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
-  id: string;
+  id: string
 
   @Column("uuid")
-  organizerId: string;
+  organizerId: string
 
   @Column("varchar")
-  organizerAlias: string;
+  organizerAlias: string
 
   @Column("uuid")
-  attendeeId: string;
+  attendeeId: string
 
   @Column("varchar")
-  attendeeAlias: string;
+  attendeeAlias: string
 
   @Column("uuid")
-  eventId: string;
+  eventId: string
 
   @Column("varchar", { nullable: true })
-  eventTitle: string;
+  eventTitle: string
 
   @Column("varchar", { nullable: true })
-  eventDescription: string;
+  eventDescription: string
 
   @ManyToOne(() => EventEntity, (event: EventEntity) => event.bookedSlots)
-  event: EventEntity;
+  event: EventEntity
 
   @ManyToOne(() => UserEntity, (user: UserEntity) => user.id, { cascade: true })
-  attendee: UserEntity;
+  attendee: UserEntity
 
   @ManyToOne(() => OrganizerEntity, (user: OrganizerEntity) => user.id, {
     cascade: true,
   })
-  organizer: OrganizerEntity;
+  organizer: OrganizerEntity
 
   // duration in milliseconds
   @Column({ type: "int" })
-  bookedDuration: number;
+  bookedDuration: number
 
   @Column({ type: "timestamptz" })
-  bookedDate: Date;
+  bookedDate: Date
 
   // transaction hash (?)
   @Column({ type: "varchar", nullable: true })
-  txHash: string;
+  txHash: string
 }

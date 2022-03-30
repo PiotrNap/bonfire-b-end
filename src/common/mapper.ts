@@ -1,5 +1,5 @@
-import { UserEntity } from "../model/user.entity";
-import { UserDto } from "../users/dto/user.dto";
+import { UserEntity } from "../model/user.entity"
+import { UserDto } from "../users/dto/user.dto"
 
 export const toUserDto = (data: UserEntity): UserDto => {
   const {
@@ -9,7 +9,7 @@ export const toUserDto = (data: UserEntity): UserDto => {
     profileType,
     googleApiCredentials,
     lastUsedRefreshToken,
-  } = data;
+  } = data
 
   let userDto: UserDto = {
     id,
@@ -18,7 +18,7 @@ export const toUserDto = (data: UserEntity): UserDto => {
     profileType,
     googleApiCredentials,
     lastUsedRefreshToken,
-  };
+  }
 
-  return userDto;
-};
+  return userDto
+}

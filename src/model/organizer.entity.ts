@@ -1,7 +1,7 @@
-import { ChildEntity, Column, OneToMany } from "typeorm";
-import { EventEntity } from "./event.entity";
-import { BookingSlotEntity } from "./bookingSlot.entity";
-import { UserEntity } from "./user.entity";
+import { ChildEntity, Column, OneToMany } from "typeorm"
+import { EventEntity } from "./event.entity"
+import { BookingSlotEntity } from "./bookingSlot.entity"
+import { UserEntity } from "./user.entity"
 
 @ChildEntity()
 export class OrganizerEntity extends UserEntity {
@@ -9,22 +9,22 @@ export class OrganizerEntity extends UserEntity {
   // organizerId: string;
 
   @Column({ name: "bio", type: "varchar", length: 250 })
-  bio: string;
+  bio: string
 
   @Column({ name: "profession", type: "varchar", length: 100, nullable: true })
-  profession?: string | string[];
+  profession?: string | string[]
 
   @Column({ name: "jobTitle", type: "varchar", length: 100, nullable: true })
-  jobTitle?: string | string[];
+  jobTitle?: string | string[]
 
   @Column({ name: "skills", type: "varchar", length: 100, nullable: true })
-  skills?: string | string[];
+  skills?: string | string[]
 
   @Column({ name: "hourlyRate", type: "integer" })
-  hourlyRate: number | null;
+  hourlyRate: number | null
 
   @Column({ type: "simple-array", nullable: true })
-  tags?: string[] | null;
+  tags?: string[] | null
 
   /**
    * Organizer should be able to fetch events he is hosting,
@@ -35,23 +35,23 @@ export class OrganizerEntity extends UserEntity {
   @OneToMany(() => EventEntity, (event: EventEntity) => event.organizer, {
     cascade: true,
   })
-  events: EventEntity[];
+  events: EventEntity[]
 
   // scheduled events as an attendee
   @OneToMany(
     () => BookingSlotEntity,
     (bookingSlot: BookingSlotEntity) => bookingSlot.attendee
   )
-  bookedSlots: BookingSlotEntity[];
+  bookedSlots: BookingSlotEntity[]
 
   // scheduled events with other attendees (as an organizer)
   @OneToMany(
     () => BookingSlotEntity,
     (bookingSlot: BookingSlotEntity) => bookingSlot.organizer
   )
-  scheduledSlots: BookingSlotEntity[];
+  scheduledSlots: BookingSlotEntity[]
 }
 
 export function isOrganizerEntity(obj: any): obj is OrganizerEntity {
-  return obj.bio != "undefined" && obj.hourlyRate !== "undefined";
+  return obj.bio != "undefined" && obj.hourlyRate !== "undefined"
 }

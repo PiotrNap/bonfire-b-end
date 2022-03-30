@@ -1,6 +1,6 @@
-import { IsBoolean, IsObject, IsString, MaxLength } from "class-validator";
-import { EventEntity } from "../../model/event.entity";
-import { SelectedDays } from "../events.interface";
+import { IsBoolean, IsObject, IsString, MaxLength } from "class-validator"
+import { EventEntity } from "../../model/event.entity"
+import { SelectedDays } from "../events.interface"
 
 export class EventPaginationDto {
   constructor(event: EventEntity) {
@@ -14,46 +14,46 @@ export class EventPaginationDto {
       eventTitleColor,
       selectedDays,
       organizerId,
-    } = event;
-    console.log(event);
+    } = event
+    console.log(event)
 
-    this.id = id;
-    this.title = title;
-    this.description = description;
-    this.imageURI = imageURI;
-    this.privateEvent = privateEvent;
-    this.eventCardColor = eventCardColor;
-    this.eventTitleColor = eventTitleColor;
-    this.selectedDays = selectedDays;
-    this.organizerId = organizerId;
+    this.id = id
+    this.title = title
+    this.description = description
+    this.imageURI = imageURI
+    this.privateEvent = privateEvent
+    this.eventCardColor = eventCardColor
+    this.eventTitleColor = eventTitleColor
+    this.selectedDays = selectedDays
+    this.organizerId = organizerId
   }
 
   @IsString()
-  id: string;
+  id: string
 
   @IsString()
   @MaxLength(40, { message: "Title should be max 40 chars." })
-  title: string;
+  title: string
 
   @IsString()
   @MaxLength(150, { message: "Description should be max 150 chars." })
-  description: string;
+  description: string
 
   @IsString()
-  imageURI: string;
+  imageURI: string
 
   @IsBoolean()
-  privateEvent: boolean;
+  privateEvent: boolean
 
   @IsString()
-  eventCardColor: string;
+  eventCardColor: string
 
   @IsString()
-  eventTitleColor: string;
+  eventTitleColor: string
 
   @IsObject()
-  selectedDays: SelectedDays;
+  selectedDays: SelectedDays
 
   @IsString()
-  organizerId: string;
+  organizerId: string
 }

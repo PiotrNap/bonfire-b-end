@@ -1,4 +1,4 @@
-import { IsNotEmpty, MaxLength } from "class-validator";
+import { IsNotEmpty, MaxLength } from "class-validator"
 
 export class CreateUserDto {
   constructor(
@@ -8,27 +8,27 @@ export class CreateUserDto {
     id: string,
     profileType: string
   ) {
-    this.name = name;
-    this.username = username;
-    this.publicKey = publicKey;
-    this.id = id;
-    this.profileType = profileType;
+    this.name = name
+    this.username = username
+    this.publicKey = publicKey
+    this.id = id
+    this.profileType = profileType
   }
 
   @IsNotEmpty({ message: "Name cannot be empty" })
   @MaxLength(100)
-  name: string;
+  name: string
 
   @IsNotEmpty({ message: "Username cannot be empty" })
   @MaxLength(100)
-  username: string;
+  username: string
 
   @IsNotEmpty({ message: "Profile type cannot be empty" })
-  profileType: string;
+  profileType: string
 
   @IsNotEmpty({ message: "Public key cannot be empty" })
-  publicKey: string;
+  publicKey: string
 
   @IsNotEmpty({ message: "Id cannot be empty" })
-  id: string;
+  id: string
 }

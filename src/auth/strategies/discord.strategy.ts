@@ -1,10 +1,10 @@
-import { PassportStrategy } from "@nestjs/passport";
-import { Injectable } from "@nestjs/common";
-import { Strategy } from "passport-oauth2";
+import { PassportStrategy } from "@nestjs/passport"
+import { Injectable } from "@nestjs/common"
+import { Strategy } from "passport-oauth2"
 
 @Injectable()
 export class DiscordStrategy extends PassportStrategy(Strategy, "discord") {
-  http = require("http");
+  http = require("http")
   constructor() {
     super({
       authorizationURL: null,
@@ -13,7 +13,7 @@ export class DiscordStrategy extends PassportStrategy(Strategy, "discord") {
       clientSecret: null,
       callbackURL: null,
       scope: null,
-    });
+    })
   }
 
   async validate(accessToken: string): Promise<any> {
@@ -21,6 +21,6 @@ export class DiscordStrategy extends PassportStrategy(Strategy, "discord") {
       .get("https://discordapp.com/api/users/@me", {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
-      .toPromise();
+      .toPromise()
   }
 }

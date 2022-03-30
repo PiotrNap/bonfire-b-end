@@ -1,1 +1,1 @@
-declare module "cookie-parser";
+declare module "cookie-parser"

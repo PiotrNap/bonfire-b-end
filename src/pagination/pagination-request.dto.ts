@@ -1,4 +1,4 @@
 export interface PaginationRequestDto {
-  limit: number;
-  page: number;
+  limit: number
+  page: number
 }

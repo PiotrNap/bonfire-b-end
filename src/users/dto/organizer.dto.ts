@@ -1,6 +1,6 @@
-import { IsNotEmpty, MaxLength } from "class-validator";
-import { CreateUserDto } from "./user-create.dto";
-import { OrganizerEntity } from "../../model/organizer.entity";
+import { IsNotEmpty, MaxLength } from "class-validator"
+import { CreateUserDto } from "./user-create.dto"
+import { OrganizerEntity } from "../../model/organizer.entity"
 
 export class CreateOrganizerDto extends CreateUserDto {
   constructor(organizerDto: OrganizerEntity) {
@@ -15,21 +15,21 @@ export class CreateOrganizerDto extends CreateUserDto {
       jobTitle,
       hourlyRate,
       skills,
-    } = organizerDto;
-    super(name, username, publicKey, id, profileType);
-    this.bio = bio;
-    this.profession = profession;
-    this.jobTitle = jobTitle;
-    this.hourlyRate = hourlyRate;
-    this.skills = skills;
+    } = organizerDto
+    super(name, username, publicKey, id, profileType)
+    this.bio = bio
+    this.profession = profession
+    this.jobTitle = jobTitle
+    this.hourlyRate = hourlyRate
+    this.skills = skills
   }
   @IsNotEmpty({ message: "Bio cannot be empty" })
   @MaxLength(100)
-  bio: string;
+  bio: string
   @IsNotEmpty({ message: "Hourly rate cannot be empty" })
-  hourlyRate: number;
+  hourlyRate: number
   @MaxLength(100)
-  profession?: string | string[];
-  jobTitle?: string | string[];
-  skills?: string | string[];
+  profession?: string | string[]
+  jobTitle?: string | string[]
+  skills?: string | string[]
 }

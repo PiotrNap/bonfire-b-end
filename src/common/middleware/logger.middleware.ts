@@ -1,26 +1,26 @@
-import { Request, Response, NextFunction } from "express";
-import { v4 as uuidv4 } from "uuid";
-let eventID = uuidv4();
-import { unixTime, localTimeStamp } from "../utils";
+import { Request, Response, NextFunction } from "express"
+import { v4 as uuidv4 } from "uuid"
+let eventID = uuidv4()
+import { unixTime, localTimeStamp } from "../utils"
 
-let bob = localTimeStamp;
+let bob = localTimeStamp
 
 export async function logger(req: Request, res: Response, next: NextFunction) {
   console.log(
     "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-  );
-  console.log(eventID + ":" + localTimeStamp());
-  console.log("Requsted URL: ", req.originalUrl);
+  )
+  console.log(eventID + ":" + localTimeStamp())
+  console.log("Requsted URL: ", req.originalUrl)
   console.log(
     `New ${req.socket.remoteFamily} request from [${req.socket.remoteAddress}]:${req.socket.remotePort}`
-  );
+  )
 
   // done logging, call next
-  next();
+  next()
 
   // all done ;)
-  console.log(`${eventID}:${localTimeStamp()}`);
+  console.log(`${eventID}:${localTimeStamp()}`)
   console.log(
     "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-  );
+  )
 }

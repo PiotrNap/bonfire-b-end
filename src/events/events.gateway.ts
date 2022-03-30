@@ -2,8 +2,8 @@ import {
   WebSocketGateway,
   SubscribeMessage,
   MessageBody,
-} from "@nestjs/websockets";
-import { EventsService } from "./events.service";
+} from "@nestjs/websockets"
+import { EventsService } from "./events.service"
 // import { CreateEventDto } from "./dto/create-event.dto";
 // import { UpdateEventDto } from "./dto/update-event.dto";
 
@@ -18,12 +18,12 @@ export class EventsGateway {
 
   @SubscribeMessage("findAllEvents")
   findAll() {
-    return this.eventsService.findAll();
+    return this.eventsService.findAll()
   }
 
   @SubscribeMessage("findOneEvent")
   findOne(@MessageBody() id: string) {
-    return this.eventsService.findOne(id);
+    return this.eventsService.findOne(id)
   }
 
   // @SubscribeMessage("updateEvent")

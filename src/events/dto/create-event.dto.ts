@@ -8,50 +8,50 @@ import {
   IsOptional,
   IsString,
   MaxLength,
-} from "class-validator";
-import { EventUser } from "src/model/event.entity";
-import { EventAvailability, SelectedDays } from "../events.interface";
+} from "class-validator"
+import { EventUser } from "src/model/event.entity"
+import { EventAvailability, SelectedDays } from "../events.interface"
 
 export class CreateEventDto {
   @IsString()
   @MaxLength(40, { message: "Title should be max 40 chars." })
-  title: string;
+  title: string
 
   @IsString()
   @MaxLength(150, { message: "Description should be max 150 chars." })
-  description: string;
+  description: string
 
   @IsJSON()
-  availabilities: EventAvailability;
+  availabilities: EventAvailability
 
   @IsObject()
-  selectedDays: SelectedDays;
+  selectedDays: SelectedDays
 
   @IsDate()
-  fromDate: Date;
+  fromDate: Date
 
   @IsDate()
-  toDate: Date;
+  toDate: Date
 
   @IsOptional()
   @IsArray()
-  tags?: string[];
+  tags?: string[]
 
   @IsNumber()
-  hourlyRate: number;
+  hourlyRate: number
 
   @IsString()
-  imageURI: string;
+  imageURI: string
 
   @IsBoolean()
-  privateEvent: boolean;
+  privateEvent: boolean
 
   @IsString()
-  eventCardColor: string;
+  eventCardColor: string
 
   @IsString()
-  eventTitleColor: string;
+  eventTitleColor: string
 
   @IsObject()
-  organizer: EventUser;
+  organizer: EventUser
 }

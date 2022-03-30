@@ -1,17 +1,17 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { SuccessMessage } from "src/auth/interfaces/payload.interface";
-import { EventEntity } from "src/model/event.entity";
-import { BookingSlotEntity } from "src/model/bookingSlot.entity";
-import { PaginationRequestDto, PaginationResult } from "src/pagination";
-import { FindManyOptions, ILike, Repository } from "typeorm";
-import { CreateEventDto } from "./dto/create-event.dto";
-import { EventBookingDto } from "./dto/event-booking.dto";
-import { UpdateEventDto } from "./dto/update-event.dto";
-import { OrganizerEntity } from "src/model/organizer.entity";
-import { EventPaginationDto } from "./dto/event-pagination.dto";
-import { JWTUserDto } from "src/users/dto/user.dto";
-import { UserEntity } from "src/model/user.entity";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
+import { InjectRepository } from "@nestjs/typeorm"
+import { SuccessMessage } from "src/auth/interfaces/payload.interface"
+import { EventEntity } from "src/model/event.entity"
+import { BookingSlotEntity } from "src/model/bookingSlot.entity"
+import { PaginationRequestDto, PaginationResult } from "src/pagination"
+import { FindManyOptions, ILike, Repository } from "typeorm"
+import { CreateEventDto } from "./dto/create-event.dto"
+import { EventBookingDto } from "./dto/event-booking.dto"
+import { UpdateEventDto } from "./dto/update-event.dto"
+import { OrganizerEntity } from "src/model/organizer.entity"
+import { EventPaginationDto } from "./dto/event-pagination.dto"
+import { JWTUserDto } from "src/users/dto/user.dto"
+import { UserEntity } from "src/model/user.entity"
 
 @Injectable()
 export class EventsService {
@@ -41,46 +41,46 @@ export class EventsService {
       eventCardColor,
       eventTitleColor,
       organizer,
-    } = createEventDto;
+    } = createEventDto
     try {
-      let event: EventEntity = new EventEntity();
+      let event: EventEntity = new EventEntity()
       let user: OrganizerEntity = await this.organizerRepository.findOne({
         where: { id: organizer.id },
         relations: ["events"],
-      });
+      })
 
-      event.description = description;
-      event.title = title;
-      event.availabilities = availabilities as any;
-      event.selectedDays = selectedDays;
-      event.tags = tags;
-      event.fromDate = fromDate;
-      event.toDate = toDate;
-      event.hourlyRate = hourlyRate;
-      event.imageURI = imageURI;
-      event.privateEvent = privateEvent;
-      event.eventCardColor = eventCardColor;
-      event.eventTitleColor = eventTitleColor;
-      event.organizerAlias = user.username;
-      user.events = [...user.events, event];
+      event.description = description
+      event.title = title
+      event.availabilities = availabilities as any
+      event.selectedDays = selectedDays
+      event.tags = tags
+      event.fromDate = fromDate
+      event.toDate = toDate
+      event.hourlyRate = hourlyRate
+      event.imageURI = imageURI
+      event.privateEvent = privateEvent
+      event.eventCardColor = eventCardColor
+      event.eventTitleColor = eventTitleColor
+      event.organizerAlias = user.username
+      user.events = [...user.events, event]
 
-      await this.organizerRepository.save(user);
-      console.log("New event added: ", event);
+      await this.organizerRepository.save(user)
+      console.log("New event added: ", event)
 
-      return event.id;
+      return event.id
     } catch (e) {
-      console.error(e);
+      console.error(e)
       throw new HttpException(
         "Something went wrong while adding new event.",
         HttpStatus.BAD_REQUEST
-      );
+      )
     }
   }
 
   async findAll(): Promise<EventEntity[] | null> {
     return this.eventsRepository.find({
       relations: ["bookedSlots", "organizer"],
-    });
+    })
   }
 
   async findAllWithPagination(
@@ -88,11 +88,11 @@ export class EventsService {
     options?: FindManyOptions<EventEntity>
   ): Promise<PaginationResult<EventPaginationDto> | void> {
     try {
-      let { limit, page } = paginationRequestDto;
-      page = Math.abs(Number(page));
-      limit = Math.abs(Number(limit));
-      if (limit < 10) limit = 10;
-      let skip = (page - 1) * limit;
+      let { limit, page } = paginationRequestDto
+      page = Math.abs(Number(page))
+      limit = Math.abs(Number(limit))
+      if (limit < 10) limit = 10
+      let skip = (page - 1) * limit
 
       const results = await this.eventsRepository.findAndCount({
         take: limit,
@@ -119,19 +119,19 @@ export class EventsService {
         // default cache time = 1s
         cache: true,
         ...options,
-      });
+      })
 
-      if (results == null) throw new Error();
+      if (results == null) throw new Error()
 
       return {
         result: results[0],
         count: results[1],
         limit,
         page,
-      };
+      }
     } catch (e) {
-      console.error(e);
-      throw new HttpException("Something went wrong", HttpStatus.BAD_REQUEST);
+      console.error(e)
+      throw new HttpException("Something went wrong", HttpStatus.BAD_REQUEST)
     }
   }
 
@@ -145,7 +145,7 @@ export class EventsService {
         "selectedDays",
         "organizerAlias",
       ],
-    });
+    })
   }
 
   async update(
@@ -156,34 +156,34 @@ export class EventsService {
     try {
       let oldEvent = await this.eventsRepository.findOne(id, {
         relations: ["organizer"],
-      });
-      if (oldEvent === undefined) this.noEventError();
-      if (oldEvent.organizerId !== userId) this.notAllowedError();
+      })
+      if (oldEvent === undefined) this.noEventError()
+      if (oldEvent.organizerId !== userId) this.notAllowedError()
 
-      let newEvent = Object.assign({}, oldEvent, updateEventDto);
-      await this.eventsRepository.save(newEvent);
+      let newEvent = Object.assign({}, oldEvent, updateEventDto)
+      await this.eventsRepository.save(newEvent)
 
       return {
         message: `Event with id ${id}, updated successfully.`,
         status: 201,
-      };
+      }
     } catch (e) {
-      if (e.response && e.status) throw new HttpException(e.response, e.status);
+      if (e.response && e.status) throw new HttpException(e.response, e.status)
     }
   }
 
   async remove(id: string, userId: string): Promise<SuccessMessage | void> {
     try {
-      let event = await this.eventsRepository.findOne({ where: { id } });
+      let event = await this.eventsRepository.findOne({ where: { id } })
 
-      await this.eventsRepository.remove(event);
+      await this.eventsRepository.remove(event)
 
       return {
         message: `Event with id ${id}, removed successfully.`,
         status: 201,
-      };
+      }
     } catch (e) {
-      if (e.response && e.status) throw new HttpException(e.response, e.status);
+      if (e.response && e.status) throw new HttpException(e.response, e.status)
     }
   }
 
@@ -191,24 +191,24 @@ export class EventsService {
     eventBookingId: string,
     user: UserEntity
   ): Promise<any | void> {
-    return await this.bookingSlotRepository.softDelete(eventBookingId);
+    return await this.bookingSlotRepository.softDelete(eventBookingId)
   }
 
   async bookEvent(
     user: JWTUserDto,
     eventBookingDto: EventBookingDto
   ): Promise<string | void> {
-    const { txHash, bookedDuration, bookedDate, eventId } = eventBookingDto;
+    const { txHash, bookedDuration, bookedDate, eventId } = eventBookingDto
 
     try {
       const event = await this.eventsRepository.findOne({
         where: { id: eventId },
         relations: ["organizer", "bookedSlots", "bookedSlots.attendee"],
-      });
+      })
 
-      if (event == undefined) this.noEventError();
+      if (event == undefined) this.noEventError()
 
-      let hasExistingSlotInTimeFrame: boolean = false;
+      let hasExistingSlotInTimeFrame: boolean = false
 
       // prevent making new bookings at already scheduled time frame
       event.bookedSlots.forEach((slot) => {
@@ -217,41 +217,41 @@ export class EventsService {
             slot.bookedDate === eventBookingDto.bookedDate &&
             slot.bookedDuration >= eventBookingDto.bookedDuration
           )
-            hasExistingSlotInTimeFrame = true;
+            hasExistingSlotInTimeFrame = true
         }
-      });
+      })
 
       if (hasExistingSlotInTimeFrame)
         throw new HttpException(
           "Booking slot with given time frame already exists",
           HttpStatus.BAD_REQUEST
-        );
+        )
 
-      let bookingSlot = new BookingSlotEntity();
-      console.log(user);
+      let bookingSlot = new BookingSlotEntity()
+      console.log(user)
 
-      bookingSlot.event = event;
-      bookingSlot.eventId = event.id;
-      bookingSlot.eventTitle = event.title;
-      bookingSlot.eventDescription = event.description;
-      bookingSlot.attendeeId = user.id;
-      bookingSlot.attendeeAlias = user.username;
-      bookingSlot.organizerAlias = event.organizer.username;
-      bookingSlot.organizerId = event.organizer.id;
-      bookingSlot.bookedDuration = bookedDuration;
-      bookingSlot.bookedDate = bookedDate;
-      bookingSlot.txHash = txHash;
+      bookingSlot.event = event
+      bookingSlot.eventId = event.id
+      bookingSlot.eventTitle = event.title
+      bookingSlot.eventDescription = event.description
+      bookingSlot.attendeeId = user.id
+      bookingSlot.attendeeAlias = user.username
+      bookingSlot.organizerAlias = event.organizer.username
+      bookingSlot.organizerId = event.organizer.id
+      bookingSlot.bookedDuration = bookedDuration
+      bookingSlot.bookedDate = bookedDate
+      bookingSlot.txHash = txHash
 
-      bookingSlot = await this.bookingSlotRepository.save(bookingSlot);
-      console.log(bookingSlot);
+      bookingSlot = await this.bookingSlotRepository.save(bookingSlot)
+      console.log(bookingSlot)
 
-      return bookingSlot.id;
+      return bookingSlot.id
     } catch (e) {
-      console.error(e);
+      console.error(e)
       throw new HttpException(
         `Something went wrong while booking event with id ${eventId}`,
         HttpStatus.BAD_REQUEST
-      );
+      )
     }
   }
 
@@ -265,17 +265,17 @@ export class EventsService {
           description: ILike(`%${searchQuery}%`),
         },
       ],
-    });
+    })
   }
 
   private noEventError() {
-    throw new HttpException("Event does not exists.", HttpStatus.NOT_FOUND);
+    throw new HttpException("Event does not exists.", HttpStatus.NOT_FOUND)
   }
 
   private notAllowedError() {
-    throw new HttpException("Permission denied.", HttpStatus.FORBIDDEN);
+    throw new HttpException("Permission denied.", HttpStatus.FORBIDDEN)
   }
 }
 function BookingRepository(BookingRepository: any) {
-  throw new Error("Function not implemented.");
+  throw new Error("Function not implemented.")
 }

@@ -1,8 +1,7 @@
-import { Injectable } from "@nestjs/common";
-import { HttpService } from "@nestjs/axios";
-import { Observable } from "rxjs";
-import { AxiosResponse } from "axios";
- 
+import { Injectable } from "@nestjs/common"
+import { HttpService } from "@nestjs/axios"
+import { Observable } from "rxjs"
+import { AxiosResponse } from "axios"
 
 @Injectable()
 export class BTCService {
@@ -13,13 +12,13 @@ export class BTCService {
     pass: "test",
     host: "127.0.0.1",
     port: "8332",
-  };
-  getBlockCount(): Observable<AxiosResponse<any>> {
-    return this.httpService.post("http://127.0.0.1:8332",this.data);
   }
-  requestBlockCount() {};
+  getBlockCount(): Observable<AxiosResponse<any>> {
+    return this.httpService.post("http://127.0.0.1:8332", this.data)
+  }
+  requestBlockCount() {}
   getBestBlockHash() {
-    return "blockhash";
+    return "blockhash"
   }
   getConnectionCount() {}
   getDifficulty() {}

@@ -1,31 +1,31 @@
-import { TypeOrmModuleOptions } from "@nestjs/typeorm";
-import * as dotenv from "dotenv";
-dotenv.config();
+import { TypeOrmModuleOptions } from "@nestjs/typeorm"
+import * as dotenv from "dotenv"
+dotenv.config()
 
 class ConfigService {
   constructor(private env: { [k: string]: string | undefined }) {}
 
   private getValue(key: string, throwOnMissing = true): string {
-    const value = this.env[key];
+    const value = this.env[key]
     if (!value && throwOnMissing) {
-      throw new Error(`config error - missing env.${key}`);
+      throw new Error(`config error - missing env.${key}`)
     }
 
-    return value;
+    return value
   }
 
   public ensureValues(keys: string[]) {
-    keys.forEach((k) => this.getValue(k, true));
-    return this;
+    keys.forEach((k) => this.getValue(k, true))
+    return this
   }
 
   public getPort() {
-    return this.getValue("PORT", true);
+    return this.getValue("PORT", true)
   }
 
   public isProduction() {
-    const mode = this.getValue("MODE", false);
-    return mode != "DEV";
+    const mode = this.getValue("MODE", false)
+    return mode != "DEV"
   }
   public getTypeOrmConfig(): TypeOrmModuleOptions {
     return {
@@ -45,7 +45,7 @@ class ConfigService {
       },
       ssl: this.isProduction(),
       logging: !!parseInt(process.env.LOGGING),
-    };
+    }
   }
 }
 
@@ -55,6 +55,6 @@ const configService = new ConfigService(process.env).ensureValues([
   "POSTGRES_USER",
   "POSTGRES_PASSWORD",
   "POSTGRES_DATABASE",
-]);
+])
 
-export { configService };
+export { configService }
