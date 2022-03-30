@@ -13,15 +13,14 @@ import { ChallengeResponseDTO } from "src/users/dto/challenge-response.dto";
 import { JwtPayload } from "./interfaces/payload.interface";
 import { JwtService } from "@nestjs/jwt";
 import { google } from "googleapis";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync} from "fs";
 import { UserEntity } from "src/model/user.entity";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { generateSecretState } from "./auth.helpers";
 import { validateSecretState } from "./auth.helpers";
 import { Buffer } from "buffer";
-import * as qs from "qs";
-import { Credentials } from "./interfaces/google.interface";
+import { buildRedirectURL } from "src/common/utils";
 
 @Injectable()
 export class AuthService {
@@ -161,6 +160,8 @@ export class AuthService {
       const auth = this.generateOAuthClient();
       const credentials = await auth.getToken(code);
 
+      console.log(credentials);
+
       if (credentials.tokens) {
         let missingScope = false;
         let scopes = credentials.tokens.scope.split(" ");
@@ -184,41 +185,55 @@ export class AuthService {
   }
 
   public async handleGoogleOauthCallback(query: any): Promise<any> {
-    if (query.error != null && query.error === "access_denied")
-      return this.buildRedirectURL({
-        success: false,
-        message: "access denied",
-      });
-
     const { code, state } = query;
-
     const [hash, id] = state.split("_");
     const user = await this.userRepo.findOneOrFail(id);
+    const path = user.deepLinkingCallbackUri;
     const validState = validateSecretState(hash, id, user.verificationNonce);
-
-    if (!validState)
-      return this.buildRedirectURL({
-        success: false,
-        message: "state validation failed",
-      });
-
     const accessToken = await this.getUserAccessToken(code, user);
 
-    if (!accessToken)
-      return this.buildRedirectURL({
-        success: false,
-        message: "unable to obtain access",
-      });
+    user.verificationNonce = null;
+    user.deepLinkingCallbackUri = null;
+    await this.userRepo.save(user);
 
-    return this.buildRedirectURL({ success: true });
+    if (query.error != null && query.error === "access_denied")
+      return buildRedirectURL(
+        {
+          success: false,
+          message: "access denied",
+        },
+        path
+      );
+
+    if (!validState)
+      return buildRedirectURL(
+        {
+          success: false,
+          message: "state validation failed",
+        },
+        path
+      );
+
+    if (!accessToken)
+      return buildRedirectURL(
+        {
+          success: false,
+          message: "unable to obtain access",
+        },
+        path
+      );
+
+    return buildRedirectURL({ success: true }, path);
   }
 
   /**
-   * @description Generate url to sign-in user on mobile browser. After successful
-   * authentication it should redirect the google response to our server.
+   * @description Generates url to sign-in by user on mobile browser.
+   * After successful authentication it should redirect the google's
+   * response to our server.
    */
   public async generateAuthUrl(
     user: UserEntity,
+    callbackUri: string,
     scopes?: string
   ): Promise<string> {
     const { id } = user;
@@ -238,6 +253,7 @@ export class AuthService {
     });
 
     user.verificationNonce = nonce;
+    user.deepLinkingCallbackUri = callbackUri;
     await this.userRepo.save(user);
 
     return url;
@@ -248,6 +264,8 @@ export class AuthService {
       user.googleApiCredentials !== "undefined" &&
       user.googleApiCredentials !== null
     ) {
+      const { expiry_date } = JSON.parse(user.googleApiCredentials);
+
       if (user.lastUsedRefreshToken !== null) {
         const current = new Date();
         const sixMonthsFrom = new Date(user.lastUsedRefreshToken);
@@ -257,16 +275,5 @@ export class AuthService {
     }
 
     return false;
-  }
-
-  private buildRedirectURL(
-    queryObj: { [key: string]: any },
-    path?: string
-  ): string {
-    const queryString = qs.stringify(queryObj);
-    const base = process.env.MOBILE_APP_SCHEMA;
-
-    if (!path) return base + `?${queryString}`;
-    return base + path + queryString;
   }
 }

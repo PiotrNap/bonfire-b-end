@@ -8,13 +8,15 @@ import {
   Res,
   BadRequestException,
   UnprocessableEntityException,
-} from "@nestjs/common";
-import { AuthService } from "./auth.service";
-import { LoginStatus } from "./interfaces/login-status.interface";
-import { ChallengeDTO } from "src/users/dto/challenge.dto";
-import { ChallengeResponseDTO } from "src/users/dto/challenge-response.dto";
-import { Public } from "src/common/decorators/public.decorator";
-import { roles, Roles } from "./roles/roles.decorator";
+  UnauthorizedException,
+} from "@nestjs/common"
+import { AuthService } from "./auth.service"
+import { LoginStatus } from "./interfaces/login-status.interface"
+import { ChallengeDTO } from "src/users/dto/challenge.dto"
+import { ChallengeResponseDTO } from "src/users/dto/challenge-response.dto"
+import { Public } from "src/common/decorators/public.decorator"
+import { roles, Roles } from "./roles/roles.decorator"
+import { DEEP_LINKING_PATHS } from "src/common/clientAppLinking"
 
 @Controller("auth")
 export class AuthController {
@@ -34,8 +36,8 @@ export class AuthController {
   @Public()
   @Post("challenge")
   public async getChallangeByPayload(@Body() body: any): Promise<ChallengeDTO> {
-    const { credential } = body;
-    return await this.authService.createChallenge(credential);
+    const { credential } = body
+    return await this.authService.createChallenge(credential)
   }
 
   /**
@@ -45,50 +47,59 @@ export class AuthController {
   @Public()
   @Post("login")
   public async login(@Body() body: ChallengeResponseDTO): Promise<LoginStatus> {
-    return await this.authService.login(body);
+    return await this.authService.login(body)
   }
 
   @Public()
   @Get("google-oauth-callback")
   public async oauthGoogleCallback(@Res() res: any, @Query() query: any) {
-    const result = await this.authService.handleGoogleOauthCallback(query);
+    const result = await this.authService.handleGoogleOauthCallback(query)
 
     if (!result) {
-      throw new UnprocessableEntityException();
+      throw new UnprocessableEntityException()
     }
-    return res.redirect(result);
+    return res.redirect(result)
   }
 
   @Get("google-oauth-url")
   public async getGoogleAuthUrl(
     @Req() req: any,
-    @Query() query: { scopes: string }
+    @Query() query: { scopes: string; uri: string; path: DEEP_LINKING_PATHS }
   ): Promise<any> {
-    const { scopes } = query;
-    const { user } = req;
-    const authUrl = await this.authService.generateAuthUrl(user, scopes);
+    console.log(query)
+    const { scopes, path, uri } = query
+    const { user } = req
+
+    // we don't allow attendees to be redirected to events creation screen
+    if (
+      user.profileType === "attendee" &&
+      path === DEEP_LINKING_PATHS["Available Days Selection"]
+    )
+      throw new UnauthorizedException()
+
+    const authUrl = await this.authService.generateAuthUrl(user, uri, scopes)
 
     if (authUrl) {
-      return { authUrl };
+      return { authUrl }
     } else {
-      throw new BadRequestException();
+      throw new BadRequestException()
     }
   }
 
   @Get("google-oauth-valid")
   public async checkForValidGoogleOauth(@Req() req: any) {
-    const { user } = req;
-    return await this.authService.checkValidOauth(user);
+    const { user } = req
+    return await this.authService.checkValidOauth(user)
   }
 
-  @Get("google-calendar-events")
+  @Get("google-cal-events")
   @Roles(roles.organizer)
   public async getEvents(@Query() query: any) {
-    const events = await this.authService.getUserCalendarEvents(query);
+    const events = await this.authService.getUserCalendarEvents(query)
 
-    if (!events) throw new BadRequestException();
+    if (!events) throw new BadRequestException()
 
-    return events;
+    return events
   }
 
   // @Get("whoami")
