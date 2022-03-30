@@ -1,8 +1,8 @@
 import { getConnectionOptions, getConnection } from "typeorm";
 import { Buffer } from "buffer";
-import { months } from "./lib/types";
 import * as bcrypt from "bcrypt";
 import * as crypto from "crypto";
+import * as qs from "qs";
 
 export class Random {
   private readonly CHARSET =
@@ -46,7 +46,7 @@ export const euro = Buffer.from([0xe2, 0x82, 0xac]);
 
 export const unixTime = Math.floor(Date.now());
 export function localTimeStamp() {
-  return new Date(Math.floor(Date.now()));
+  return new Date(Date.now());
 }
 export const isoTime = new Date(Math.floor(Date.now())).toISOString();
 export const expiry = new Date(Math.floor(Date.now()) + 1000 * 3600);
@@ -150,4 +150,12 @@ export const base64ToUTF8 = (val: string) => {
 
 export const utf8ToBase64 = (val: string) => {
   return Buffer.from(val, "utf-8").toString("base64");
+};
+
+export const buildRedirectURL = (
+  queryObj: { [key: string]: any },
+  uri: string
+): string => {
+  const queryString = qs.stringify(queryObj);
+  return uri + `?${queryString}`;
 };
