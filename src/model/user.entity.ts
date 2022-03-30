@@ -1,3 +1,4 @@
+import { DEEP_LINKING_PATHS } from "src/common/clientAppLinking";
 import { Entity, Column, TableInheritance } from "typeorm";
 import { BaseEntity } from "./base.entity";
 
@@ -5,10 +6,10 @@ import { BaseEntity } from "./base.entity";
 @TableInheritance({ column: { type: "varchar", name: "userType" } })
 export class UserEntity extends BaseEntity {
   @Column({ type: "varchar", length: 100, nullable: true })
-  name?: string; // real name
+  name: string; // real name
 
-  @Column({ type: "varchar", length: 65535, nullable: true })
-  profileImage?: string; //base encoded png 512x512
+  @Column({ type: "bytea", nullable: true })
+  profileImage: Buffer; //base encoded image 512x512
 
   // @Column({ type: "varchar", length: 65535 })
   // didDocument?: string; // reference to did-document
@@ -49,7 +50,10 @@ export class UserEntity extends BaseEntity {
   verificationNonce?: string;
 
   @Column({ name: "profileType", type: "varchar", nullable: true })
-  profileType: string;
+  profileType: "organizer" | "attendee";
+
+  @Column({ name: "deepLinkingCallbackUri", type: "varchar", nullable: true })
+  deepLinkingCallbackUri: string;
 
   // @Column({ type: 'varchar', length: 65535 })
   // profileSettings?: string; // profile settings
