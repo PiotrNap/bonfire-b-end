@@ -5,12 +5,11 @@ clear
 # These variables can be anything as they only apply to the docker container; pw and db should match your .env
 CONTAINER="bonfire_db"
 PW="c0n3xd@ta!"
-DB_DEV="bonfire_db_dev"
-DB_PROD="bonfire_db_prod"
+DB="bonfire_db"
 DBPORT="5436"
-DBVOLUME=$(pwd)/bonfireDb/dev
+DBVOLUME=$(pwd)/db
 
-mkdir -p $(pwd)/devDb
+mkdir -p $(pwd)/db
 
 [ -z "${RESET:-}" ] || {
   echo "echo Recreating docker container [$CONTAINER]"
@@ -41,7 +40,7 @@ until echo "\l" | docker exec -i $CONTAINER psql -U postgres ; do {
 } done
 sleep 1
 (
-  echo "CREATE DATABASE $DB_DEV ENCODING 'UTF-8';" 
-  echo "CREATE DATABASE $DB_PROD ENCODING 'UTF-8';" 
+  echo "CREATE DATABASE $DB ENCODING 'UTF-8';" 
+  # echo "CREATE DATABASE $DB_PROD ENCODING 'UTF-8';" 
   echo "CREATE DATABASE $MIGRATION_DB ENCODING 'UTF-8';" 
 ) | docker exec -i $CONTAINER psql -U postgres
