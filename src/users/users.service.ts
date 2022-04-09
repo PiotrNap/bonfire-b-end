@@ -167,13 +167,10 @@ export class UsersService {
     date: Date
   ): Promise<any | void> {
     if (profileType === "organizer") {
-      let {
-        bookedSlots,
-        scheduledSlots,
-        events,
-      }: OrganizerEntity = await this.organizerRepo.findOne(id, {
-        relations: ["bookedSlots", "scheduledSlots", "events"],
-      })
+      let { bookedSlots, scheduledSlots, events }: OrganizerEntity =
+        await this.organizerRepo.findOne(id, {
+          relations: ["bookedSlots", "scheduledSlots", "events"],
+        })
 
       const filterByDate = (entities: any[]) => {
         return entities.filter((entity) => {
@@ -270,6 +267,10 @@ export class UsersService {
   }
 
   async getUserProfileImage(uuid: string) {
-    return await this.userRepo.findOne(uuid, { select: ["profileImage"] })
+    const user = await this.userRepo.findOne(uuid, { select: ["profileImage"] })
+
+   if (user?.profileImage!) return false
+
+    return user.profileImage
   }
 }

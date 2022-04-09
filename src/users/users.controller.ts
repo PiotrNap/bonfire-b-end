@@ -121,10 +121,10 @@ export class UsersController {
   @Public()
   @Get("files/profile-image/:uuid")
   public async getUserProfileImage(@Param("uuid", ParseUUIDPipe) uuid: string) {
-    const { profileImage } = await this.usersService.getUserProfileImage(uuid)
+    const profileImage = await this.usersService.getUserProfileImage(uuid)
     console.log("-------------- PROFILE IMAGE ", profileImage)
 
-    if (profileImage) throw new NotFoundException()
+    if (!profileImage) throw new NotFoundException()
 
     return profileImage
   }
