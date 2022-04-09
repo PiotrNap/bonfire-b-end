@@ -1,4 +1,3 @@
-import { DEEP_LINKING_PATHS } from "src/common/clientAppLinking"
 import { Entity, Column, TableInheritance } from "typeorm"
 import { BaseEntity } from "./base.entity"
 

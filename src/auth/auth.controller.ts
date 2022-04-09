@@ -41,7 +41,7 @@ export class AuthController {
   }
 
   /**
-   * User wants obtain a valid JWT by providing us a challenge with
+   * User wants to obtain a valid JWT by providing us a challenge with
    * his own signature.
    */
   @Public()
