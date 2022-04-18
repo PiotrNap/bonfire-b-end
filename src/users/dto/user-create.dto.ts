@@ -6,13 +6,15 @@ export class CreateUserDto {
     username: string,
     publicKey: string,
     id: string,
-    profileType: string
+    profileType: string,
+    profileImage?: Buffer
   ) {
     this.name = name
     this.username = username
     this.publicKey = publicKey
     this.id = id
     this.profileType = profileType
+    this.profileImage = profileImage
   }
 
   @IsNotEmpty({ message: "Name cannot be empty" })
@@ -25,6 +27,8 @@ export class CreateUserDto {
 
   @IsNotEmpty({ message: "Profile type cannot be empty" })
   profileType: string
+
+  profileImage?: Buffer
 
   @IsNotEmpty({ message: "Public key cannot be empty" })
   publicKey: string

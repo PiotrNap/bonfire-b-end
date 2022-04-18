@@ -1,8 +1,8 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
-  HttpStatus,
   NotFoundException,
   Param,
   ParseUUIDPipe,
@@ -18,7 +18,7 @@ import {
 import { Express } from "express"
 import { UsersService } from "./users.service"
 import { CreateUserDto } from "../users/dto/user-create.dto"
-import { JWTUserDto, UserDto } from "./dto/user.dto"
+import { UserDto } from "./dto/user.dto"
 import { UpdateUserDto } from "./dto/user-update.dto"
 import { Public } from "src/common/decorators/public.decorator"
 import { PaginationRequestDto, PaginationResult } from "src/pagination"
@@ -30,6 +30,8 @@ import { FileInterceptor } from "@nestjs/platform-express"
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  // TODO This SHOULD NOT be public lol
+  @Public()
   @Get()
   async getUsers(
     @Query() query: PaginationRequestDto,
@@ -111,22 +113,33 @@ export class UsersController {
     @Req() req: any,
     @UploadedFile() file: Express.Multer.File
   ) {
-    const user = await this.usersService.updateUserProfileImage(file, req.user)
+    const img = await this.usersService.updateUserProfileImage(file, req.user)
 
-    if (!user) throw new UnprocessableEntityException()
+    if (!img) throw new UnprocessableEntityException()
 
-    return HttpStatus.OK
+    return img
   }
 
   @Public()
   @Get("files/profile-image/:uuid")
   public async getUserProfileImage(@Param("uuid", ParseUUIDPipe) uuid: string) {
     const profileImage = await this.usersService.getUserProfileImage(uuid)
-    console.log("-------------- PROFILE IMAGE ", profileImage)
-
     if (!profileImage) throw new NotFoundException()
 
     return profileImage
+  }
+
+  @Delete("files/profile-image/:uuid")
+  public async removeUserProfileImage(
+    @Param("uuid", ParseUUIDPipe) uuid: string,
+    @Req() req: any
+  ) {
+    const { user } = req
+    const success = this.usersService.removeProfileImage(uuid, user)
+
+    if (!success) throw new NotFoundException()
+
+    return success
   }
 
   @Get(":uuid")
@@ -137,9 +150,24 @@ export class UsersController {
   @Put(":uuid")
   public async updateUser(
     @Body() body: UpdateUserDto,
-    @Param("uuid", ParseUUIDPipe) uuid: string
+    @Param("uuid", ParseUUIDPipe) uuid: string,
+    @Req() req: any
   ): Promise<any> {
-    return await this.usersService.updateUser(body, uuid)
+    const { user } = req
+    return await this.usersService.updateUser(body, uuid, user.profileType)
+  }
+
+  //TODO needs to be tested
+  // Puts user record as in-active
+  @Delete(":uuid")
+  public deleteUser(
+    @Param("uuid", ParseUUIDPipe) uuid: string,
+    @Req() req: any
+  ) {
+    const { user } = req
+    if (user.id !== uuid) throw new UnauthorizedException()
+
+    return this.usersService.deleteUser(uuid)
   }
 
   @Get(":uuid/events")
@@ -161,5 +189,18 @@ export class UsersController {
     if (!events) throw new UnprocessableEntityException()
 
     return events
+  }
+
+  @Get(":uuid/booking")
+  public async getUserBookingSlots(
+    @Param("uuid", ParseUUIDPipe) uuid: string,
+    @Req() req: any
+  ) {
+    const { user } = req
+    const slots = await this.usersService.getUserBookingSlots(uuid, user.id)
+
+    if (!slots) throw new UnprocessableEntityException()
+
+    return slots
   }
 }

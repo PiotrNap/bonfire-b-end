@@ -1,6 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
-import { FindManyOptions, getRepository, Repository } from "typeorm"
+import { FindManyOptions, Repository } from "typeorm"
 import { JWTUserDto, UserDto } from "./dto/user.dto"
 import { UserEntity } from "../model/user.entity"
 import { toUserDto } from "../common/mapper"
@@ -11,8 +11,6 @@ import { PaginationRequestDto, PaginationResult } from "src/pagination"
 import { OrganizerEntity } from "src/model/organizer.entity"
 import { CreateOrganizerDto } from "./dto/organizer.dto"
 import { AttendeeEntity } from "src/model/attendee.entity"
-import { BookingSlotEntity } from "src/model/bookingSlot.entity"
-import { FileUpload } from "src/common/lib/interfaces"
 
 @Injectable()
 export class UsersService {
@@ -33,26 +31,36 @@ export class UsersService {
     return user
   }
 
-  async updateUser(values: any, id: string): Promise<any> {
+  async updateUser(
+    values: any,
+    id: string,
+    profileType: UserEntity["profileType"]
+  ): Promise<any> {
+    const organizer = profileType === "organizer"
+    const attendee = profileType === "attendee"
+    let user: any
+
     try {
-      let user = await this.userRepo.findOne({ where: { id } })
+      if (organizer) user = await this.organizerRepo.findOne(id)
+      if (attendee) user = await this.userRepo.findOne(id)
+
       if (typeof values === "object")
         for (let key in values) {
           user[`${key}`] = values[key]
         }
-      await this.userRepo.save(user)
 
-      const newUser = await this.userRepo.findOne({ where: { id } })
+      if (organizer) await this.organizerRepo.save(user)
+      if (attendee) await this.userRepo.save(user)
 
       return {
         status: 201,
         message: "User record updated successfully.",
-        record: newUser,
+        record: toUserDto(user),
       }
     } catch (e) {
       console.error(e)
       throw new HttpException(
-        "Could not update the record",
+        "Could not update the record.",
         HttpStatus.BAD_REQUEST
       )
     }
@@ -114,7 +122,6 @@ export class UsersService {
       newUser.publicKey = publicKey
       newUser.profileType = profileType
 
-      console.log(newUserDto)
       if (profileType === "organizer") {
         await this.organizerRepo.save(newUser)
       } else if (profileType === "attendee") {
@@ -137,6 +144,10 @@ export class UsersService {
         HttpStatus.BAD_REQUEST
       )
     }
+  }
+
+  async deleteUser(uuid: string) {
+    return this.userRepo.delete(uuid)
   }
 
   async getAll(options?: FindManyOptions<UserEntity>): Promise<UserEntity[]> {
@@ -260,17 +271,45 @@ export class UsersService {
 
   async updateUserProfileImage(file: Express.Multer.File, user: JWTUserDto) {
     const userEntity: UserEntity = await this.userRepo.findOne(user.id)
-
     userEntity.profileImage = file.buffer
+    const { profileImage } = await this.userRepo.save(userEntity)
 
-    return await this.userRepo.save(userEntity)
+    return profileImage
+  }
+
+  async removeProfileImage(uuid: string, user: UserEntity) {
+    user.profileImage = null
+    const update = await this.userRepo.update(uuid, user)
+    if (!update) return false
+
+    return {
+      status: 201,
+      message: "User record updated successfully.",
+      record: toUserDto(user),
+    }
   }
 
   async getUserProfileImage(uuid: string) {
     const user = await this.userRepo.findOne(uuid, { select: ["profileImage"] })
-
-   if (user?.profileImage!) return false
+    if (!user?.profileImage) return false
 
     return user.profileImage
+  }
+
+  async getUserBookingSlots(
+    uuid: string,
+    profileType: "organizer" | "attendee"
+  ) {
+    if (profileType === "attendee")
+      return await this.attendeeRepo
+        .findOne(uuid, {
+          relations: ["bookedSlots"],
+        })
+        .then((res) => res.bookedSlots)
+    return await this.organizerRepo
+      .findOne(uuid, {
+        relations: ["bookedSlots"],
+      })
+      .then((res) => res.bookedSlots)
   }
 }

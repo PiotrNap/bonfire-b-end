@@ -8,7 +8,7 @@ export class UserEntity extends BaseEntity {
   name: string // real name
 
   @Column({ type: "bytea", nullable: true })
-  profileImage: Buffer //base encoded image 512x512
+  profileImage: Buffer
 
   // @Column({ type: "varchar", length: 65535 })
   // didDocument?: string; // reference to did-document
