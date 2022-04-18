@@ -66,7 +66,6 @@ export class AuthController {
     @Req() req: any,
     @Query() query: { scopes: string; uri: string; path: DEEP_LINKING_PATHS }
   ): Promise<any> {
-    console.log(query)
     const { scopes, path, uri } = query
     const { user } = req
 

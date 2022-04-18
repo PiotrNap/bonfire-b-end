@@ -75,6 +75,8 @@ export class AuthService {
       username: user.username,
       id: user.id,
       profileType: user.profileType,
+      profileImage: user.profileImage,
+      hourlyRate: user.hourlyRate,
       ...token,
     }
   }
@@ -94,6 +96,7 @@ export class AuthService {
 
   private _createToken({ username, id, profileType }: UserDto): any {
     const expiresIn = process.env.EXPIRES_IN
+    console.log(expiresIn)
 
     const user: JwtPayload = { username, sub: id, profileType }
     const accessToken = this.jwtService.sign(user)
@@ -122,13 +125,11 @@ export class AuthService {
       version: "v3",
       auth,
     })
-    const timeMin = (query?.fromTime
-      ? new Date(Number(query.fromTime))
-      : new Date()
+    const timeMin = (
+      query?.fromTime ? new Date(Number(query.fromTime)) : new Date()
     ).toISOString()
-    const timeMax = (query?.toTime
-      ? new Date(Number(query.toTime))
-      : new Date()
+    const timeMax = (
+      query?.toTime ? new Date(Number(query.toTime)) : new Date()
     ).toISOString()
 
     return new Promise((res, rej) => {
@@ -161,8 +162,6 @@ export class AuthService {
     try {
       const auth = this.generateOAuthClient()
       const credentials = await auth.getToken(code)
-
-      console.log(credentials)
 
       if (credentials.tokens) {
         let missingScope = false
@@ -262,10 +261,7 @@ export class AuthService {
   }
 
   public async checkValidOauth(user: UserEntity) {
-    if (
-      user.googleApiCredentials !== "undefined" &&
-      user.googleApiCredentials !== null
-    ) {
+    if (user.googleApiCredentials) {
       const { expiry_date } = JSON.parse(user.googleApiCredentials)
 
       if (user.lastUsedRefreshToken !== null) {

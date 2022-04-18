@@ -8,19 +8,18 @@ export class EventPaginationDto {
       id,
       title,
       description,
-      imageURI,
       privateEvent,
       eventCardColor,
+      eventCardImage,
       eventTitleColor,
       selectedDays,
       organizerId,
     } = event
-    console.log(event)
 
     this.id = id
     this.title = title
     this.description = description
-    this.imageURI = imageURI
+    this.eventCardImage = eventCardImage
     this.privateEvent = privateEvent
     this.eventCardColor = eventCardColor
     this.eventTitleColor = eventTitleColor
@@ -40,7 +39,7 @@ export class EventPaginationDto {
   description: string
 
   @IsString()
-  imageURI: string
+  eventCardImage?: Buffer
 
   @IsBoolean()
   privateEvent: boolean

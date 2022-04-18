@@ -1,24 +1,23 @@
-import { UserEntity } from "../model/user.entity"
-import { UserDto } from "../users/dto/user.dto"
-
-export const toUserDto = (data: UserEntity): UserDto => {
-  const {
+export const toUserDto = (data: any) => {
+  const { id, username, name, profileType, profileImage, hourlyRate } = data
+  const user = {
     id,
+    name,
     username,
-    publicKey,
     profileType,
-    googleApiCredentials,
-    lastUsedRefreshToken,
-  } = data
-
-  let userDto: UserDto = {
-    id,
-    username,
-    publicKey,
-    profileType,
-    googleApiCredentials,
-    lastUsedRefreshToken,
+    profileImage,
+    hourlyRate,
   }
 
-  return userDto
+  if (data.profileType === "attendee") return user
+  if (data.profileType === "organizer")
+    return {
+      ...user,
+      bio: data.bio,
+      profession: data.profession,
+      skills: data.skills,
+      tags: data.tags,
+      jobTitle: data.jobTitle,
+      hourlyRate: data.hourlyRate,
+    }
 }
