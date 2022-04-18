@@ -20,7 +20,7 @@ export class OrganizerEntity extends UserEntity {
   @Column({ name: "skills", type: "varchar", length: 100, nullable: true })
   skills?: string | string[]
 
-  @Column({ name: "hourlyRate", type: "integer" })
+  @Column({ name: "hourlyRate", type: "real" })
   hourlyRate: number | null
 
   @Column({ type: "simple-array", nullable: true })

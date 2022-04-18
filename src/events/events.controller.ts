@@ -11,7 +11,10 @@ import {
   Query,
   Req,
   UnprocessableEntityException,
+  UploadedFile,
+  UseInterceptors,
 } from "@nestjs/common"
+import { FileInterceptor } from "@nestjs/platform-express"
 import { roles, Roles } from "src/auth/roles/roles.decorator"
 import { Public } from "src/common/decorators/public.decorator"
 import { PaginationRequestDto } from "src/pagination"
@@ -42,9 +45,12 @@ export class EventsController {
 
   @Get("results")
   public async getResults(@Query() query: any) {
-    const { search_query } = query
+    const { search_query, organizer_id } = query
     try {
-      const result = await this.eventsService.getResults(search_query)
+      const result = await this.eventsService.getResults(
+        search_query,
+        organizer_id
+      )
 
       return {
         result,
@@ -72,6 +78,14 @@ export class EventsController {
     return confirmation
   }
 
+  @Get("booking/:uuid")
+  getBookingSlotById(@Param("uuid", ParseUUIDPipe) uuid: string) {
+    const slot = this.eventsService.getBookingSlotById(uuid)
+    if (!slot) throw new NotFoundException()
+
+    return slot
+  }
+
   @Delete("booking/:uuid")
   public async removeEventBooking(
     @Param("uuid", new ParseUUIDPipe()) uuid: string,
@@ -79,6 +93,11 @@ export class EventsController {
   ): Promise<any> {
     const res = this.eventsService.removeBookedEventSlot(uuid, req.user)
     return res
+  }
+
+  @Put("booking/:uuid")
+  public async updateBooking(@Param("uuid", new ParseUUIDPipe()) uuid: string) {
+    return `Event with id ${uuid} updated successfully.`
   }
 
   @Get(":uuid")
@@ -109,14 +128,6 @@ export class EventsController {
     return await this.eventsService.update(uuid, id, body)
   }
 
-  @Put("booking/:uuid")
-  public async updateBooking(
-    @Param("uuid", new ParseUUIDPipe()) uuid: string,
-    @Body() body: EventBookingDto
-  ) {
-    return `Event with id ${uuid} updated successfully.`
-  }
-
   @Delete(":uuid")
   @Roles(roles.organizer)
   public async removeEvent(
@@ -125,5 +136,21 @@ export class EventsController {
   ): Promise<any> {
     const { userId } = req.user
     return await this.eventsService.remove(uuid, userId)
+  }
+
+  @Post(":uuid/image")
+  @UseInterceptors(FileInterceptor("file"))
+  public async uploadImage(
+    @Param("uuid", new ParseUUIDPipe()) uuid: string,
+    @Req() req: any,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    const success = await this.eventsService.updateEventImage(
+      file,
+      uuid,
+      req.user.id
+    )
+    if (!success) throw new UnprocessableEntityException()
+    return
   }
 }

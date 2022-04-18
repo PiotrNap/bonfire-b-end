@@ -4,7 +4,7 @@ import { SuccessMessage } from "src/auth/interfaces/payload.interface"
 import { EventEntity } from "src/model/event.entity"
 import { BookingSlotEntity } from "src/model/bookingSlot.entity"
 import { PaginationRequestDto, PaginationResult } from "src/pagination"
-import { FindManyOptions, ILike, Repository } from "typeorm"
+import { Equal, FindManyOptions, ILike, Repository } from "typeorm"
 import { CreateEventDto } from "./dto/create-event.dto"
 import { EventBookingDto } from "./dto/event-booking.dto"
 import { UpdateEventDto } from "./dto/update-event.dto"
@@ -16,8 +16,6 @@ import { UserEntity } from "src/model/user.entity"
 @Injectable()
 export class EventsService {
   constructor(
-    @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(EventEntity)
     private readonly eventsRepository: Repository<EventEntity>,
     @InjectRepository(BookingSlotEntity)
@@ -36,7 +34,6 @@ export class EventsService {
       fromDate,
       toDate,
       hourlyRate,
-      imageURI,
       privateEvent,
       eventCardColor,
       eventTitleColor,
@@ -57,7 +54,6 @@ export class EventsService {
       event.fromDate = fromDate
       event.toDate = toDate
       event.hourlyRate = hourlyRate
-      event.imageURI = imageURI
       event.privateEvent = privateEvent
       event.eventCardColor = eventCardColor
       event.eventTitleColor = eventTitleColor
@@ -65,7 +61,6 @@ export class EventsService {
       user.events = [...user.events, event]
 
       await this.organizerRepository.save(user)
-      console.log("New event added: ", event)
 
       return event.id
     } catch (e) {
@@ -106,7 +101,7 @@ export class EventsService {
           "privateEvent",
           "eventCardColor",
           "eventTitleColor",
-          "imageURI",
+          "eventCardImage",
           "organizerId",
         ],
         order: {
@@ -174,15 +169,19 @@ export class EventsService {
 
   async remove(id: string, userId: string): Promise<SuccessMessage | void> {
     try {
-      let event = await this.eventsRepository.findOne({ where: { id } })
+      let event = await this.eventsRepository.findOne(id, {
+        relations: ["bookedSlots"],
+      })
+      // let bs = await this.bookingSlotRepository.findOne(event.bookedSlots[0].id)
+      // await this.bookingSlotRepository.remove(bs)
 
       await this.eventsRepository.remove(event)
-
       return {
         message: `Event with id ${id}, removed successfully.`,
         status: 201,
       }
     } catch (e) {
+      console.error(e)
       if (e.response && e.status) throw new HttpException(e.response, e.status)
     }
   }
@@ -228,7 +227,6 @@ export class EventsService {
         )
 
       let bookingSlot = new BookingSlotEntity()
-      console.log(user)
 
       bookingSlot.event = event
       bookingSlot.eventId = event.id
@@ -243,7 +241,6 @@ export class EventsService {
       bookingSlot.txHash = txHash
 
       bookingSlot = await this.bookingSlotRepository.save(bookingSlot)
-      console.log(bookingSlot)
 
       return bookingSlot.id
     } catch (e) {
@@ -255,17 +252,45 @@ export class EventsService {
     }
   }
 
-  public getResults(searchQuery: string) {
-    return this.eventsRepository.find({
-      where: [
+  public getResults(searchQuery: string, organizerId: string) {
+    let findParams = []
+
+    if (searchQuery)
+      findParams.push(
         {
           title: ILike(`%${searchQuery}%`),
         },
         {
           description: ILike(`%${searchQuery}%`),
-        },
-      ],
+        }
+      )
+
+    if (organizerId)
+      findParams.push({
+        organizerId: Equal(`${organizerId}`),
+      })
+
+    return this.eventsRepository.find({
+      where: [...findParams],
     })
+  }
+
+  public async updateEventImage(
+    file: Express.Multer.File,
+    eventId: string,
+    userId: string
+  ) {
+    const event = await this.eventsRepository.findOneOrFail(eventId)
+    if (!event) this.noEventError()
+    if (event.organizerId !== userId) return false
+
+    return this.eventsRepository.update(eventId, {
+      eventCardImage: file.buffer,
+    })
+  }
+
+  public getBookingSlotById(uuid: string) {
+    return this.eventsRepository.findOneOrFail(uuid)
   }
 
   private noEventError() {
@@ -275,7 +300,4 @@ export class EventsService {
   private notAllowedError() {
     throw new HttpException("Permission denied.", HttpStatus.FORBIDDEN)
   }
-}
-function BookingRepository(BookingRepository: any) {
-  throw new Error("Function not implemented.")
 }

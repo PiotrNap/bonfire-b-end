@@ -8,6 +8,7 @@ dotenv.config()
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   app.use(new ValidationPipe(), cookieParser())
+
   // @TODO: remove before deploying
   app.enableCors()
   await app.listen(8000)

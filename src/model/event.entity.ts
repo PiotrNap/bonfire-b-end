@@ -41,8 +41,8 @@ export class EventEntity extends BaseEntity {
   @Column({ type: "int" })
   hourlyRate: number
 
-  @Column({ type: "varchar" })
-  imageURI: string
+  @Column({ type: "bytea", nullable: true })
+  eventCardImage?: Buffer
 
   @Column({ type: "boolean" })
   privateEvent: boolean
