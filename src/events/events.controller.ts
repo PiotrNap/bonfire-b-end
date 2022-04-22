@@ -135,7 +135,7 @@ export class EventsController {
     @Req() req: any
   ): Promise<any> {
     const { userId } = req.user
-    return await this.eventsService.remove(uuid, userId)
+    return await this.eventsService.removeEvent(uuid, userId)
   }
 
   @Post(":uuid/image")

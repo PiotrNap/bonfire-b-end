@@ -30,6 +30,9 @@ export class BookingSlotEntity extends BaseEntity {
   @Column("varchar", { nullable: true })
   eventDescription: string
 
+  @Column("real", { nullable: true })
+  durationCost: number | null
+
   @ManyToOne(() => EventEntity, (event: EventEntity) => event.bookedSlots)
   event: EventEntity
 

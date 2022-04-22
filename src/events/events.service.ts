@@ -53,12 +53,14 @@ export class EventsService {
       event.tags = tags
       event.fromDate = fromDate
       event.toDate = toDate
-      event.hourlyRate = hourlyRate
+      event.hourlyRate = hourlyRate || user.hourlyRate
       event.privateEvent = privateEvent
       event.eventCardColor = eventCardColor
       event.eventTitleColor = eventTitleColor
       event.organizerAlias = user.username
       user.events = [...user.events, event]
+
+      console.log("creating new event :", event)
 
       await this.organizerRepository.save(user)
 
@@ -159,7 +161,7 @@ export class EventsService {
       await this.eventsRepository.save(newEvent)
 
       return {
-        message: `Event with id ${id}, updated successfully.`,
+        message: `Event updated successfully`,
         status: 201,
       }
     } catch (e) {
@@ -167,17 +169,20 @@ export class EventsService {
     }
   }
 
-  async remove(id: string, userId: string): Promise<SuccessMessage | void> {
+  async removeEvent(id: string, userId: string): Promise<any> {
     try {
       let event = await this.eventsRepository.findOne(id, {
         relations: ["bookedSlots"],
       })
+
       // let bs = await this.bookingSlotRepository.findOne(event.bookedSlots[0].id)
       // await this.bookingSlotRepository.remove(bs)
+      if (!event) return this.noEventError()
 
+      // TODO this should be only allowed by an event owner
       await this.eventsRepository.remove(event)
       return {
-        message: `Event with id ${id}, removed successfully.`,
+        message: `Event removed successfully`,
         status: 201,
       }
     } catch (e) {
@@ -197,7 +202,8 @@ export class EventsService {
     user: JWTUserDto,
     eventBookingDto: EventBookingDto
   ): Promise<string | void> {
-    const { txHash, bookedDuration, bookedDate, eventId } = eventBookingDto
+    const { txHash, bookedDuration, bookedDate, eventId, durationCost } =
+      eventBookingDto
 
     try {
       const event = await this.eventsRepository.findOne({
@@ -238,6 +244,7 @@ export class EventsService {
       bookingSlot.organizerId = event.organizer.id
       bookingSlot.bookedDuration = bookedDuration
       bookingSlot.bookedDate = bookedDate
+      bookingSlot.durationCost = durationCost
       bookingSlot.txHash = txHash
 
       bookingSlot = await this.bookingSlotRepository.save(bookingSlot)

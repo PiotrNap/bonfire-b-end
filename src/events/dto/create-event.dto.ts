@@ -40,9 +40,6 @@ export class CreateEventDto {
   @IsNumber()
   hourlyRate: number
 
-  @IsString()
-  imageURI: string
-
   @IsBoolean()
   privateEvent: boolean
 

@@ -15,4 +15,7 @@ export class EventBookingDto {
 
   @IsNumber()
   bookedDuration: number
+
+  @IsNumber()
+  durationCost: number
 }

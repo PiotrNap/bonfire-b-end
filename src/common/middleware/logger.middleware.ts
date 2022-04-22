@@ -9,15 +9,13 @@ export async function logger(req: Request, res: Response, next: NextFunction) {
   )
   console.log(eventID + ":" + localTimeStamp())
   console.log("Requsted URL: ", req.originalUrl, " | ", "Method: ", req.method)
-  console.log(
-    `New ${req.socket.remoteFamily} request from [${req.socket.remoteAddress}]:${req.socket.remotePort}`
-  )
+  if (req.method === "POST" || req.method === "PUT")
+    console.log("Body: ", req.body)
+  // console.log(
+  //   `New ${req.socket.remoteFamily} request from [${req.socket.remoteAddress}]:${req.socket.remotePort}`
+  // )
 
-  // done logging, call next
   next()
-
-  // all done ;)
-  console.log(`${eventID}:${localTimeStamp()}`)
   console.log(
     "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
   )

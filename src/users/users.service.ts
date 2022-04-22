@@ -32,7 +32,6 @@ export class UsersService {
   }
 
   async updateUserSettings(settings: any, id: string) {
-    console.log("settings ", settings)
     return await this.userRepo.update(id, { userSettings: settings })
   }
 
