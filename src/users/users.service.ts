@@ -31,6 +31,11 @@ export class UsersService {
     return user
   }
 
+  async updateUserSettings(settings: any, id: string) {
+    console.log("settings ", settings)
+    return await this.userRepo.update(id, { userSettings: settings })
+  }
+
   async updateUser(
     values: any,
     id: string,
@@ -54,7 +59,7 @@ export class UsersService {
 
       return {
         status: 201,
-        message: "User record updated successfully.",
+        message: "User record updated successfully",
         record: toUserDto(user),
       }
     } catch (e) {
@@ -284,7 +289,7 @@ export class UsersService {
 
     return {
       status: 201,
-      message: "User record updated successfully.",
+      message: "User record updated successfully",
       record: toUserDto(user),
     }
   }

@@ -54,8 +54,13 @@ export class UserEntity extends BaseEntity {
   @Column({ name: "deepLinkingCallbackUri", type: "varchar", nullable: true })
   deepLinkingCallbackUri: string
 
-  // @Column({ type: 'varchar', length: 65535 })
-  // profileSettings?: string; // profile settings
+  @Column({ type: "json", nullable: true })
+  userSettings?: UserSettings // user profile settings
+}
+
+export type UserSettings = {
+  eventCreationHintHidden: boolean
+  showPastCalendarEvents: boolean
 }
 
 export function isUserEntity(obj: any): obj is UserEntity {

@@ -203,4 +203,18 @@ export class UsersController {
 
     return slots
   }
+
+  @Put(":uuid/settings")
+  public async updateUserSettings(
+    @Param("uuid", ParseUUIDPipe) uuid: string,
+    @Req() req: any
+  ) {
+    const { user, body } = req
+    if (uuid !== user.id) throw new UnauthorizedException()
+
+    const updated = await this.usersService.updateUserSettings(body, user.id)
+    if (!updated) throw new UnprocessableEntityException()
+
+    return
+  }
 }
