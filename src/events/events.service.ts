@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common"
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { SuccessMessage } from "src/auth/interfaces/payload.interface"
 import { EventEntity } from "src/model/event.entity"
@@ -297,7 +302,28 @@ export class EventsService {
   }
 
   public getBookingSlotById(uuid: string) {
-    return this.eventsRepository.findOneOrFail(uuid)
+    return this.bookingSlotRepository.findOneOrFail(uuid)
+  }
+
+  public async getEventBookings(uuid: string, userId: string) {
+    const event = await this.eventsRepository.findOneOrFail(uuid, {
+      relations: ["bookedSlots"],
+    })
+
+    if (event.organizerId !== userId) throw new UnauthorizedException()
+    if (!event) return null
+
+    return event.bookedSlots
+  }
+
+  public async getEventBookingsByUserId(uuid: string, userId: string) {
+    const event = await this.eventsRepository.findOneOrFail(uuid, {
+      relations: ["bookedSlots"],
+    })
+
+    if (!event) this.noEventError()
+
+    return event.bookedSlots.filter((bs) => bs.attendeeId === userId)
   }
 
   private noEventError() {

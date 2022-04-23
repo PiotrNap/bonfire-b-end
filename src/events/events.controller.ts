@@ -79,8 +79,9 @@ export class EventsController {
   }
 
   @Get("booking/:uuid")
-  getBookingSlotById(@Param("uuid", ParseUUIDPipe) uuid: string) {
-    const slot = this.eventsService.getBookingSlotById(uuid)
+  public async getBookingSlotById(@Param("uuid", ParseUUIDPipe) uuid: string) {
+    const slot = await this.eventsService.getBookingSlotById(uuid)
+    console.log(slot)
     if (!slot) throw new NotFoundException()
 
     return slot
@@ -97,7 +98,7 @@ export class EventsController {
 
   @Put("booking/:uuid")
   public async updateBooking(@Param("uuid", new ParseUUIDPipe()) uuid: string) {
-    return `Event with id ${uuid} updated successfully.`
+    return `Booking with id ${uuid} updated successfully.`
   }
 
   @Get(":uuid")
@@ -152,5 +153,40 @@ export class EventsController {
     )
     if (!success) throw new UnprocessableEntityException()
     return
+  }
+
+  /**
+   * Returns event bookings (scheduled meetings)
+   */
+  @Roles(roles.organizer)
+  @Get(":uuid/booking")
+  public async getEventBookings(
+    @Param("uuid", ParseUUIDPipe) uuid: string,
+    @Req() req: any
+  ) {
+    const { user } = req
+    const bookings = await this.eventsService.getEventBookings(uuid, user.id)
+    if (!bookings) return new NotFoundException()
+    return bookings
+  }
+
+  /**
+   * Returns all bookings for a given event-id and a specific user-id.
+   * (which is extracted from request object)
+   */
+  @Get(":eventUuid/booking/user")
+  public async getEventBookingsByUserId(
+    @Param("eventUuid", ParseUUIDPipe) eventUuid: string,
+    @Req() req: any
+  ) {
+    const { user } = req
+    const bookings = this.eventsService.getEventBookingsByUserId(
+      eventUuid,
+      user.id
+    )
+
+    if (!bookings) throw new NotFoundException()
+
+    return bookings
   }
 }
