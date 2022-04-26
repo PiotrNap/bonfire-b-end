@@ -57,6 +57,7 @@
     "@nestjs/swagger": "^5.0.4",
     "@nestjs/typeorm": "^8.0.1",
     "@nestjs/websockets": "^8.0.6",
+    "@tensorflow/tfjs-node": "^3.16.0",
     "axios": "^0.21.1",
     "bcrypt": "^5.0.1",
     "class-transformer": "^0.4.0",
@@ -67,12 +68,14 @@
     "ethr-did-resolver": "^4.3.4",
     "fernet": "^0.3.1",
     "googleapis": "^88.2.0",
+    "image-decode": "^1.2.2",
     "ipld": "^0.30.1",
     "jose": "^3.15.4",
     "js-sha256": "^0.9.0",
     "jwt-passport": "^0.0.5",
     "mysql": "^2.18.1",
     "node-forge": "^0.10.0",
+    "nsfwjs": "^2.4.1",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
@@ -121,13 +124,19 @@
     "typescript": "^4.3.5"
   },
   "jest": {
-    "moduleFileExtensions": ["js", "json", "ts"],
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
-    "collectCoverageFrom": ["**/*.(t|j)s"],
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   }

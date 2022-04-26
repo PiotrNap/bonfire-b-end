@@ -1,8 +1,21 @@
 import { getConnectionOptions, getConnection } from "typeorm"
 import { Buffer } from "buffer"
+
+let MODEL
+
+import * as tf from "@tensorflow/tfjs-node"
+import * as nsfw from "nsfwjs"
+import * as qs from "qs"
+import * as decode from "image-decode"
+
 import * as bcrypt from "bcrypt"
 import * as crypto from "crypto"
-import * as qs from "qs"
+
+export const loadModel = async () => {
+  // needs to be loaded only once
+  // tf.enableProdMode() TODO enable this in prod
+  MODEL = await nsfw.load("file://./src/model/tf/", { size: 299 })
+}
 
 export class Random {
   private readonly CHARSET =
@@ -158,4 +171,27 @@ export const buildRedirectURL = (
 ): string => {
   const queryString = qs.stringify(queryObj)
   return uri + `?${queryString}`
+}
+
+export const isNSFW = async (file: Express.Multer.File): Promise<boolean> => {
+  const { width, height, data } = decode(file.buffer, file.mimetype)
+  const numChannels = 3
+  const numPixels = width * height
+
+  const values = new Int32Array(numPixels * numChannels)
+
+  for (let i = 0; i < numPixels; i++)
+    for (let c = 0; c < numChannels; c++)
+      values[i * numChannels + c] = data[i * 4 + c]
+
+  const tfImg = tf.tensor3d(values, [height, width, numChannels], "int32")
+  const predictions = await MODEL.classify(tfImg)
+  tfImg.dispose() // otherwise our server will explode
+
+  const sexy = predictions.find((p) => p.className === "Sexy").probability * 100
+  const porn = predictions.find((p) => p.className === "Porn").probability * 100
+
+  if ((porn > 1 && sexy > 1) || (porn <= 1 && sexy >= 30)) return true
+
+  return false
 }

@@ -138,7 +138,7 @@ export class EventsService {
   }
 
   findOne(id: string): Promise<any | void> {
-    return this.eventsRepository.findOne(id, {
+    const event = this.eventsRepository.findOne(id, {
       select: [
         "privateEvent",
         "hourlyRate",
@@ -147,7 +147,13 @@ export class EventsService {
         "selectedDays",
         "organizerAlias",
       ],
+      relations: ["bookedSlots"],
     })
+
+    // based on `bookedSlots` calculate which days are still available for booking
+
+    if(!event) this.noEventError()
+        return
   }
 
   async update(

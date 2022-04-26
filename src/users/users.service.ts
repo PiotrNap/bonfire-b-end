@@ -1,6 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
-import { FindManyOptions, Repository } from "typeorm"
+import { FindManyOptions, Repository, UpdateResult } from "typeorm"
 import { JWTUserDto, UserDto } from "./dto/user.dto"
 import { UserEntity } from "../model/user.entity"
 import { toUserDto } from "../common/mapper"
@@ -274,11 +274,9 @@ export class UsersService {
   }
 
   async updateUserProfileImage(file: Express.Multer.File, user: JWTUserDto) {
-    const userEntity: UserEntity = await this.userRepo.findOne(user.id)
-    userEntity.profileImage = file.buffer
-    const { profileImage } = await this.userRepo.save(userEntity)
-
-    return profileImage
+    return await this.userRepo.update(user.id, { profileImage: file.buffer })
+    // userEntity.profileImage = file.buffer
+    // const { profileImage } = await this.userRepo.save(userEntity)
   }
 
   async removeProfileImage(uuid: string, user: UserEntity) {

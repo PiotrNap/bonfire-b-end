@@ -25,6 +25,7 @@ import { PaginationRequestDto, PaginationResult } from "src/pagination"
 import { UserEntity } from "src/model/user.entity"
 import { CreateOrganizerDto } from "./dto/organizer.dto"
 import { FileInterceptor } from "@nestjs/platform-express"
+import { isNSFW } from "src/common/utils"
 
 @Controller("users")
 export class UsersController {
@@ -113,11 +114,15 @@ export class UsersController {
     @Req() req: any,
     @UploadedFile() file: Express.Multer.File
   ) {
-    const img = await this.usersService.updateUserProfileImage(file, req.user)
+    if (await isNSFW(file)) throw new UnprocessableEntityException()
 
-    if (!img) throw new UnprocessableEntityException()
+    const updated = await this.usersService.updateUserProfileImage(
+      file,
+      req.user
+    )
+    if (!updated) throw new NotFoundException()
 
-    return img
+    return
   }
 
   @Public()

@@ -10,6 +10,7 @@ import {
   Put,
   Query,
   Req,
+  UnauthorizedException,
   UnprocessableEntityException,
   UploadedFile,
   UseInterceptors,
@@ -17,6 +18,7 @@ import {
 import { FileInterceptor } from "@nestjs/platform-express"
 import { roles, Roles } from "src/auth/roles/roles.decorator"
 import { Public } from "src/common/decorators/public.decorator"
+import { isNSFW } from "src/common/utils"
 import { PaginationRequestDto } from "src/pagination"
 import { CreateEventDto } from "./dto/create-event.dto"
 import { EventBookingDto } from "./dto/event-booking.dto"
@@ -103,19 +105,13 @@ export class EventsController {
 
   @Get(":uuid")
   public async getEventById(@Param("uuid", new ParseUUIDPipe()) uuid: string) {
-    const event = await this.eventsService.findOne(uuid)
-
-    if (!event) {
-      throw new NotFoundException()
-    }
-
-    return event
+    return await this.eventsService.findOne(uuid)
   }
 
   @Post()
   @Roles(roles.organizer)
   public async createEvent(@Body() createEventDto: CreateEventDto) {
-    return this.eventsService.create(createEventDto)
+    return await this.eventsService.create(createEventDto)
   }
 
   @Put(":uuid")
@@ -146,12 +142,14 @@ export class EventsController {
     @Req() req: any,
     @UploadedFile() file: Express.Multer.File
   ) {
+    if (await isNSFW(file)) throw new UnprocessableEntityException()
+
     const success = await this.eventsService.updateEventImage(
       file,
       uuid,
       req.user.id
     )
-    if (!success) throw new UnprocessableEntityException()
+    if (!success) throw new UnauthorizedException()
     return
   }
 
