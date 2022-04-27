@@ -81,19 +81,6 @@ export class AuthService {
     }
   }
 
-  async validateUser(payload: JwtPayload): Promise<UserDto> {
-    const user = await this.usersService.findOne(
-      { id: payload.sub, username: payload.username },
-      true
-    )
-
-    if (!user) {
-      throw new HttpException("Invalid token", HttpStatus.UNAUTHORIZED)
-    }
-
-    return user
-  }
-
   private _createToken({ username, id, profileType }: UserDto): any {
     const expiresIn = process.env.EXPIRES_IN
     console.log(expiresIn)

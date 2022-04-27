@@ -16,6 +16,7 @@ import {
   UseInterceptors,
 } from "@nestjs/common"
 import { FileInterceptor } from "@nestjs/platform-express"
+import { checkIfAuthorized } from "src/auth/auth.helpers"
 import { roles, Roles } from "src/auth/roles/roles.decorator"
 import { Public } from "src/common/decorators/public.decorator"
 import { isNSFW } from "src/common/utils"

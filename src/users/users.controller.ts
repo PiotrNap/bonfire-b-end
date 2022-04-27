@@ -10,7 +10,6 @@ import {
   Put,
   Query,
   Req,
-  UnauthorizedException,
   UnprocessableEntityException,
   UploadedFile,
   UseInterceptors,
@@ -26,6 +25,7 @@ import { UserEntity } from "src/model/user.entity"
 import { CreateOrganizerDto } from "./dto/organizer.dto"
 import { FileInterceptor } from "@nestjs/platform-express"
 import { isNSFW } from "src/common/utils"
+import { checkIfAuthorized } from "src/auth/auth.helpers"
 
 @Controller("users")
 export class UsersController {
@@ -140,11 +140,11 @@ export class UsersController {
     @Req() req: any
   ) {
     const { user } = req
+    checkIfAuthorized(user.id, uuid)
     const success = this.usersService.removeProfileImage(uuid, user)
 
     if (!success) throw new NotFoundException()
-
-    return success
+    return
   }
 
   @Get(":uuid")
@@ -159,6 +159,8 @@ export class UsersController {
     @Req() req: any
   ): Promise<any> {
     const { user } = req
+    checkIfAuthorized(user.id, uuid)
+
     return await this.usersService.updateUser(body, uuid, user.profileType)
   }
 
@@ -170,7 +172,7 @@ export class UsersController {
     @Req() req: any
   ) {
     const { user } = req
-    if (user.id !== uuid) throw new UnauthorizedException()
+    checkIfAuthorized(user.id, uuid)
 
     return this.usersService.deleteUser(uuid)
   }
@@ -182,8 +184,7 @@ export class UsersController {
     @Req() req: any
   ): Promise<any> {
     const { user } = req
-
-    if (user.id !== uuid) throw new UnauthorizedException()
+    checkIfAuthorized(user.id, uuid)
 
     const events = await this.usersService.getCalendarEvents(
       uuid,
@@ -202,6 +203,7 @@ export class UsersController {
     @Req() req: any
   ) {
     const { user } = req
+    checkIfAuthorized(user.id, uuid)
     const slots = await this.usersService.getUserBookingSlots(uuid, user.id)
 
     if (!slots) throw new UnprocessableEntityException()
@@ -215,7 +217,7 @@ export class UsersController {
     @Req() req: any
   ) {
     const { user, body } = req
-    if (uuid !== user.id) throw new UnauthorizedException()
+    checkIfAuthorized(user.id, uuid)
 
     const updated = await this.usersService.updateUserSettings(body, user.id)
     if (!updated) throw new UnprocessableEntityException()

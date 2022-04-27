@@ -1,3 +1,4 @@
+import { UnauthorizedException } from "@nestjs/common"
 import { sha256 } from "js-sha256"
 import { Random } from "../common/utils"
 
@@ -21,4 +22,9 @@ export const validateSecretState = (
   } else {
     return false
   }
+}
+
+export const checkIfAuthorized = (userId: string, id: string) => {
+  if (userId !== id) throw new UnauthorizedException()
+  return true
 }

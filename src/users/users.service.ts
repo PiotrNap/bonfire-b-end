@@ -275,13 +275,10 @@ export class UsersService {
 
   async updateUserProfileImage(file: Express.Multer.File, user: JWTUserDto) {
     return await this.userRepo.update(user.id, { profileImage: file.buffer })
-    // userEntity.profileImage = file.buffer
-    // const { profileImage } = await this.userRepo.save(userEntity)
   }
 
   async removeProfileImage(uuid: string, user: UserEntity) {
-    user.profileImage = null
-    const update = await this.userRepo.update(uuid, user)
+    const update = await this.userRepo.update(uuid, { profileImage: null })
     if (!update) return false
 
     return {
