@@ -191,7 +191,7 @@ export const isNSFW = async (file: Express.Multer.File): Promise<boolean> => {
   const sexy = predictions.find((p) => p.className === "Sexy").probability * 100
   const porn = predictions.find((p) => p.className === "Porn").probability * 100
 
-  if ((porn > 1 && sexy > 1) || (porn <= 1 && sexy >= 30)) return true
+  if ((porn > 10 && sexy > 10) || (porn <= 10 && sexy >= 30)) return true
 
   return false
 }
