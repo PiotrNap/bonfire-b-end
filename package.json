@@ -63,6 +63,7 @@
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
     "cookie-parser": "^1.4.5",
+    "dayjs": "^1.11.2",
     "did-resolver": "^3.1.0",
     "dotenv": "^10.0.0",
     "ethr-did-resolver": "^4.3.4",
