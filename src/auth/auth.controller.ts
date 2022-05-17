@@ -16,7 +16,10 @@ import { ChallengeDTO } from "src/users/dto/challenge.dto"
 import { ChallengeResponseDTO } from "src/users/dto/challenge-response.dto"
 import { Public } from "src/common/decorators/public.decorator"
 import { roles, Roles } from "./roles/roles.decorator"
-import { DEEP_LINKING_PATHS } from "src/common/clientAppLinking"
+import {
+  combineUrlPaths,
+  DEEP_LINKING_PATHS,
+} from "src/common/clientAppLinking"
 
 @Controller("auth")
 export class AuthController {
@@ -64,15 +67,20 @@ export class AuthController {
   @Get("google-oauth-url")
   public async getGoogleAuthUrl(
     @Req() req: any,
-    @Query() query: { scopes: string; uri: string; path: DEEP_LINKING_PATHS }
+    @Query() query: { scopes: string; uri: string }
   ): Promise<any> {
-    const { scopes, path, uri } = query
+    const { scopes, uri } = query
     const { user } = req
 
     // we don't allow attendees to be redirected to events creation screen
     if (
       user.profileType === "attendee" &&
-      path === DEEP_LINKING_PATHS["Available Days Selection"]
+      uri.includes(
+        combineUrlPaths([
+          DEEP_LINKING_PATHS.Navigation,
+          DEEP_LINKING_PATHS["Available Days Selection"],
+        ])
+      )
     )
       throw new UnauthorizedException()
 

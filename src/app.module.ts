@@ -31,6 +31,7 @@ import { ConfigModule } from "@nestjs/config"
     TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
   ],
   controllers: [AppController],
+  // enable jwt & roles guards globally
   providers: [
     AppService,
     {
