@@ -16,7 +16,6 @@ import { UpdateEventDto } from "./dto/update-event.dto"
 import { OrganizerEntity } from "src/model/organizer.entity"
 import { EventPaginationDto } from "./dto/event-pagination.dto"
 import { JWTUserDto } from "src/users/dto/user.dto"
-import { UserEntity } from "src/model/user.entity"
 
 @Injectable()
 export class EventsService {
@@ -58,7 +57,8 @@ export class EventsService {
       event.tags = tags
       event.fromDate = fromDate
       event.toDate = toDate
-      event.hourlyRate = hourlyRate || user.hourlyRate
+      event.hourlyRate.ada = hourlyRate.ada || user.hourlyRate.ada
+      event.hourlyRate.gimbals = hourlyRate.gimbals || user.hourlyRate.gimbals
       event.privateEvent = privateEvent
       event.eventCardColor = eventCardColor
       event.eventTitleColor = eventTitleColor
@@ -110,6 +110,7 @@ export class EventsService {
           "eventTitleColor",
           "eventCardImage",
           "organizerId",
+          "organizerAlias",
         ],
         order: {
           createDateTime: "ASC",
@@ -117,6 +118,9 @@ export class EventsService {
         // select only available events
         where: {
           available: true,
+          ...(paginationRequestDto?.organizer_id
+            ? { organizerId: paginationRequestDto.organizer_id }
+            : {}),
         },
         // default cache time = 1s
         cache: true,
@@ -142,17 +146,26 @@ export class EventsService {
       select: [
         "privateEvent",
         "hourlyRate",
-        "tags",
         "availabilities",
         "selectedDays",
         "organizerAlias",
+        "title",
+        "description",
+        "fromDate",
+        "toDate",
+        "eventCardImage",
+        "id",
+        "organizerId",
+        "organizerAlias",
+        "eventCardColor",
+        "eventTitleColor",
       ],
       relations: ["bookedSlots"],
     })
-    // based on `bookedSlots` calculate which days are still available for booking
+    //TODO based on `bookedSlots` calculate which days are still available for booking
 
     if (!event) this.noEventError()
-    return event
+    return { ...event, numOfBookedSlots: event.bookedSlots.length }
   }
 
   async update(
@@ -203,9 +216,14 @@ export class EventsService {
 
   async removeBookedEventSlot(
     eventBookingId: string,
-    user: UserEntity
+    userId: string
   ): Promise<any | void> {
-    return await this.bookingSlotRepository.softDelete(eventBookingId)
+    const event = await this.bookingSlotRepository.findOneOrFail(eventBookingId)
+
+    if (!event) return this.noEventError()
+    if (event.attendeeId !== userId) throw new UnauthorizedException()
+
+    return
   }
 
   async bookEvent(

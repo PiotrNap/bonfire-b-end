@@ -25,3 +25,8 @@ export const months: Record<number, Month> = {
   10: "November",
   11: "December",
 }
+
+export type HourlyRate = {
+  ada: number
+  gimbals: number
+}

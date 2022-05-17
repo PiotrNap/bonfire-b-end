@@ -1,3 +1,4 @@
+import { HourlyRate } from "src/common/lib/types"
 import { EventAvailability, SelectedDays } from "src/events/events.interface"
 import { Entity, Column, ManyToOne, OneToMany } from "typeorm"
 import { BaseEntity } from "./base.entity"
@@ -11,6 +12,7 @@ export interface EventUser {
 
 @Entity()
 export class EventEntity extends BaseEntity {
+  //TODO remove nullable options for required fields
   @Column({ type: "varchar", length: 150, nullable: false })
   description: string
 
@@ -38,8 +40,8 @@ export class EventEntity extends BaseEntity {
   @Column({ type: "simple-array" })
   tags?: string[]
 
-  @Column({ type: "int" })
-  hourlyRate: number
+  @Column({ type: "json", nullable: true })
+  hourlyRate: HourlyRate
 
   @Column({ type: "bytea", nullable: true })
   eventCardImage?: Buffer

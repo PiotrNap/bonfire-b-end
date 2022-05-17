@@ -2,6 +2,7 @@ import { ChildEntity, Column, OneToMany } from "typeorm"
 import { EventEntity } from "./event.entity"
 import { BookingSlotEntity } from "./bookingSlot.entity"
 import { UserEntity } from "./user.entity"
+import { HourlyRate } from "src/common/lib/types"
 
 @ChildEntity()
 export class OrganizerEntity extends UserEntity {
@@ -20,8 +21,8 @@ export class OrganizerEntity extends UserEntity {
   @Column({ name: "skills", type: "varchar", length: 100, nullable: true })
   skills?: string | string[]
 
-  @Column({ name: "hourlyRate", type: "real" })
-  hourlyRate: number | null
+  @Column({ name: "hourlyRate", type: "json" })
+  hourlyRate: HourlyRate
 
   @Column({ type: "simple-array", nullable: true })
   tags?: string[] | null

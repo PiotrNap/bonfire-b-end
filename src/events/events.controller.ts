@@ -16,7 +16,6 @@ import {
   UseInterceptors,
 } from "@nestjs/common"
 import { FileInterceptor } from "@nestjs/platform-express"
-import { checkIfAuthorized } from "src/auth/auth.helpers"
 import { roles, Roles } from "src/auth/roles/roles.decorator"
 import { Public } from "src/common/decorators/public.decorator"
 import { isNSFW } from "src/common/utils"
@@ -29,6 +28,7 @@ import { EventsService } from "./events.service"
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
+  //TODO should not be public, only organizers & attendees
   @Get()
   @Public()
   public async getEvents(@Query() query: PaginationRequestDto) {
@@ -95,8 +95,7 @@ export class EventsController {
     @Param("uuid", new ParseUUIDPipe()) uuid: string,
     @Req() req: any
   ): Promise<any> {
-    const res = this.eventsService.removeBookedEventSlot(uuid, req.user)
-    return res
+    return await this.eventsService.removeBookedEventSlot(uuid, req.user)
   }
 
   @Put("booking/:uuid")

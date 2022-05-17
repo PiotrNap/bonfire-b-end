@@ -31,7 +31,7 @@ import { checkIfAuthorized } from "src/auth/auth.helpers"
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // TODO This SHOULD NOT be public lol
+  // TODO This SHOULD NOT be public
   @Public()
   @Get()
   async getUsers(
