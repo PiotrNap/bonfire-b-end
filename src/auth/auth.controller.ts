@@ -20,6 +20,7 @@ import {
   combineUrlPaths,
   DEEP_LINKING_PATHS,
 } from "src/common/clientAppLinking"
+import { GoogleApiService } from "src/common/google/googleApis"
 
 @Controller("auth")
 export class AuthController {
@@ -56,7 +57,7 @@ export class AuthController {
   @Public()
   @Get("google-oauth-callback")
   public async oauthGoogleCallback(@Res() res: any, @Query() query: any) {
-    const result = await this.authService.handleGoogleOauthCallback(query)
+    const result = await new GoogleApiService().handleGoogleOauthCallback(query)
 
     if (!result) {
       throw new UnprocessableEntityException()
@@ -84,7 +85,11 @@ export class AuthController {
     )
       throw new UnauthorizedException()
 
-    const authUrl = await this.authService.generateAuthUrl(user, uri, scopes)
+    const authUrl = await new GoogleApiService().generateAuthUrl(
+      user,
+      uri,
+      scopes
+    )
 
     if (authUrl) {
       return { authUrl }
@@ -96,13 +101,15 @@ export class AuthController {
   @Get("google-oauth-valid")
   public async checkForValidGoogleOauth(@Req() req: any) {
     const { user } = req
-    return await this.authService.checkValidOauth(user)
+    return await new GoogleApiService().checkValidOauth(user)
   }
 
   @Get("google-cal-events")
   @Roles(roles.organizer)
   public async getEvents(@Query() query: any) {
-    const events = await this.authService.getUserCalendarEvents(query)
+    const events = await new GoogleApiService().getUserGoogleCalendarEvents(
+      query
+    )
 
     if (!events) throw new BadRequestException()
 
