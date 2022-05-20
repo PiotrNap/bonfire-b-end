@@ -48,6 +48,13 @@ export class UserEntity extends BaseEntity {
   })
   verificationNonce?: string
 
+  //TODO when user can use multiple devices, this has to be an array of tokens
+  @Column("varchar", {
+    name: "messagingToken",
+    nullable: true,
+  })
+  messagingToken?: string
+
   @Column({ name: "profileType", type: "varchar", nullable: true })
   profileType: "organizer" | "attendee"
 

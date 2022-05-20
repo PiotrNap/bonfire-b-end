@@ -20,7 +20,7 @@ import {
   combineUrlPaths,
   DEEP_LINKING_PATHS,
 } from "src/common/clientAppLinking"
-import { GoogleApiService } from "src/common/google/googleApis"
+import { GoogleApiService } from "src/common/google/googleApiService"
 
 @Controller("auth")
 export class AuthController {
@@ -104,11 +104,15 @@ export class AuthController {
     return await new GoogleApiService().checkValidOauth(user)
   }
 
+  //TODO this shouldn't be public
+  @Public()
   @Get("google-cal-events")
   @Roles(roles.organizer)
-  public async getEvents(@Query() query: any) {
+  public async getEvents(@Query() query: any, @Req() req: any) {
+    const { user } = req.user
     const events = await new GoogleApiService().getUserGoogleCalendarEvents(
-      query
+      query,
+      user.id
     )
 
     if (!events) throw new BadRequestException()

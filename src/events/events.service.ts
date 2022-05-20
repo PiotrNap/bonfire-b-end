@@ -16,6 +16,7 @@ import { UpdateEventDto } from "./dto/update-event.dto"
 import { OrganizerEntity } from "src/model/organizer.entity"
 import { EventPaginationDto } from "./dto/event-pagination.dto"
 import { JWTUserDto } from "src/users/dto/user.dto"
+import { sendBookedEventMessage } from "src/common/firebase"
 
 @Injectable()
 export class EventsService {
@@ -276,6 +277,14 @@ export class EventsService {
       bookingSlot.txHash = txHash
 
       bookingSlot = await this.bookingSlotRepository.save(bookingSlot)
+
+      if (event.organizer.messagingToken)
+        await sendBookedEventMessage(
+          event.organizer.messagingToken,
+          user.username,
+          event.title,
+          event.id
+        )
 
       return bookingSlot.id
     } catch (e) {

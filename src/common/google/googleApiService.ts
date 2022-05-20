@@ -48,6 +48,10 @@ export class GoogleApiService {
         )
         if (missingScope) return null
 
+        const oldCredentials = JSON.parse(user.googleApiCredentials)
+        if (!credentials.tokens.refresh_token && oldCredentials?.refresh_token)
+          credentials.tokens.refresh_token = oldCredentials.refresh_token
+
         user.googleApiCredentials = JSON.stringify(credentials.tokens)
         if (credentials.tokens.refresh_token)
           user.lastUsedRefreshToken = new Date()
@@ -161,9 +165,10 @@ export class GoogleApiService {
   }
 
   /**
-   * @description Call Google Calendar API and get user events
+   * @description returns Gcal events by given from-to dates
+   * of a specific user
    */
-  public getUserGoogleCalendarEvents(query: any) {
+  public getUserGoogleCalendarEvents(query: any, userId: string) {
     let auth = this.generateOAuthClient()
 
     // const content = readFileSync("userTokens.json", "utf8")

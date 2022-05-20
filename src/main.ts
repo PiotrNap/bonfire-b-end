@@ -1,9 +1,10 @@
 import { NestFactory } from "@nestjs/core"
-import { AppModule } from "./app.module"
 import { ValidationPipe } from "@nestjs/common"
-
-import * as cookieParser from "cookie-parser"
+import { initializeApp } from "firebase-admin/app"
 import * as dotenv from "dotenv"
+import * as cookieParser from "cookie-parser"
+
+import { AppModule } from "./app.module"
 import { loadModel } from "./common/utils"
 dotenv.config()
 
@@ -14,6 +15,7 @@ async function bootstrap() {
   // @TODO: remove before deploying
   app.enableCors()
   await loadModel()
+  initializeApp()
 
   await app.listen(8000)
 }
