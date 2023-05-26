@@ -63,6 +63,12 @@ export class UserEntity extends BaseEntity {
 
   @Column({ type: "json", nullable: true })
   userSettings?: UserSettings // user profile settings
+
+  @Column({ type: "varchar", nullable: true })
+  timeZone?: string
+
+  @Column({ type: "json", nullable: true })
+  walletBaseAddress?: string
 }
 
 export type UserSettings = {

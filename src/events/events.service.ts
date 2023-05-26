@@ -17,6 +17,10 @@ import { OrganizerEntity } from "src/model/organizer.entity"
 import { EventPaginationDto } from "./dto/event-pagination.dto"
 import { JWTUserDto } from "src/users/dto/user.dto"
 import { sendBookedEventMessage } from "src/common/firebase"
+import { EventStatistics } from "src/model/eventStatistics.entity"
+import { UserEntity } from "src/model/user.entity"
+import { GoogleApiService } from "src/common/google/googleApiService"
+import * as dayjs from "dayjs"
 
 @Injectable()
 export class EventsService {
@@ -26,7 +30,11 @@ export class EventsService {
     @InjectRepository(BookingSlotEntity)
     private readonly bookingSlotRepository: Repository<BookingSlotEntity>,
     @InjectRepository(OrganizerEntity)
-    private readonly organizerRepository: Repository<OrganizerEntity>
+    private readonly organizerRepository: Repository<OrganizerEntity>,
+    @InjectRepository(EventStatistics)
+    private readonly eventStatistics: Repository<EventStatistics>,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>
   ) {}
 
   async create(createEventDto: CreateEventDto) {
@@ -43,6 +51,7 @@ export class EventsService {
       eventCardColor,
       eventTitleColor,
       organizer,
+      gCalEventsBooking,
     } = createEventDto
     try {
       let event: EventEntity = new EventEntity()
@@ -51,6 +60,9 @@ export class EventsService {
         relations: ["events"],
       })
 
+      /*
+       * Create event record
+       */
       event.description = description
       event.title = title
       event.availabilities = availabilities as any
@@ -58,23 +70,30 @@ export class EventsService {
       event.tags = tags
       event.fromDate = fromDate
       event.toDate = toDate
-      event.hourlyRate.ada = hourlyRate.ada || user.hourlyRate.ada
-      event.hourlyRate.gimbals = hourlyRate.gimbals || user.hourlyRate.gimbals
+      event.hourlyRate = {
+        ada: hourlyRate?.ada || user.hourlyRate.ada,
+        gimbals: hourlyRate?.gimbals || user.hourlyRate.gimbals,
+      }
       event.privateEvent = privateEvent
       event.eventCardColor = eventCardColor
       event.eventTitleColor = eventTitleColor
       event.organizerAlias = user.username
+      event.gCalEventsBooking = gCalEventsBooking
       user.events = [...user.events, event]
-
-      console.log("creating new event :", event)
-
       await this.organizerRepository.save(user)
+
+      /*
+       * Create event statistics record
+       */
+      const stats = new EventStatistics()
+      stats.eventId = event.id
+      await this.eventStatistics.save(stats)
 
       return event.id
     } catch (e) {
       console.error(e)
       throw new HttpException(
-        "Something went wrong while adding new event.",
+        "Something went wrong while adding new event",
         HttpStatus.BAD_REQUEST
       )
     }
@@ -228,18 +247,27 @@ export class EventsService {
   }
 
   async bookEvent(
-    user: JWTUserDto,
+    user: JWTUserDto | UserEntity,
     eventBookingDto: EventBookingDto
   ): Promise<string | void> {
-    const { txHash, bookedDuration, bookedDate, eventId, durationCost } =
-      eventBookingDto
+    const {
+      txHash,
+      bookedDuration,
+      bookedDate,
+      eventId,
+      durationCost,
+      createGoogleCalEvent,
+    } = eventBookingDto
 
     try {
       const event = await this.eventsRepository.findOne({
         where: { id: eventId },
         relations: ["organizer", "bookedSlots", "bookedSlots.attendee"],
       })
+      user = await this.userRepository.findOne(user.id)
 
+      if (!user)
+        throw new HttpException("User not found", HttpStatus.UNAUTHORIZED)
       if (event == undefined) this.noEventError()
 
       let hasExistingSlotInTimeFrame: boolean = false
@@ -277,6 +305,80 @@ export class EventsService {
       bookingSlot.txHash = txHash
 
       bookingSlot = await this.bookingSlotRepository.save(bookingSlot)
+
+      console.log(user.googleApiCredentials, createGoogleCalEvent)
+
+      // book event on organizers or/and attendee Gcal
+      if (user.googleApiCredentials || createGoogleCalEvent) {
+        const organizerOAuthToken =
+          await new GoogleApiService().checkValidOauth(event.organizer)
+        const attendeeOAuthToken = await new GoogleApiService().checkValidOauth(
+          user
+        )
+
+        const gCalRequestBody = {
+          //attendees: [
+          //  {
+          //    displayName: user.username,
+          //    // id has to be alpanumeric only
+          //    //TODO add transactions id
+          //    comment: `txId: abc123, userId: ${user.id}`,
+          //  },
+          //],
+          summary: event.title,
+          description: event.description,
+          end: {
+            dateTime: dayjs(bookingSlot.bookedDate)
+              .add(bookingSlot.bookedDuration, "milliseconds")
+              .toISOString(),
+            timeZone: "UTC",
+          },
+          start: {
+            dateTime: bookingSlot.bookedDate,
+            timeZone: "UTC",
+          },
+          id: Buffer.from(bookingSlot.id).toString("hex"),
+          organizer: { displayName: event.organizerAlias },
+        }
+
+        if (
+          organizerOAuthToken &&
+          typeof organizerOAuthToken === "string" &&
+          event.organizer.googleApiCredentials
+        ) {
+          let oldCred = JSON.parse(event.organizer.googleApiCredentials)
+          user.googleApiCredentials = JSON.stringify({
+            ...oldCred,
+            access_token: organizerOAuthToken,
+          })
+          let organizerCalRes =
+            await new GoogleApiService().createUserGoogleCalendarEvent(
+              organizerOAuthToken,
+              gCalRequestBody
+            )
+          console.log("google res organizer ", organizerCalRes)
+        }
+        if (
+          attendeeOAuthToken &&
+          typeof attendeeOAuthToken === "string" &&
+          createGoogleCalEvent &&
+          user.googleApiCredentials
+        ) {
+          if (createGoogleCalEvent) {
+            let oldCred = JSON.parse(user.googleApiCredentials)
+            user.googleApiCredentials = JSON.stringify({
+              ...oldCred,
+              access_token: attendeeOAuthToken,
+            })
+            let attendeeCalRes =
+              await new GoogleApiService().createUserGoogleCalendarEvent(
+                attendeeOAuthToken,
+                gCalRequestBody
+              )
+            console.log("google res attendee ", attendeeCalRes)
+          }
+        }
+      }
 
       if (event.organizer.messagingToken)
         await sendBookedEventMessage(

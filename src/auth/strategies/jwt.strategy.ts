@@ -14,6 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload): Promise<any> {
-    return { ...payload, id: payload.sub }
+    const { sub, ...rest } = payload
+    return { ...rest, id: sub }
   }
 }

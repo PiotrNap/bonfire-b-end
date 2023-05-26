@@ -1,6 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
-import { FindManyOptions, Repository, UpdateResult } from "typeorm"
+import { FindManyOptions, Repository } from "typeorm"
 import { JWTUserDto, UserDto } from "./dto/user.dto"
 import { UserEntity } from "../model/user.entity"
 import { toUserDto } from "../common/mapper"
@@ -25,6 +25,7 @@ export class UsersService {
 
   async findOne(options: any, toDto: boolean = true): Promise<UserDto> {
     const user = await this.userRepo.findOne({ where: { ...options } })
+    console.log(user)
 
     if (toDto) return toUserDto(user)
 
@@ -48,10 +49,13 @@ export class UsersService {
       if (organizer) user = await this.organizerRepo.findOne(id)
       if (attendee) user = await this.userRepo.findOne(id)
 
-      if (typeof values === "object")
+      if (typeof values === "object") {
         for (let key in values) {
           user[`${key}`] = values[key]
         }
+      }
+
+      console.log("updating ", user)
 
       if (organizer) await this.organizerRepo.save(user)
       if (attendee) await this.userRepo.save(user)
@@ -72,6 +76,8 @@ export class UsersService {
 
   async challengeLogin(payload: ChallengeResponseDTO): Promise<UserDto> {
     const { signature, challengeString, userCredential } = payload
+    console.log("payload ", payload)
+
     var user: UserEntity = await this.userRepo.findOne({
       where: userCredential,
     })
@@ -119,12 +125,13 @@ export class UsersService {
 
     try {
       let newUser: any
-      const { name, publicKey } = newUserDto
+      const { name, publicKey, timeZone } = newUserDto
       newUser = new UserEntity()
       newUser.name = name
       newUser.username = username
       newUser.publicKey = publicKey
       newUser.profileType = profileType
+      newUser.timeZone = timeZone
 
       if (profileType === "organizer") {
         await this.organizerRepo.save(newUser)
@@ -137,7 +144,8 @@ export class UsersService {
         newUser.username,
         newUser.publicKey,
         newUser.id,
-        newUser.profileType
+        newUser.profileType,
+        newUser.timeZone
       )
 
       return userDto

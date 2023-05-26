@@ -9,6 +9,7 @@ export class UserDto {
   createdOn?: Date
   calendarToken?: string | null
   refreshToken?: string | null
+  timeZone?: any
 }
 
 export class OrganizerDTO extends UserDto {
@@ -25,4 +26,6 @@ export class JWTUserDto {
   username: string
   publicKey: string
   profileType: string
+  iat: number
+  exp: number
 }

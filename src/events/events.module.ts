@@ -7,6 +7,7 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { BookingSlotEntity } from "src/model/bookingSlot.entity"
 import { OrganizerEntity } from "src/model/organizer.entity"
 import { UserEntity } from "src/model/user.entity"
+import { EventStatistics } from "src/model/eventStatistics.entity"
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { UserEntity } from "src/model/user.entity"
       OrganizerEntity,
       UserEntity,
       BookingSlotEntity,
+      EventStatistics,
     ]),
   ],
   controllers: [EventsController],

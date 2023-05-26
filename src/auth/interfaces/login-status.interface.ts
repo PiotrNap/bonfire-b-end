@@ -7,4 +7,5 @@ export interface LoginStatus {
   expiresIn: any
   profileImage: any
   hourlyRate: HourlyRate
+  timeZone: any
 }

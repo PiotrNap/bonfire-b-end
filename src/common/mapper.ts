@@ -8,6 +8,7 @@ export const toUserDto = (data: any) => {
     profileImage,
     hourlyRate,
   }
+  console.log(hourlyRate)
 
   if (data.profileType === "attendee") return user
   if (data.profileType === "organizer")

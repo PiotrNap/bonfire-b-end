@@ -57,6 +57,7 @@ export class AuthService {
       profileType: user.profileType,
       profileImage: user.profileImage,
       hourlyRate: user.hourlyRate,
+      timeZone: user.timeZone,
       ...token,
     }
   }

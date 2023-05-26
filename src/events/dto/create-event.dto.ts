@@ -52,4 +52,7 @@ export class CreateEventDto {
 
   @IsObject()
   organizer: EventUser
+
+  @IsBoolean()
+  gCalEventsBooking: boolean
 }

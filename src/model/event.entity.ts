@@ -64,6 +64,9 @@ export class EventEntity extends BaseEntity {
   @Column("boolean", { default: true })
   available: boolean
 
+  @Column("boolean", { default: false, nullable: true })
+  gCalEventsBooking: boolean
+
   @ManyToOne(
     () => OrganizerEntity,
     (organizer: OrganizerEntity) => organizer.events

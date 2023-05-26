@@ -58,7 +58,6 @@ export class AuthController {
   @Get("google-oauth-callback")
   public async oauthGoogleCallback(@Res() res: any, @Query() query: any) {
     const result = await new GoogleApiService().handleGoogleOauthCallback(query)
-
     if (!result) {
       throw new UnprocessableEntityException()
     }

@@ -1,6 +1,5 @@
 import { google } from "googleapis"
 import { getRepository, Repository } from "typeorm"
-import dayjs from "dayjs"
 
 import { generateSecretState } from "../../auth/auth.helpers"
 import { validateSecretState } from "../../auth/auth.helpers"
@@ -26,7 +25,7 @@ export class GoogleApiService {
   /**
    * @description Exchange the user code for access_token and refresh_token.
    *              The refresh_token will only be returned once after
-   *              first authorization (or after user revoke app permissions).
+   *              first authorization (or after user revoking app permissions).
    * @param code (string)
    */
   public async getUserAccessToken(
@@ -40,7 +39,6 @@ export class GoogleApiService {
       const credentials = await auth.getToken(code)
 
       if (credentials.tokens) {
-        console.log("got new credentials")
         let missingScope = false
         let scopes = credentials.tokens.scope.split(" ")
         this.baseGoogleScope.map((val) =>
@@ -68,7 +66,6 @@ export class GoogleApiService {
 
   public async handleGoogleOauthCallback(query: any): Promise<any> {
     const { code, state } = query
-    console.log(query)
     const [hash, id] = state.split("_")
     const user = await this.userRepo.findOneOrFail(id)
     const path = user.deepLinkingCallbackUri
@@ -143,16 +140,21 @@ export class GoogleApiService {
   }
 
   public async checkValidOauth(user: UserEntity) {
+    user = await this.userRepo.findOneOrFail(user.id)
+
     if (user.googleApiCredentials) {
       const { expiry_date, refresh_token } = JSON.parse(
         user.googleApiCredentials
       )
+      const client = this.generateOAuthClient()
 
       if (!refresh_token) return false
-      if (dayjs(expiry_date).toDate() < dayjs().toDate()) {
-        this.getUserAccessToken
+      if (new Date(expiry_date) < new Date()) {
+        client.credentials.refresh_token = refresh_token
+        const { Authorization } = await client.getRequestHeaders()
+        const accessToken = Authorization.split(" ")[1]
+        return accessToken
       }
-
       if (user.lastUsedRefreshToken !== null) {
         const current = new Date()
         const sixMonthsFrom = new Date(user.lastUsedRefreshToken)
@@ -169,7 +171,7 @@ export class GoogleApiService {
    * of a specific user
    */
   public getUserGoogleCalendarEvents(query: any, userId: string) {
-    let auth = this.generateOAuthClient()
+    let client = this.generateOAuthClient()
 
     // const content = readFileSync("userTokens.json", "utf8")
     // const { refresh_token, access_token } = JSON.parse(content)
@@ -180,7 +182,7 @@ export class GoogleApiService {
     // })
     const calendar = google.calendar({
       version: "v3",
-      auth,
+      auth: client,
     })
     const timeMin = (
       query?.fromTime ? new Date(Number(query.fromTime)) : new Date()
@@ -206,7 +208,43 @@ export class GoogleApiService {
     })
   }
 
-  public createUserGoogleCalendarEvent() {
-    let auth = this.generateOAuthClient()
+  public async createUserGoogleCalendarEvent(
+    access_token: string,
+    requestBody: any
+  ) {
+    let client = this.generateOAuthClient()
+    client.credentials.access_token = access_token
+
+    const calendar = google.calendar({
+      version: "v3",
+      auth: client,
+    })
+
+    return await calendar.events.insert(
+      {
+        calendarId: "primary",
+        maxAttendees: 1,
+        sendNotifications: true,
+        requestBody,
+      },
+      { responseType: "json" }
+    )
   }
+
+  // public async hasValidGoogleAuthToken(user: UserEntity): Promise<boolean> {
+  //   if (!user.googleApiCredentials) return false
+
+  //   const { refresh_token, expiry_date, access_token } = JSON.parse(
+  //     user?.googleApiCredentials
+  //   )
+  //   const client = this.generateOAuthClient()
+  //   client.credentials.refresh_token = refresh_token
+
+  //   try {
+  //     const res = await client.getRequestHeaders()
+  //     console.log(res)
+  //   } catch (e) {
+  //     console.log(e)
+  //   }
+  // }
 }

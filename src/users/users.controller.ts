@@ -158,6 +158,7 @@ export class UsersController {
     @Param("uuid", ParseUUIDPipe) uuid: string,
     @Req() req: any
   ): Promise<any> {
+    console.log(req.user)
     const { user } = req
     checkIfAuthorized(user.id, uuid)
 

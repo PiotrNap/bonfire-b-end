@@ -98,10 +98,10 @@ export class EventsController {
     return await this.eventsService.removeBookedEventSlot(uuid, req.user)
   }
 
-  @Put("booking/:uuid")
-  public async updateBooking(@Param("uuid", new ParseUUIDPipe()) uuid: string) {
-    return `Booking with id ${uuid} updated successfully.`
-  }
+  // @Put("booking/:uuid")
+  // public async updateBooking(@Param("uuid", new ParseUUIDPipe()) uuid: string) {
+  //   return `Booking with id ${uuid} updated successfully.`
+  // }
 
   @Get(":uuid")
   public async getEventById(@Param("uuid", new ParseUUIDPipe()) uuid: string) {
