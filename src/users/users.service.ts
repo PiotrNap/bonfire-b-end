@@ -25,11 +25,7 @@ export class UsersService {
 
   async findOne(options: any, toDto: boolean = true): Promise<UserDto> {
     const user = await this.userRepo.findOne({ where: { ...options } })
-    console.log(user)
-
-    if (toDto) return toUserDto(user)
-
-    return user
+    if (user && toDto) return toUserDto(user)
   }
 
   async updateUserSettings(settings: any, id: string) {
@@ -55,8 +51,6 @@ export class UsersService {
         }
       }
 
-      console.log("updating ", user)
-
       if (organizer) await this.organizerRepo.save(user)
       if (attendee) await this.userRepo.save(user)
 
@@ -76,14 +70,19 @@ export class UsersService {
 
   async challengeLogin(payload: ChallengeResponseDTO): Promise<UserDto> {
     const { signature, challengeString, userCredential } = payload
-    console.log("payload ", payload)
-
-    var user: UserEntity = await this.userRepo.findOne({
-      where: userCredential,
-    })
+    const { id, publicKey } = userCredential
+    const user: UserEntity = await this.userRepo.findOne(id)
 
     if (!user) {
       throw new HttpException("User not found", HttpStatus.UNAUTHORIZED)
+    }
+
+    // @TODO initial work-around. When user interrupts registration and publicKey
+    // is empty
+    if (!user.publicKey) {
+      user.publicKey = publicKey
+      console.log("saving new user ", user)
+      await this.userRepo.save(user)
     }
 
     const valid = new ChallengeResponseValidation().validate(
@@ -92,11 +91,9 @@ export class UsersService {
       challengeString,
       userCredential
     )
-
     if (!valid) {
       throw new HttpException("Invalid credentials", HttpStatus.UNAUTHORIZED)
     }
-
     return toUserDto(user)
   }
 

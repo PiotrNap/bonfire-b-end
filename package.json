@@ -21,7 +21,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "start:debug": "nest start --debug --watch",
+    "start:debug": "yarn start:dev:db && nest start --debug --watch",
     "start:dev": "yarn start:dev:db && nest start --watch",
     "start:dev:db": "./src/scripts/start-db.sh",
     "start:prod": "node dist/main",

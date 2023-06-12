@@ -144,12 +144,14 @@ export class UsersController {
     const success = this.usersService.removeProfileImage(uuid, user)
 
     if (!success) throw new NotFoundException()
-    return
   }
 
   @Get(":uuid")
   public async getUserById(@Param("uuid", ParseUUIDPipe) uuid: string) {
-    return await this.usersService.findOne({ id: uuid }, true)
+    const user = await this.usersService.findOne({ id: uuid }, true)
+
+    if (!user) throw new NotFoundException()
+    return user
   }
 
   @Put(":uuid")
@@ -185,6 +187,7 @@ export class UsersController {
     @Req() req: any
   ): Promise<any> {
     const { user } = req
+    console.log(user, uuid)
     checkIfAuthorized(user.id, uuid)
 
     const events = await this.usersService.getCalendarEvents(

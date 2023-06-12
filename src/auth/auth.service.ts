@@ -47,7 +47,6 @@ export class AuthService {
 
   async login(payload: ChallengeResponseDTO): Promise<LoginStatus> {
     const user = await this.usersService.challengeLogin(payload)
-
     // generate and sign token
     const token = this._createToken(user)
 

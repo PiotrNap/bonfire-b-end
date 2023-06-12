@@ -14,15 +14,12 @@ export class ChallengeResponseValidation {
     var TTL = 600000 // time to live 10 minutes
 
     var challArray = base64ToUTF8(challenge).split("_")
-    var [challengeCredential, challengeTime, challengeHash] = challArray
+    var [publicKey, challengeTime, challengeHash] = challArray
 
     var passedTime = new Date().getTime() - Number(challengeTime)
-    var newHash = sha256(
-      challengeCredential + challengeTime + process.env.JWT_SECRET
-    )
-
+    var newHash = sha256(publicKey + challengeTime + process.env.JWT_SECRET)
     if (
-      challengeCredential !== user[Object.keys(userCredential)[0]] ||
+      publicKey !== userCredential.publicKey ||
       passedTime > TTL ||
       challengeHash !== newHash
     )
