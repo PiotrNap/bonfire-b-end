@@ -59,7 +59,7 @@ export const euro = Buffer.from([0xe2, 0x82, 0xac])
 
 export const unixTime = Math.floor(Date.now())
 export function localTimeStamp() {
-  return new Date(Date.now())
+  return new Date().toISOString()
 }
 export const isoTime = new Date(Math.floor(Date.now())).toISOString()
 export const expiry = new Date(Math.floor(Date.now()) + 1000 * 3600)

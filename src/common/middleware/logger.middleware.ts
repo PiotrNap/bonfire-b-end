@@ -1,22 +1,22 @@
 import { Request, Response, NextFunction } from "express"
 import { v4 as uuidv4 } from "uuid"
-let eventID = uuidv4()
 import { localTimeStamp } from "../utils"
 
 export async function logger(req: Request, res: Response, next: NextFunction) {
-  console.log(
-    "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-  )
-  console.log(eventID + ":" + localTimeStamp())
-  console.log("Requsted URL: ", req.originalUrl, " | ", "Method: ", req.method)
+  const eventID = uuidv4()
+  const baseLog = `${localTimeStamp().replace("T", " ")} [${eventID.substring(
+    eventID.length - 8,
+    eventID.length
+  )}]`
+  console.log(baseLog + " --> ", req.originalUrl, " | ", "Method: ", req.method)
+
   if (req.method === "POST" || req.method === "PUT")
-    console.log("Body: ", req.body)
-  // console.log(
-  //   `New ${req.socket.remoteFamily} request from [${req.socket.remoteAddress}]:${req.socket.remotePort}`
-  // )
+    console.log("Request body: ", req.body)
+
+  res.on("finish", () => {
+    console.log(baseLog + " <-- ", res.statusCode + " " + res.statusMessage)
+    // Here you can access response object properties like res.statusCode
+  })
 
   next()
-  console.log(
-    "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-  )
 }
