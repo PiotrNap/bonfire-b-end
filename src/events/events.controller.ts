@@ -16,7 +16,6 @@ import {
   UseInterceptors,
 } from "@nestjs/common"
 import { FileInterceptor } from "@nestjs/platform-express"
-import { roles, Roles } from "src/auth/roles/roles.decorator"
 import { Public } from "src/common/decorators/public.decorator"
 import { isNSFW } from "src/common/utils"
 import { PaginationRequestDto } from "src/pagination"
@@ -109,13 +108,11 @@ export class EventsController {
   }
 
   @Post()
-  @Roles(roles.organizer)
   public async createEvent(@Body() createEventDto: CreateEventDto) {
     return await this.eventsService.create(createEventDto)
   }
 
   @Put(":uuid")
-  @Roles(roles.organizer)
   public async updateEvent(
     @Param("uuid", new ParseUUIDPipe()) uuid: string,
     @Body() body: any,
@@ -126,7 +123,6 @@ export class EventsController {
   }
 
   @Delete(":uuid")
-  @Roles(roles.organizer)
   public async removeEvent(
     @Param("uuid", new ParseUUIDPipe()) uuid: string,
     @Req() req: any
@@ -156,7 +152,6 @@ export class EventsController {
   /**
    * Returns event bookings (scheduled meetings)
    */
-  @Roles(roles.organizer)
   @Get(":uuid/booking")
   public async getEventBookings(
     @Param("uuid", ParseUUIDPipe) uuid: string,

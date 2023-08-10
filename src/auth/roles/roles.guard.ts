@@ -1,6 +1,5 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common"
 import { Reflector } from "@nestjs/core"
-import { JwtPayload } from "../interfaces/payload.interface"
 import { RolesType, ROLES_KEY } from "./roles.decorator"
 
 @Injectable()
@@ -18,9 +17,7 @@ export class RolesGuard implements CanActivate {
     }
 
     const { user } = context.switchToHttp().getRequest()
-    const { profileType }: JwtPayload = user
-
     // check if profile type is the required one
-    return requiredRoles.some((role: string) => profileType === role)
+    // return requiredRoles.some((role: string) => profileType === role)
   }
 }

@@ -22,7 +22,6 @@ import { UpdateUserDto } from "./dto/user-update.dto"
 import { Public } from "src/common/decorators/public.decorator"
 import { PaginationRequestDto, PaginationResult } from "src/pagination"
 import { UserEntity } from "src/model/user.entity"
-import { CreateOrganizerDto } from "./dto/organizer.dto"
 import { FileInterceptor } from "@nestjs/platform-express"
 import { isNSFW } from "src/common/utils"
 import { checkIfAuthorized } from "src/auth/auth.helpers"
@@ -58,54 +57,8 @@ export class UsersController {
 
   @Public()
   @Post("register")
-  public async registerUser(
-    @Body() body: CreateUserDto | CreateOrganizerDto
-  ): Promise<UserDto> {
+  public async registerUser(@Body() body: CreateUserDto): Promise<UserDto> {
     return await this.usersService.register(body)
-  }
-
-  @Get("attendees")
-  public async getAttendees(
-    @Query() query: PaginationRequestDto
-  ): Promise<any> {
-    let attendees: any
-
-    if (Object.keys(query).length) {
-      attendees = this.usersService.getWithPagination(
-        query,
-        undefined,
-        "attendee"
-      )
-    } else {
-      // TODO this shouldn't be in production
-      attendees = await this.usersService.getAllAttendees()
-    }
-
-    if (!attendees) return new NotFoundException()
-
-    return attendees
-  }
-
-  @Get("organizers")
-  public async getOrganizers(
-    @Query() query: PaginationRequestDto
-  ): Promise<any> {
-    let organizers: any
-
-    if (Object.keys(query).length) {
-      organizers = this.usersService.getWithPagination(
-        query,
-        undefined,
-        "organizer"
-      )
-    } else {
-      // TODO this shouldn't be in production
-      organizers = await this.usersService.getAllOrganizers()
-    }
-
-    if (!organizers) return new NotFoundException()
-
-    return organizers
   }
 
   @Post("files/profile-image")
@@ -164,7 +117,7 @@ export class UsersController {
     const { user } = req
     checkIfAuthorized(user.id, uuid)
 
-    return await this.usersService.updateUser(body, uuid, user.profileType)
+    return await this.usersService.updateUser(body, uuid)
   }
 
   //TODO needs to be tested
@@ -192,7 +145,6 @@ export class UsersController {
 
     const events = await this.usersService.getCalendarEvents(
       uuid,
-      user.profileType,
       query.date || new Date()
     )
 
@@ -208,7 +160,7 @@ export class UsersController {
   ) {
     const { user } = req
     checkIfAuthorized(user.id, uuid)
-    const slots = await this.usersService.getUserBookingSlots(uuid, user.id)
+    const slots = await this.usersService.getUserBookingSlots(uuid)
 
     if (!slots) throw new UnprocessableEntityException()
 

@@ -13,14 +13,13 @@ import { Equal, FindManyOptions, ILike, Repository } from "typeorm"
 import { CreateEventDto } from "./dto/create-event.dto"
 import { EventBookingDto } from "./dto/event-booking.dto"
 import { UpdateEventDto } from "./dto/update-event.dto"
-import { OrganizerEntity } from "src/model/organizer.entity"
 import { EventPaginationDto } from "./dto/event-pagination.dto"
 import { JWTUserDto } from "src/users/dto/user.dto"
 import { sendBookedEventMessage } from "src/common/firebase"
 import { EventStatistics } from "src/model/eventStatistics.entity"
 import { UserEntity } from "src/model/user.entity"
 import { GoogleApiService } from "src/common/google/googleApiService"
-import * as dayjs from "dayjs"
+import dayjs from "dayjs"
 
 @Injectable()
 export class EventsService {
@@ -29,8 +28,6 @@ export class EventsService {
     private readonly eventsRepository: Repository<EventEntity>,
     @InjectRepository(BookingSlotEntity)
     private readonly bookingSlotRepository: Repository<BookingSlotEntity>,
-    @InjectRepository(OrganizerEntity)
-    private readonly organizerRepository: Repository<OrganizerEntity>,
     @InjectRepository(EventStatistics)
     private readonly eventStatistics: Repository<EventStatistics>,
     @InjectRepository(UserEntity)
@@ -55,7 +52,7 @@ export class EventsService {
     } = createEventDto
     try {
       let event: EventEntity = new EventEntity()
-      let user: OrganizerEntity = await this.organizerRepository.findOne({
+      let user: UserEntity = await this.userRepository.findOne({
         where: { id: organizer.id },
         relations: ["events"],
       })
@@ -70,17 +67,14 @@ export class EventsService {
       event.tags = tags
       event.fromDate = fromDate
       event.toDate = toDate
-      event.hourlyRate = {
-        ada: hourlyRate?.ada || user.hourlyRate.ada,
-        gimbals: hourlyRate?.gimbals || user.hourlyRate.gimbals,
-      }
+      event.hourlyRate = hourlyRate
       event.privateEvent = privateEvent
       event.eventCardColor = eventCardColor
       event.eventTitleColor = eventTitleColor
       event.organizerAlias = user.username
       event.gCalEventsBooking = gCalEventsBooking
       user.events = [...user.events, event]
-      await this.organizerRepository.save(user)
+      await this.userRepository.save(user)
 
       /*
        * Create event statistics record
@@ -131,6 +125,7 @@ export class EventsService {
           "eventCardImage",
           "organizerId",
           "organizerAlias",
+          "hourlyRate",
         ],
         order: {
           createDateTime: "ASC",
@@ -138,8 +133,8 @@ export class EventsService {
         // select only available events
         where: {
           available: true,
-          ...(paginationRequestDto?.organizer_id
-            ? { organizerId: paginationRequestDto.organizer_id }
+          ...(paginationRequestDto?.user_id
+            ? { organizerId: paginationRequestDto.user_id }
             : {}),
         },
         // default cache time = 1s
@@ -380,13 +375,13 @@ export class EventsService {
         }
       }
 
-      if (event.organizer.messagingToken)
-        await sendBookedEventMessage(
-          event.organizer.messagingToken,
-          user.username,
-          event.title,
-          event.id
-        )
+      // if (event.organizer.messagingToken)
+      //   await sendBookedEventMessage(
+      //     event.organizer.messagingToken,
+      //     user.username,
+      //     event.title,
+      //     event.id
+      //   )
 
       return bookingSlot.id
     } catch (e) {

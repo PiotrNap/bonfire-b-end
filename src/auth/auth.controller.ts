@@ -106,7 +106,6 @@ export class AuthController {
   //TODO this shouldn't be public
   @Public()
   @Get("google-cal-events")
-  @Roles(roles.organizer)
   public async getEvents(@Query() query: any, @Req() req: any) {
     const { user } = req.user
     const events = await new GoogleApiService().getUserGoogleCalendarEvents(

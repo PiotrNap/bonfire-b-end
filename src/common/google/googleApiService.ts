@@ -211,7 +211,7 @@ export class GoogleApiService {
   public async createUserGoogleCalendarEvent(
     access_token: string,
     requestBody: any
-  ) {
+  ): Promise<any> {
     let client = this.generateOAuthClient()
     client.credentials.access_token = access_token
 

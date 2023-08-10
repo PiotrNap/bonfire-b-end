@@ -1,10 +1,9 @@
 import { SetMetadata } from "@nestjs/common"
 
-export type RolesType = "admin" | "attendee" | "organizer"
+export type RolesType = "admin" | "user"
 export const roles: Record<RolesType, string> = {
   admin: "admin",
-  attendee: "attendee",
-  organizer: "organizer",
+  user: "user",
 }
 
 export const ROLES_KEY = "roles"

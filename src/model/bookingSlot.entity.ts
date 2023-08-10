@@ -1,7 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm"
 import { BaseEntity } from "./base.entity"
 import { EventEntity } from "./event.entity"
-import { OrganizerEntity } from "./organizer.entity"
 import { UserEntity } from "./user.entity"
 
 @Entity()
@@ -39,10 +38,10 @@ export class BookingSlotEntity extends BaseEntity {
   @ManyToOne(() => UserEntity, (user: UserEntity) => user.id, { cascade: true })
   attendee: UserEntity
 
-  @ManyToOne(() => OrganizerEntity, (user: OrganizerEntity) => user.id, {
+  @ManyToOne(() => UserEntity, (user: UserEntity) => user.id, {
     cascade: true,
   })
-  organizer: OrganizerEntity
+  organizer: UserEntity
 
   // duration in milliseconds
   @Column({ type: "int" })

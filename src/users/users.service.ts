@@ -4,23 +4,15 @@ import { FindManyOptions, Repository } from "typeorm"
 import { JWTUserDto, UserDto } from "./dto/user.dto"
 import { UserEntity } from "../model/user.entity"
 import { toUserDto } from "../common/mapper"
-import { CreateUserDto } from "./dto/user-create.dto"
 import { ChallengeResponseValidation } from "../common/challengeValidation"
 import { ChallengeResponseDTO } from "./dto/challenge-response.dto"
 import { PaginationRequestDto, PaginationResult } from "src/pagination"
-import { OrganizerEntity } from "src/model/organizer.entity"
-import { CreateOrganizerDto } from "./dto/organizer.dto"
-import { AttendeeEntity } from "src/model/attendee.entity"
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
-    private readonly userRepo: Repository<UserEntity>,
-    @InjectRepository(OrganizerEntity)
-    private readonly organizerRepo: Repository<OrganizerEntity>,
-    @InjectRepository(AttendeeEntity)
-    private readonly attendeeRepo: Repository<AttendeeEntity>
+    private readonly userRepo: Repository<UserEntity>
   ) {}
 
   async findOne(options: any, toDto: boolean = true): Promise<UserDto> {
@@ -32,27 +24,18 @@ export class UsersService {
     return await this.userRepo.update(id, { userSettings: settings })
   }
 
-  async updateUser(
-    values: any,
-    id: string,
-    profileType: UserEntity["profileType"]
-  ): Promise<any> {
-    const organizer = profileType === "organizer"
-    const attendee = profileType === "attendee"
+  async updateUser(values: any, id: string): Promise<any> {
     let user: any
 
     try {
-      if (organizer) user = await this.organizerRepo.findOne(id)
-      if (attendee) user = await this.userRepo.findOne(id)
+      user = this.userRepo.findOne(id)
 
       if (typeof values === "object") {
         for (let key in values) {
           user[`${key}`] = values[key]
         }
       }
-
-      if (organizer) await this.organizerRepo.save(user)
-      if (attendee) await this.userRepo.save(user)
+      await this.userRepo.save(user)
 
       return {
         status: 201,
@@ -110,10 +93,8 @@ export class UsersService {
     return users
   }
 
-  async register(
-    newUserDto: CreateUserDto | CreateOrganizerDto
-  ): Promise<UserDto> {
-    const { username, profileType } = newUserDto
+  async register(newUserDto: UserDto): Promise<UserDto> {
+    const { username } = newUserDto
     const user = await this.userRepo.findOne({ username })
 
     if (user) {
@@ -122,30 +103,28 @@ export class UsersService {
 
     try {
       let newUser: any
-      const { name, publicKey, timeZone } = newUserDto
+      const {
+        publicKey,
+        hourlyRateAda,
+        baseAddress,
+        bio,
+        profession,
+        skills,
+        jobTitle,
+      } = newUserDto
       newUser = new UserEntity()
-      newUser.name = name
       newUser.username = username
       newUser.publicKey = publicKey
-      newUser.profileType = profileType
-      newUser.timeZone = timeZone
+      newUser.hourlyRateAda = hourlyRateAda
+      newUser.baseAddress = baseAddress
+      newUser.bio = bio
+      newUser.profession = profession
+      newUser.skills = skills
+      newUser.jobTitle = jobTitle
 
-      if (profileType === "organizer") {
-        await this.organizerRepo.save(newUser)
-      } else if (profileType === "attendee") {
-        await this.attendeeRepo.save(newUser)
-      }
+      newUser = await this.userRepo.save(newUser)
 
-      const userDto = new CreateUserDto(
-        newUser.name,
-        newUser.username,
-        newUser.publicKey,
-        newUser.id,
-        newUser.profileType,
-        newUser.timeZone
-      )
-
-      return userDto
+      return { username, id: newUser.id }
     } catch (e) {
       console.error(e)
       throw new HttpException(
@@ -165,87 +144,56 @@ export class UsersService {
     return users
   }
 
-  async getAllOrganizers(): Promise<OrganizerEntity[]> {
-    const organizers = await this.organizerRepo.find({
-      relations: ["events", "bookedSlots", "scheduledSlots"],
-    })
+  // async getAllOrganizers(): Promise<OrganizerEntity[]> {
+  //   const organizers = await this.organizerRepo.find({
+  //     relations: ["events", "bookedSlots", "scheduledSlots"],
+  //   })
 
-    return organizers
-  }
+  //   return organizers
+  // }
 
-  async getAllAttendees(): Promise<AttendeeEntity[]> {
-    const attendees = await this.attendeeRepo.find({
-      relations: ["bookedSlots"],
-    })
+  // async getAllAttendees(): Promise<AttendeeEntity[]> {
+  //   const attendees = await this.attendeeRepo.find({
+  //     relations: ["bookedSlots"],
+  //   })
 
-    return attendees
-  }
+  //   return attendees
+  // }
 
-  async getCalendarEvents(
-    id: string,
-    profileType: string,
-    date: Date
-  ): Promise<any | void> {
-    if (profileType === "organizer") {
-      let { bookedSlots, scheduledSlots, events }: OrganizerEntity =
-        await this.organizerRepo.findOne(id, {
-          relations: ["bookedSlots", "scheduledSlots", "events"],
-        })
+  async getCalendarEvents(id: string, date: Date): Promise<any | void> {
+    let { bookedSlots, scheduledSlots, events }: UserEntity =
+      await this.userRepo.findOne(id, {
+        relations: ["bookedSlots", "scheduledSlots", "events"],
+      })
 
-      const filterByDate = (entities: any[]) => {
-        return entities.filter((entity) => {
-          const searchYear = new Date(date).getFullYear()
-          const searchMonth = new Date(date).getMonth()
+    const filterByDate = (entities: any[]) => {
+      return entities.filter((entity) => {
+        const searchYear = new Date(date).getFullYear()
+        const searchMonth = new Date(date).getMonth()
 
-          const searchFrom = new Date(searchYear, searchMonth)
-          const searchTo = new Date(
-            searchYear,
-            new Date(date).getMonth() + 1,
-            0
-          )
-          if (entity.bookedDate)
-            return (
-              entity.bookedDate > searchFrom && entity.bookedDate < searchTo
-            )
+        const searchFrom = new Date(searchYear, searchMonth)
+        const searchTo = new Date(searchYear, new Date(date).getMonth() + 1, 0)
+        if (entity.bookedDate)
+          return entity.bookedDate > searchFrom && entity.bookedDate < searchTo
 
-          return entity.fromDate > searchFrom
-        })
-      }
-
-      return {
-        bookedSlots: filterByDate(bookedSlots),
-        scheduledSlots: filterByDate(scheduledSlots),
-        events: filterByDate(events),
-      }
+        return entity.fromDate > searchFrom
+      })
     }
 
-    if (profileType === "attendee") {
-      const { bookedSlots }: AttendeeEntity = await this.attendeeRepo.findOne(
-        id,
-        {
-          relations: ["bookedSlots"],
-        }
-      )
-
-      return bookedSlots
+    return {
+      bookedSlots: filterByDate(bookedSlots),
+      scheduledSlots: filterByDate(scheduledSlots),
+      events: filterByDate(events),
     }
   }
 
   async getWithPagination(
     paginationRequestDto: PaginationRequestDto,
-    options?: FindManyOptions<UserEntity>,
-    repositoryName?: "organizer" | "attendee"
+    options?: FindManyOptions<UserEntity>
   ): Promise<PaginationResult<any> | void> {
     let repo: any
 
-    if (repositoryName === "organizer") {
-      repo = this.organizerRepo
-    } else if (repositoryName === "attendee") {
-      repo = this.attendeeRepo
-    } else {
-      repo = this.userRepo
-    }
-
+    repo = this.userRepo
     try {
       let { limit, page } = paginationRequestDto
       page = Math.abs(Number(page))
@@ -300,17 +248,8 @@ export class UsersService {
     return user.profileImage
   }
 
-  async getUserBookingSlots(
-    uuid: string,
-    profileType: "organizer" | "attendee"
-  ) {
-    if (profileType === "attendee")
-      return await this.attendeeRepo
-        .findOne(uuid, {
-          relations: ["bookedSlots"],
-        })
-        .then((res) => res.bookedSlots)
-    return await this.organizerRepo
+  async getUserBookingSlots(uuid: string) {
+    return await this.userRepo
       .findOne(uuid, {
         relations: ["bookedSlots"],
       })

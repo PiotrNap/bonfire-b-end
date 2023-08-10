@@ -9,7 +9,6 @@ import {
   IsString,
   MaxLength,
 } from "class-validator"
-import { HourlyRate } from "src/common/lib/types"
 import { EventUser } from "src/model/event.entity"
 import { EventAvailability, SelectedDays } from "../events.interface"
 
@@ -39,7 +38,7 @@ export class CreateEventDto {
   tags?: string[]
 
   @IsNumber()
-  hourlyRate: HourlyRate
+  hourlyRate: number
 
   @IsBoolean()
   privateEvent: boolean

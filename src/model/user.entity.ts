@@ -1,5 +1,7 @@
-import { Entity, Column, TableInheritance } from "typeorm"
+import { Entity, Column, TableInheritance, OneToMany } from "typeorm"
 import { BaseEntity } from "./base.entity"
+import { EventEntity } from "./event.entity"
+import { BookingSlotEntity } from "./bookingSlot.entity"
 
 @Entity({ name: "user" })
 @TableInheritance({ column: { type: "varchar", name: "userType" } })
@@ -69,6 +71,41 @@ export class UserEntity extends BaseEntity {
 
   @Column({ type: "json", nullable: true })
   walletBaseAddress?: string
+
+  @Column({ name: "bio", type: "varchar", length: 250, nullable: true })
+  bio: string
+
+  @Column({ name: "profession", type: "varchar", length: 100, nullable: true })
+  profession?: string | string[]
+
+  @Column({ name: "jobTitle", type: "varchar", length: 100, nullable: true })
+  jobTitle?: string | string[]
+
+  @Column({ name: "skills", type: "varchar", length: 100, nullable: true })
+  skills?: string | string[]
+
+  @Column({ name: "hourlyRateAda", type: "int", nullable: true })
+  hourlyRateAda: number
+
+  // hosted events (events for sale)
+  @OneToMany(() => EventEntity, (event: EventEntity) => event.organizer, {
+    cascade: true,
+  })
+  events: EventEntity[]
+
+  // scheduled events as an attendee
+  @OneToMany(
+    () => BookingSlotEntity,
+    (bookingSlot: BookingSlotEntity) => bookingSlot.attendee
+  )
+  bookedSlots: BookingSlotEntity[]
+
+  // scheduled events as an organizer
+  @OneToMany(
+    () => BookingSlotEntity,
+    (bookingSlot: BookingSlotEntity) => bookingSlot.organizer
+  )
+  scheduledSlots: BookingSlotEntity[]
 }
 
 export type UserSettings = {

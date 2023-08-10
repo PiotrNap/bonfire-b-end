@@ -1,9 +1,8 @@
-import { HourlyRate } from "src/common/lib/types"
 import { EventAvailability, SelectedDays } from "src/events/events.interface"
 import { Entity, Column, ManyToOne, OneToMany } from "typeorm"
 import { BaseEntity } from "./base.entity"
 import { BookingSlotEntity } from "./bookingSlot.entity"
-import { OrganizerEntity } from "./organizer.entity"
+import { UserEntity } from "./user.entity"
 
 export interface EventUser {
   id: string // this should be a uuidv4 or uuidv5
@@ -40,8 +39,8 @@ export class EventEntity extends BaseEntity {
   @Column({ type: "simple-array" })
   tags?: string[]
 
-  @Column({ type: "json", nullable: true })
-  hourlyRate: HourlyRate
+  @Column({ type: "json" })
+  hourlyRate: any
 
   @Column({ type: "bytea", nullable: true })
   eventCardImage?: Buffer
@@ -67,11 +66,8 @@ export class EventEntity extends BaseEntity {
   @Column("boolean", { default: false, nullable: true })
   gCalEventsBooking: boolean
 
-  @ManyToOne(
-    () => OrganizerEntity,
-    (organizer: OrganizerEntity) => organizer.events
-  )
-  organizer: OrganizerEntity
+  @ManyToOne(() => UserEntity, (organizer: UserEntity) => organizer.events)
+  organizer: UserEntity
 
   // time slots wich are booked by other users
   @OneToMany(

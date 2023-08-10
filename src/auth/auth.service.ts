@@ -53,18 +53,17 @@ export class AuthService {
     return {
       username: user.username,
       id: user.id,
-      profileType: user.profileType,
       profileImage: user.profileImage,
-      hourlyRate: user.hourlyRate,
+      hourlyRateAda: user.hourlyRateAda,
       timeZone: user.timeZone,
       ...token,
     }
   }
 
-  private _createToken({ username, id, profileType }: UserDto): any {
+  private _createToken({ username, id }: UserDto): any {
     const expiresIn = process.env.EXPIRES_IN
 
-    const user: JwtPayload = { username, sub: id, profileType }
+    const user: JwtPayload = { username, sub: id }
     const accessToken = this.jwtService.sign(user)
 
     return {

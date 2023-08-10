@@ -1,40 +1,33 @@
 import { IsNotEmpty, MaxLength } from "class-validator"
+import { UserDto } from "./user.dto"
 
-export class CreateUserDto {
+export class CreateUserDto implements UserDto {
   constructor(
-    name: string,
     username: string,
     publicKey: string,
     id: string,
-    profileType: string,
     profileImage?: Buffer,
     timeZone?: string
   ) {
-    this.name = name
     this.username = username
     this.publicKey = publicKey
     this.id = id
-    this.profileType = profileType
     this.profileImage = profileImage
     this.timeZone = timeZone
   }
 
-  @IsNotEmpty({ message: "Name cannot be empty" })
-  @MaxLength(100)
-  name: string
-
   @IsNotEmpty({ message: "Username cannot be empty" })
   @MaxLength(100)
   username: string
-
-  @IsNotEmpty({ message: "Profile type cannot be empty" })
-  profileType: string
 
   @IsNotEmpty({ message: "Public key cannot be empty" })
   publicKey: string
 
   @IsNotEmpty({ message: "Id cannot be empty" })
   id: string
+
+  @IsNotEmpty({ message: "Base address cannot empty" })
+  baseAddress: string
 
   profileImage?: Buffer
   timeZone?: string

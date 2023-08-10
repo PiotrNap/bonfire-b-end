@@ -1,24 +1,20 @@
 export class UserDto {
   id: string
   username: string
-  profileType: string
+  baseAddress?: string
+  publicKey?: string
   profileImage?: Buffer
-  hourlyRate?: string | number
+  hourlyRateAda?: string | number
   googleApiCredentials?: string
   lastUsedRefreshToken?: Date
   createdOn?: Date
   calendarToken?: string | null
   refreshToken?: string | null
   timeZone?: any
-}
-
-export class OrganizerDTO extends UserDto {
-  bio: string
-  hourlyRate: number
+  bio?: string
   profession?: string
   jobTitle?: string
   skills?: string | string[]
-  tags?: string[]
 }
 
 export class JWTUserDto {
