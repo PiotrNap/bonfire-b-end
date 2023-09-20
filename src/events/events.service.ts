@@ -51,8 +51,8 @@ export class EventsService {
       gCalEventsBooking,
     } = createEventDto
     try {
-      let event: EventEntity = new EventEntity()
-      let user: UserEntity = await this.userRepository.findOne({
+      const event: EventEntity = new EventEntity()
+      const user: UserEntity = await this.userRepository.findOne({
         where: { id: organizer.id },
         relations: ["events"],
       })
@@ -108,7 +108,7 @@ export class EventsService {
       page = Math.abs(Number(page))
       limit = Math.abs(Number(limit))
       if (limit < 10) limit = 10
-      let skip = (page - 1) * limit
+      const skip = (page - 1) * limit
 
       const results = await this.eventsRepository.findAndCount({
         take: limit,
@@ -189,13 +189,13 @@ export class EventsService {
     updateEventDto: UpdateEventDto
   ): Promise<SuccessMessage | void> {
     try {
-      let oldEvent = await this.eventsRepository.findOne(id, {
+      const oldEvent = await this.eventsRepository.findOne(id, {
         relations: ["organizer"],
       })
       if (oldEvent === undefined) this.noEventError()
       if (oldEvent.organizerId !== userId) this.notAllowedError()
 
-      let newEvent = Object.assign({}, oldEvent, updateEventDto)
+      const newEvent = Object.assign({}, oldEvent, updateEventDto)
       await this.eventsRepository.save(newEvent)
 
       return {
@@ -209,7 +209,7 @@ export class EventsService {
 
   async removeEvent(id: string, userId: string): Promise<any> {
     try {
-      let event = await this.eventsRepository.findOne(id, {
+      const event = await this.eventsRepository.findOne(id, {
         relations: ["bookedSlots"],
       })
 
@@ -242,7 +242,7 @@ export class EventsService {
   }
 
   async bookEvent(
-    user: JWTUserDto | UserEntity,
+    user: UserEntity,
     eventBookingDto: EventBookingDto
   ): Promise<string | void> {
     const {
@@ -341,12 +341,12 @@ export class EventsService {
           typeof organizerOAuthToken === "string" &&
           event.organizer.googleApiCredentials
         ) {
-          let oldCred = JSON.parse(event.organizer.googleApiCredentials)
+          const oldCred = JSON.parse(event.organizer.googleApiCredentials)
           user.googleApiCredentials = JSON.stringify({
             ...oldCred,
             access_token: organizerOAuthToken,
           })
-          let organizerCalRes =
+          const organizerCalRes =
             await new GoogleApiService().createUserGoogleCalendarEvent(
               organizerOAuthToken,
               gCalRequestBody
@@ -360,12 +360,12 @@ export class EventsService {
           user.googleApiCredentials
         ) {
           if (createGoogleCalEvent) {
-            let oldCred = JSON.parse(user.googleApiCredentials)
+            const oldCred = JSON.parse(user.googleApiCredentials)
             user.googleApiCredentials = JSON.stringify({
               ...oldCred,
               access_token: attendeeOAuthToken,
             })
-            let attendeeCalRes =
+            const attendeeCalRes =
               await new GoogleApiService().createUserGoogleCalendarEvent(
                 attendeeOAuthToken,
                 gCalRequestBody
@@ -394,7 +394,7 @@ export class EventsService {
   }
 
   public getResults(searchQuery: string, organizerId: string) {
-    let findParams = []
+    const findParams = []
 
     if (searchQuery)
       findParams.push(

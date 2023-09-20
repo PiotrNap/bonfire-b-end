@@ -40,7 +40,7 @@ export class GoogleApiService {
 
       if (credentials.tokens) {
         let missingScope = false
-        let scopes = credentials.tokens.scope.split(" ")
+        const scopes = credentials.tokens.scope.split(" ")
         this.baseGoogleScope.map((val) =>
           !scopes.includes(val) ? (missingScope = true) : {}
         )
@@ -171,7 +171,7 @@ export class GoogleApiService {
    * of a specific user
    */
   public getUserGoogleCalendarEvents(query: any, userId: string) {
-    let client = this.generateOAuthClient()
+    const client = this.generateOAuthClient()
 
     // const content = readFileSync("userTokens.json", "utf8")
     // const { refresh_token, access_token } = JSON.parse(content)
@@ -212,7 +212,7 @@ export class GoogleApiService {
     access_token: string,
     requestBody: any
   ): Promise<any> {
-    let client = this.generateOAuthClient()
+    const client = this.generateOAuthClient()
     client.credentials.access_token = access_token
 
     const calendar = google.calendar({

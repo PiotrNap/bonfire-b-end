@@ -6,12 +6,4 @@ const validFor = (validityPeriod - currentTime) / 1000
 const tokenExpiry = new Date(validityPeriod)
 
 @Controller()
-export class AppController {
-  constructor(private readonly authService: AuthService) {}
-
-  @Get()
-  @Public()
-  sayHi(@Req() req: any) {
-    return "hi!\n"
-  }
-}
+export class AppController {}
