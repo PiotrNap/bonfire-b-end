@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common"
-import { CreateIdTokenDto } from "./dto/create-id-token.dto"
-import { UpdateIdTokenDto } from "./dto/update-id-token.dto"
+import { CreateIdTokenDto } from "./dto/create-id-token.dto.js"
+import { UpdateIdTokenDto } from "./dto/update-id-token.dto.js"
 
 @Injectable()
 export class IdTokenService {

@@ -7,9 +7,9 @@ import {
   Param,
   Delete,
 } from "@nestjs/common"
-import { IdTokenService } from "./id-token.service"
-import { CreateIdTokenDto } from "./dto/create-id-token.dto"
-import { UpdateIdTokenDto } from "./dto/update-id-token.dto"
+import { CreateIdTokenDto } from "./dto/create-id-token.dto.js"
+import { UpdateIdTokenDto } from "./dto/update-id-token.dto.js"
+import { IdTokenService } from "./id-token.service.js"
 
 @Controller("id-token")
 export class IdTokenController {

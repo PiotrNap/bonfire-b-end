@@ -1,5 +1,4 @@
-import { UserEntity } from "src/model/user.entity"
-import { base64ToUint8Array, base64ToUTF8 } from "src/common/utils"
+import { base64ToUint8Array, base64ToUTF8 } from "../common/utils.js"
 import { sha256 } from "js-sha256"
 import * as nacl from "tweetnacl"
 

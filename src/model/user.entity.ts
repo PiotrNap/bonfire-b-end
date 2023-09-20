@@ -1,7 +1,8 @@
 import { Entity, Column, TableInheritance, OneToMany } from "typeorm"
-import { BaseEntity } from "./base.entity"
-import { EventEntity } from "./event.entity"
-import { BookingSlotEntity } from "./bookingSlot.entity"
+import { BaseEntity } from "./base.entity.js"
+import { BookingSlotEntity } from "./bookingSlot.entity.js"
+import { DeviceCredentialEntity } from "./deviceCredential.entity.js"
+import { EventEntity } from "./event.entity.js"
 
 @Entity({ name: "user" })
 @TableInheritance({ column: { type: "varchar", name: "userType" } })

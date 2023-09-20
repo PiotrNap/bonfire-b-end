@@ -1,5 +1,5 @@
 import { messaging } from "firebase-admin"
-import { MessagingPayload } from "firebase-admin/lib/messaging/messaging-api"
+import { MessagingPayload } from "node_modules/firebase-admin/lib/messaging/messaging-api.js"
 
 export const sendMessageToDevice = async (
   token: string | string[],

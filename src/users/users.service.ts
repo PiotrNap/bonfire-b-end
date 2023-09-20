@@ -1,12 +1,21 @@
-import { Injectable, HttpException, HttpStatus } from "@nestjs/common"
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  NotFoundException,
+} from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { FindManyOptions, Repository } from "typeorm"
-import { JWTUserDto, UserDto } from "./dto/user.dto"
-import { UserEntity } from "../model/user.entity"
-import { toUserDto } from "../common/mapper"
-import { ChallengeResponseValidation } from "../common/challengeValidation"
-import { ChallengeResponseDTO } from "./dto/challenge-response.dto"
-import { PaginationRequestDto, PaginationResult } from "src/pagination"
+import * as helios from "@hyperionbt/helios"
+import { AddDeviceDTO } from "./dto/add-device.dto.js"
+import { UserEntity } from "../model/user.entity.js"
+import { DeviceCredentialEntity } from "../model/deviceCredential.entity.js"
+import { JWTUserDto, UserDto } from "./dto/user.dto.js"
+import { toUserDto } from "../common/mapper.js"
+import { ChallengeResponseDTO } from "./dto/challenge-response.dto.js"
+import { ChallengeResponseValidation } from "../common/challengeValidation.js"
+import { PaginationRequestDto } from "../pagination/pagination-request.dto.js"
+import { PaginationResult } from "../pagination/pagination-result.interface.js"
 
 @Injectable()
 export class UsersService {

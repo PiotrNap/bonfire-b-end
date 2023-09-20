@@ -1,6 +1,4 @@
-import { Controller, Get, Req } from "@nestjs/common"
-import { AuthService } from "./auth/auth.service"
-import { Public } from "./common/decorators/public.decorator"
+import { Controller } from "@nestjs/common"
 
 const currentTime = Math.floor(Date.now())
 const validityPeriod = currentTime + 1000 * 60 // equates to a 60s validity period

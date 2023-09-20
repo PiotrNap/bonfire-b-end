@@ -16,12 +16,12 @@ import {
   UseInterceptors,
 } from "@nestjs/common"
 import { FileInterceptor } from "@nestjs/platform-express"
-import { Public } from "src/common/decorators/public.decorator"
-import { isNSFW } from "src/common/utils"
-import { PaginationRequestDto } from "src/pagination"
-import { CreateEventDto } from "./dto/create-event.dto"
-import { EventBookingDto } from "./dto/event-booking.dto"
-import { EventsService } from "./events.service"
+import { Public } from "../common/decorators/public.decorator.js"
+import { isNSFW } from "../common/utils.js"
+import { PaginationRequestDto } from "../pagination/pagination-request.dto.js"
+import { CreateEventDto } from "./dto/create-event.dto.js"
+import { EventBookingDto } from "./dto/event-booking.dto.js"
+import { EventsService } from "./events.service.js"
 
 @Controller("events")
 export class EventsController {

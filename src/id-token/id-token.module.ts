@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common"
-import { IdTokenService } from "./id-token.service"
-import { IdTokenController } from "./id-token.controller"
+import { IdTokenController } from "./id-token.controller.js"
+import { IdTokenService } from "./id-token.service.js"
 
 @Module({
   controllers: [IdTokenController],

@@ -1,6 +1,5 @@
 import { SetMetadata } from "@nestjs/common"
-
-import { UserEntity } from "../model/user.entity"
+import { UserEntity } from "src/model/user.entity.js"
 
 export const USER_PROVIDER = "UserProvider"
 export class UserProvider extends UserEntity {

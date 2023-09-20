@@ -5,14 +5,14 @@ import {
   forwardRef,
   Inject,
 } from "@nestjs/common"
-import { UsersService } from "../users/users.service"
-import { LoginStatus } from "./interfaces/login-status.interface"
-import { UserDto } from "../users/dto/user.dto"
-import { ChallengeDTO } from "src/users/dto/challenge.dto"
-import { ChallengeResponseDTO } from "src/users/dto/challenge-response.dto"
-import { JwtPayload } from "./interfaces/payload.interface"
+import { UsersService } from "../users/users.service.js"
+import { LoginStatus } from "./interfaces/login-status.interface.js"
+import { UserDto } from "../users/dto/user.dto.js"
+import { ChallengeDTO } from "../users/dto/challenge.dto.js"
+import { ChallengeResponseDTO } from "../users/dto/challenge-response.dto.js"
+import { JwtPayload } from "./interfaces/payload.interface.js"
 import { JwtService } from "@nestjs/jwt"
-import { Buffer } from "buffer"
+import { DeviceCredentialEntity } from "../model/deviceCredential.entity.js"
 
 @Injectable()
 export class AuthService {

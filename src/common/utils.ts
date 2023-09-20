@@ -22,7 +22,7 @@ export class Random {
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
   public generateRandomString(size: number): string {
-    var buffer = new Uint8Array(size)
+    let buffer = new Uint8Array(size)
     buffer = this.generateRandomBytes(buffer, size)
 
     return this.convertBufferToString(buffer)
@@ -31,7 +31,7 @@ export class Random {
   public generateRandomBytes(input: Uint8Array, size: number): Uint8Array {
     if (input.byteLength !== size) input = new Uint8Array(input.buffer)
 
-    var output = crypto.randomBytes(size)
+    const output = crypto.randomBytes(size)
 
     for (let i = 0; i < size; i++) input[i] = output[i]
 
@@ -48,10 +48,6 @@ export class Random {
     return charsArr.join("")
   }
 }
-
-// string decoder
-export const { StringDecoder } = require("string_decoder")
-export const utf8Decoder = new StringDecoder("utf8")
 
 // currency
 export const cent = Buffer.from([0xc2, 0xa2])
@@ -70,24 +66,24 @@ export const localDate = new Date(Math.floor(Date.now())).toLocaleDateString()
 export const utcTime = new Date(Math.floor(Date.now())).toUTCString()
 export const argCounter = (...i) => {
   let argCounter = 0
-  for (let acc of i) argCounter++
+  for (const acc of i) argCounter++
   return argCounter
 }
 export const elementCounter = (i) => {
   let elemCounter = 0
-  for (let acc of i) elemCounter++
+  for (const acc of i) elemCounter++
   return elemCounter
 }
 export const sum = (i: number[]) => {
   return i.reduce((a, b) => a + b, 0)
 }
 export const stripSentence = (i) => {
-  let re = /(\.)/
+  const re = /(\.)/
   return i.split(re).filter((i) => i != "" && i != ".")
 }
 
 export const stripWords = (i) => {
-  for (let x of i) {
+  for (const x of i) {
   }
   i = i.replace(".", "")
   i = i.replace(",", "")
@@ -97,16 +93,16 @@ export const stripWords = (i) => {
 }
 
 export const stripValues = (r) => {
-  let res = []
-  for (let i of r) {
+  const res = []
+  for (const i of r) {
     res.push(i)
   }
   return res
 }
 
 export const stripType = (r) => {
-  let res = []
-  for (let i of r) {
+  const res = []
+  for (const i of r) {
     res.push(typeof i)
   }
   return res

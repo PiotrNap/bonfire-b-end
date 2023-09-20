@@ -1,8 +1,9 @@
-import { EventAvailability, SelectedDays } from "src/events/events.interface"
 import { Entity, Column, ManyToOne, OneToMany } from "typeorm"
-import { BaseEntity } from "./base.entity"
-import { BookingSlotEntity } from "./bookingSlot.entity"
-import { UserEntity } from "./user.entity"
+import { BaseEntity } from "./base.entity.js"
+import { BookingSlotEntity } from "./bookingSlot.entity.js"
+import { EventAvailability, SelectedDays } from "../events/events.interface.js"
+import { UserEntity } from "./user.entity.js"
+import { Relation } from "typeorm/index.js"
 
 export interface EventUser {
   id: string // this should be a uuidv4 or uuidv5
@@ -67,7 +68,7 @@ export class EventEntity extends BaseEntity {
   gCalEventsBooking: boolean
 
   @ManyToOne(() => UserEntity, (organizer: UserEntity) => organizer.events)
-  organizer: UserEntity
+  organizer: Relation<UserEntity>
 
   // time slots wich are booked by other users
   @OneToMany(

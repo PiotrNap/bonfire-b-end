@@ -1,19 +1,17 @@
-import { AppController } from "./app.controller"
+import { AppController } from "./app.controller.js"
 
-import { AppService } from "./app.service"
-import { AuthModule } from "./auth/auth.module"
-import { logger } from "./common/middleware/logger.middleware"
-import { UsersModule } from "./users/users.module"
+import { AppService } from "./app.service.js"
+import { AuthModule } from "./auth/auth.module.js"
+import { logger } from "./common/middleware/logger.middleware.js"
+import { UsersModule } from "./users/users.module.js"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { configService } from "./config/config.service"
-import { CryptoModule } from "./crypto/crypto.module"
+import { configService } from "./config/config.service.js"
+import { CryptoModule } from "./crypto/crypto.module.js"
 import { HttpModule } from "@nestjs/axios"
 import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common"
-import { IdTokenModule } from "./id-token/id-token.module"
-import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard"
+import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard.js"
 import { APP_GUARD } from "@nestjs/core"
-import { EventsModule } from "./events/events.module"
-import { RolesGuard } from "./auth/roles/roles.guard"
+import { EventsModule } from "./events/events.module.js"
 import { ConfigModule } from "@nestjs/config"
 
 @Module({
@@ -27,7 +25,7 @@ import { ConfigModule } from "@nestjs/config"
     AuthModule,
     UsersModule,
     EventsModule,
-    IdTokenModule,
+    // IdTokenModule,
     TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
   ],
   controllers: [AppController],
@@ -38,10 +36,10 @@ import { ConfigModule } from "@nestjs/config"
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: RolesGuard,
+    // },
   ],
 })
 export class AppModule implements NestModule {

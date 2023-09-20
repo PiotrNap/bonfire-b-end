@@ -1,5 +1,5 @@
 import { IsNotEmpty, MaxLength } from "class-validator"
-import { UserDto } from "./user.dto"
+import { UserDto } from "./user.dto.js"
 
 export class CreateUserDto implements UserDto {
   constructor(

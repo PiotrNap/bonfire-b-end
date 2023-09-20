@@ -14,17 +14,19 @@ import {
   UploadedFile,
   UseInterceptors,
 } from "@nestjs/common"
+import { FileInterceptor } from "@nestjs/platform-express/multer/index.js"
 import { Express } from "express"
-import { UsersService } from "./users.service"
-import { CreateUserDto } from "../users/dto/user-create.dto"
-import { UserDto } from "./dto/user.dto"
-import { UpdateUserDto } from "./dto/user-update.dto"
-import { Public } from "src/common/decorators/public.decorator"
-import { PaginationRequestDto, PaginationResult } from "src/pagination"
-import { UserEntity } from "src/model/user.entity"
-import { FileInterceptor } from "@nestjs/platform-express"
-import { isNSFW } from "src/common/utils"
-import { checkIfAuthorized } from "src/auth/auth.helpers"
+import { checkIfAuthorized } from "../auth/auth.helpers.js"
+import { Public } from "../common/decorators/public.decorator.js"
+import { isNSFW } from "../common/utils.js"
+import { UserEntity } from "../model/user.entity.js"
+import { PaginationRequestDto } from "../pagination/pagination-request.dto.js"
+import { PaginationResult } from "../pagination/pagination-result.interface.js"
+import { AddDeviceDTO } from "./dto/add-device.dto.js"
+import { CreateUserDto } from "./dto/user-create.dto.js"
+import { UpdateUserDto } from "./dto/user-update.dto.js"
+import { UserDto } from "./dto/user.dto.js"
+import { UsersService } from "./users.service.js"
 
 @Controller("users")
 export class UsersController {

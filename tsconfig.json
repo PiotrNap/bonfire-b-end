@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "node16",
+    "modeResolution":"node16",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -10,6 +11,9 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+   "paths": {
+     "src/*": ["src/*"]
+   },
     "incremental": true,
     "skipLibCheck": true
   },

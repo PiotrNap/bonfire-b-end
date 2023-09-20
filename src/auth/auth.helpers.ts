@@ -1,6 +1,6 @@
 import { UnauthorizedException } from "@nestjs/common"
 import { sha256 } from "js-sha256"
-import { Random } from "../common/utils"
+import { Random } from "../common/utils.js"
 
 export const generateSecretState = (id: string): any => {
   const nonce = new Random().generateRandomString(20)

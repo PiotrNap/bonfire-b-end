@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Param } from "@nestjs/common"
-import { BTCService, ETHService, ADAService } from "./crypto.service"
+import { BTCService, ETHService, ADAService } from "./crypto.service.js"
 
 @Controller("btc")
 export class BTCController {

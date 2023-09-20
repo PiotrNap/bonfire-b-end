@@ -4,7 +4,7 @@ import { Strategy } from "passport-oauth2"
 
 @Injectable()
 export class DiscordStrategy extends PassportStrategy(Strategy, "discord") {
-  http = require("http")
+  http: any
   constructor() {
     super({
       authorizationURL: null,
@@ -17,10 +17,10 @@ export class DiscordStrategy extends PassportStrategy(Strategy, "discord") {
   }
 
   async validate(accessToken: string): Promise<any> {
-    const { data } = await this.http
-      .get("https://discordapp.com/api/users/@me", {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      })
-      .toPromise()
+    const res = await fetch("https://discordapp.com/api/users/@me", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+    const data = await res.json()
+    return data
   }
 }

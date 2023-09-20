@@ -3,7 +3,7 @@ import {
   SubscribeMessage,
   MessageBody,
 } from "@nestjs/websockets"
-import { EventsService } from "./events.service"
+import { EventsService } from "./events.service.js"
 // import { CreateEventDto } from "./dto/create-event.dto";
 // import { UpdateEventDto } from "./dto/update-event.dto";
 

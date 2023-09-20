@@ -9,8 +9,8 @@ import {
   IsString,
   MaxLength,
 } from "class-validator"
-import { EventUser } from "src/model/event.entity"
-import { EventAvailability, SelectedDays } from "../events.interface"
+import { EventUser } from "src/model/event.entity.js"
+import { EventAvailability, SelectedDays } from "../events.interface.js"
 
 export class CreateEventDto {
   @IsString()

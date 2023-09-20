@@ -1,6 +1,6 @@
 import { IsBoolean, IsObject, IsString, MaxLength } from "class-validator"
-import { EventEntity } from "../../model/event.entity"
-import { SelectedDays } from "../events.interface"
+import { EventEntity } from "../../model/event.entity.js"
+import { SelectedDays } from "../events.interface.js"
 
 export class EventPaginationDto {
   constructor(event: EventEntity) {

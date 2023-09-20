@@ -1,5 +1,5 @@
 import { Column, Entity } from "typeorm"
-import { BaseEntity } from "./base.entity"
+import { BaseEntity } from "./base.entity.js"
 
 @Entity("event-statistics")
 export class EventStatistics extends BaseEntity {

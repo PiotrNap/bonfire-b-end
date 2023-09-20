@@ -1,10 +1,10 @@
 import { google } from "googleapis"
 import { getRepository, Repository } from "typeorm"
 
-import { generateSecretState } from "../../auth/auth.helpers"
-import { validateSecretState } from "../../auth/auth.helpers"
-import { buildRedirectURL } from "../utils"
-import { UserEntity } from "src/model/user.entity"
+import { generateSecretState } from "../../auth/auth.helpers.js"
+import { validateSecretState } from "../../auth/auth.helpers.js"
+import { buildRedirectURL } from "../utils.js"
+import { UserEntity } from "../../model/user.entity.js"
 
 export class GoogleApiService {
   userRepo: Repository<UserEntity>

@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common"
-import { EventsService } from "./events.service"
-import { EventsGateway } from "./events.gateway"
-import { EventsController } from "./events.controller"
-import { EventEntity } from "src/model/event.entity"
+import { EventsService } from "./events.service.js"
+import { EventsGateway } from "./events.gateway.js"
+import { EventsController } from "./events.controller.js"
+import { EventEntity } from "../model/event.entity.js"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { BookingSlotEntity } from "src/model/bookingSlot.entity"
-import { UserEntity } from "src/model/user.entity"
-import { EventStatistics } from "src/model/eventStatistics.entity"
+import { BookingSlotEntity } from "../model/bookingSlot.entity.js"
+import { UserEntity } from "../model/user.entity.js"
+import { EventStatistics } from "../model/eventStatistics.entity.js"
 
 @Module({
   imports: [
