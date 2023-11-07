@@ -1,30 +1,27 @@
 {
-  "name": "conex",
-  "version": "0.0.5",
+  "name": "bonfire-backend",
+  "version": "0.0.1",
   "description": "",
-  "contributors": [
+  "author":  
     {
-      "name": "@oldcryptogeek",
-      "email": "kodex.data@gmail.com",
-      "url": "https://keybase.io/team/kodexdata"
-    },
-    {
-      "name": "@PiotrNap",
+      "name": "Piotr",
       "email": "piotr.napierala94@gmail.com",
       "url": "https://github.com/PiotrNap"
     }
-  ],
+  ,
   "private": true,
   "license": "UNLICENSED",
+  "type": "module",
+  "node": ">=16",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
-    "start:debug": "yarn start:dev:db && nest start --debug 9229 --watch",
-    "start:dev": "yarn start:dev:db && nest start --watch",
-    "start:dev:db": "./src/scripts/start-db.sh",
-    "start:prod": "node dist/main",
+    "debug": "yarn dev:db && nest start --debug 9229 --watch",
+    "dev": "yarn dev:db && nest start --watch",
+    "dev:db": "./src/scripts/start-db.sh",
+    "beta:start": "node dist/scripts/betaTestersRecords.js",
+    "prod": "node dist/main",
     "shell": "docker exec -it bonfire_db psql -U postgres bonfire_db",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
@@ -40,6 +37,7 @@
   },
   "dependencies": {
     "@googleapis/calendar": "^0.2.0",
+    "@hyperionbt/helios": "^0.16.3",
     "@nestjs/axios": "^0.0.1",
     "@nestjs/common": "^8.0.4",
     "@nestjs/config": "^1.0.1",
@@ -104,9 +102,6 @@
     "@types/passport-local": "^1.0.34",
     "@types/passport-oauth2": "^1.4.11",
     "@types/supertest": "^2.0.11",
-    "@typescript-eslint/eslint-plugin": "^4.28.2",
-    "@typescript-eslint/parser": "^4.28.2",
-    "eslint": "^7.30.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
     "jest": "27.0.6",
@@ -118,7 +113,7 @@
     "ts-node": "^10.0.0",
     "tsc-watch": "^4.5.0",
     "tsconfig-paths": "^3.10.1",
-    "typescript": "^4.3.5"
+    "typescript": "^5.2.2"
   },
   "jest": {
     "moduleFileExtensions": [
