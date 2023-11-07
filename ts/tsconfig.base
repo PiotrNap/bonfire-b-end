@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "lib": ["esnext", "dom"],
+        "target": "ES2016",
+        "module": "es2015",
+        "moduleResolution": "nodenext",
+
+        "importHelpers": true,
+        "rootDirs": ["../src"],
+        "strict": true,
+        // "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "noEmit": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "types": ["node", "jest"],
+        "allowSyntheticDefaultImports": true,
+        "allowJs": true,
+        "noImplicitAny": false
+    }
+}

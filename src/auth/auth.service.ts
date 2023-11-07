@@ -13,10 +13,15 @@ import { ChallengeResponseDTO } from "../users/dto/challenge-response.dto.js"
 import { JwtPayload } from "./interfaces/payload.interface.js"
 import { JwtService } from "@nestjs/jwt"
 import { DeviceCredentialEntity } from "../model/deviceCredential.entity.js"
+import { InjectRepository } from "@nestjs/typeorm"
+import { Repository } from "typeorm"
+import { NotFoundError } from "rxjs"
 
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectRepository(DeviceCredentialEntity)
+    private readonly deviceCredentialsRepo: Repository<DeviceCredentialEntity>,
     @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService
@@ -29,16 +34,17 @@ export class AuthService {
     )
   }
 
-  async createChallenge(credential: string): Promise<ChallengeDTO> {
+  async createChallenge(deviceID: string): Promise<ChallengeDTO> {
     try {
-      if (credential == null) this.badCredentialsError()
-      var challengeDTO = new ChallengeDTO(credential)
+      if (deviceID == null) this.badCredentialsError()
 
-      // return base64 string for ease of use in RN
-      challengeDTO.challengeString = Buffer.from(
-        challengeDTO.challengeString
-      ).toString("base64")
+      const deviceCredential = await this.deviceCredentialsRepo.findOne({
+        where: { id: deviceID },
+      })
+      if (!deviceCredential) throw NotFoundError
 
+      const challengeDTO = new ChallengeDTO(deviceCredential.publicKey)
+      console.log("here ?", challengeDTO)
       return challengeDTO
     } catch (e) {
       if (e.message && e.status) throw new HttpException(e.message, e.status)

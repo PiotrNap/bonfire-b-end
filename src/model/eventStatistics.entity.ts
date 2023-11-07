@@ -3,9 +3,6 @@ import { BaseEntity } from "./base.entity.js"
 
 @Entity("event-statistics")
 export class EventStatistics extends BaseEntity {
-  @Column({ name: "event-id", type: "uuid" })
-  eventId: string
-
   @Column({ name: "likes", type: "bigint" })
   likes: number = 0
 

@@ -3,13 +3,13 @@ import { Buffer } from "buffer"
 
 let MODEL
 
-import * as tf from "@tensorflow/tfjs-node"
-import * as nsfw from "nsfwjs"
-import * as qs from "qs"
-import * as decode from "image-decode"
+import tf from "@tensorflow/tfjs-node"
+import nsfw from "nsfwjs"
+import qs from "qs"
+import decode from "image-decode"
 
-import * as bcrypt from "bcrypt"
-import * as crypto from "crypto"
+import bcrypt from "bcrypt"
+import crypto from "crypto"
 
 export const loadModel = async () => {
   // needs to be loaded only once

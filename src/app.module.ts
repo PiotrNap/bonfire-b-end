@@ -25,7 +25,6 @@ import { ConfigModule } from "@nestjs/config"
     AuthModule,
     UsersModule,
     EventsModule,
-    // IdTokenModule,
     TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
   ],
   controllers: [AppController],
@@ -36,10 +35,6 @@ import { ConfigModule } from "@nestjs/config"
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: RolesGuard,
-    // },
   ],
 })
 export class AppModule implements NestModule {

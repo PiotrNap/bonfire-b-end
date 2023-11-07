@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   NotFoundException,
   Param,
   ParseUUIDPipe,
@@ -60,21 +62,73 @@ export class UsersController {
   @Public()
   @Post("register")
   public async registerUser(@Body() body: CreateUserDto): Promise<UserDto> {
-    return await this.usersService.register(body)
+    let newUser = await this.usersService.register(body)
+    let betaTesterRecord: any
+    if (body.betaTesterCode) {
+      betaTesterRecord = await this.usersService.registerBetaTester(
+        body.betaTesterCode,
+        newUser.baseAddress
+      )
+    }
+    return { ...newUser, ...betaTesterRecord }
+  }
+
+  // used during new account registration
+  @Public()
+  @Get("check-username")
+  async checkUsername(@Query("username") username: string) {
+    const isAvailable = await this.usersService.isUsernameAvailable(username)
+    return isAvailable
+  }
+
+  // used during log-in process, maps given public key to a potentialy existsing user
+  @Public()
+  @Get("check-publickey")
+  async checkPublicKey(@Query("publickey") username: string) {
+    const res = await this.usersService.getUserByPublicKey(username)
+    if (!res)
+      throw new HttpException(
+        "No user exists for a given wallet credentials.",
+        HttpStatus.NOT_FOUND
+      )
+
+    return res // returns only baseAddress + username to complete sign-in on front-end
+  }
+
+  @Public()
+  @Get("beta-tokens")
+  public async getBetaTesterRegistration() {
+    return await this.usersService.checkIfBetaTesterRegistrationStillOpen()
+  }
+
+  @Public()
+  @Get("beta-tokens/:betaTesterCode/:baseAddress")
+  public async registerBetaTester(
+    @Param("betaTesterCode") betaTesterCode: string,
+    @Param("baseAddress") baseAddress: string
+  ) {
+    return await this.usersService.registerBetaTester(betaTesterCode, baseAddress)
+  }
+
+  @Public()
+  @Post("register-device")
+  public async registerDevice(@Body() body: AddDeviceDTO): Promise<string> {
+    return await this.usersService.registerDevice(body)
+  }
+
+  //TODO is it good that it's public??
+  @Public()
+  @Get("base-address/:baseAddress")
+  public async getUserByBaseAddress(@Param("baseAddress") baseAddress: string) {
+    return await this.usersService.findOne({ baseAddress }, true)
   }
 
   @Post("files/profile-image")
   @UseInterceptors(FileInterceptor("file"))
-  public async uploadImage(
-    @Req() req: any,
-    @UploadedFile() file: Express.Multer.File
-  ) {
+  public async uploadImage(@Req() req: any, @UploadedFile() file: Express.Multer.File) {
     if (await isNSFW(file)) throw new UnprocessableEntityException()
 
-    const updated = await this.usersService.updateUserProfileImage(
-      file,
-      req.user
-    )
+    const updated = await this.usersService.updateUserProfileImage(file, req.user)
     if (!updated) throw new NotFoundException()
 
     return
@@ -125,14 +179,11 @@ export class UsersController {
   //TODO needs to be tested
   // Puts user record as in-active
   @Delete(":uuid")
-  public deleteUser(
-    @Param("uuid", ParseUUIDPipe) uuid: string,
-    @Req() req: any
-  ) {
+  public deleteUser(@Param("uuid", ParseUUIDPipe) uuid: string, @Req() req: any) {
     const { user } = req
     checkIfAuthorized(user.id, uuid)
 
-    return this.usersService.deleteUser(uuid)
+    return this.usersService.deactivateUser(uuid)
   }
 
   @Get(":uuid/events")
@@ -181,5 +232,19 @@ export class UsersController {
     if (!updated) throw new UnprocessableEntityException()
 
     return
+  }
+
+  @Get(":uuid/tx/plutus-scripts")
+  public async attachPlutusScript(
+    @Param("uuid", ParseUUIDPipe) uuid: string,
+    @Req() req: any
+  ) {
+    // const { body } = req
+    const user = await this.usersService.findOne({ id: uuid })
+
+    checkIfAuthorized(user.id, uuid)
+
+    //@ts-ignore
+    return await createUnlockingTx(user)
   }
 }

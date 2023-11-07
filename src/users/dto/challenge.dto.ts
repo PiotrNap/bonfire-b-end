@@ -2,12 +2,15 @@ import { IsNotEmpty } from "class-validator"
 import { sha256 } from "js-sha256"
 
 export class ChallengeDTO {
-  constructor(credential: string) {
-    let time = new Date().getTime()
-    let hash = sha256(credential + time + process.env.JWT_SECRET)
-    this.challengeString = `${credential}_${time}_${hash}`
+  constructor(pubKey: string) {
+    const time = new Date().getTime()
+    const hash = sha256(pubKey + time + process.env.JWT_SECRET)
+    this.challenge = Buffer.from(`${pubKey}_${time}_${hash}`).toString("base64")
   }
 
   @IsNotEmpty({ message: "Challenge string cannot be empty" })
-  challengeString: string // Hash of credential and timestamp
+  challenge: string // Hash of credential and timestamp
+
+  @IsNotEmpty({ message: "Device ID cannot be empty" })
+  deviceID: string // Hash of credential and timestamp
 }

@@ -1,11 +1,12 @@
 export class UserDto {
   id: string
   username: string
+  deviceID?: string
   baseAddress?: string
   publicKey?: string
+  walletPublicKey?: string
   profileImage?: Buffer
   hourlyRateAda?: string | number
-  googleApiCredentials?: string
   lastUsedRefreshToken?: Date
   createdOn?: Date
   calendarToken?: string | null
@@ -20,8 +21,7 @@ export class UserDto {
 export class JWTUserDto {
   id: string
   username: string
-  publicKey: string
-  profileType: string
+  deviceID: string
   iat: number
   exp: number
 }

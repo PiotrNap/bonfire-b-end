@@ -1,18 +1,9 @@
 export const toUserDto = (data: any) => {
-  const {
-    id,
-    username,
-    name,
-    profileType,
-    profileImage,
-    hourlyRateAda,
-    baseAddress,
-  } = data
+  const { id, username, name, profileImage, hourlyRateAda, baseAddress } = data
   const user = {
     id,
     name,
     username,
-    profileType,
     profileImage,
     hourlyRateAda,
     baseAddress,
@@ -25,6 +16,6 @@ export const toUserDto = (data: any) => {
     skills: data.skills,
     tags: data.tags,
     jobTitle: data.jobTitle,
-    hourlyRate: data.hourlyRate,
+    hourlyRateAda: data.hourlyRateAda,
   }
 }

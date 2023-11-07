@@ -16,7 +16,6 @@ import { PaginationResult } from "../pagination/pagination-result.interface.js"
 import { EventPaginationDto } from "./dto/event-pagination.dto.js"
 import { UpdateEventDto } from "./dto/update-event.dto.js"
 import { SuccessMessage } from "../auth/interfaces/payload.interface.js"
-import { JWTUserDto } from "../users/dto/user.dto.js"
 import { EventBookingDto } from "./dto/event-booking.dto.js"
 import { GoogleApiService } from "../common/google/googleApiService.js"
 import dayjs from "dayjs"
@@ -80,7 +79,7 @@ export class EventsService {
        * Create event statistics record
        */
       const stats = new EventStatistics()
-      stats.eventId = event.id
+      stats.id = event.id
       await this.eventStatistics.save(stats)
 
       return event.id
@@ -261,8 +260,7 @@ export class EventsService {
       })
       user = await this.userRepository.findOne(user.id)
 
-      if (!user)
-        throw new HttpException("User not found", HttpStatus.UNAUTHORIZED)
+      if (!user) throw new HttpException("User not found", HttpStatus.UNAUTHORIZED)
       if (event == undefined) this.noEventError()
 
       let hasExistingSlotInTimeFrame: boolean = false
@@ -305,11 +303,10 @@ export class EventsService {
 
       // book event on organizers or/and attendee Gcal
       if (user.googleApiCredentials || createGoogleCalEvent) {
-        const organizerOAuthToken =
-          await new GoogleApiService().checkValidOauth(event.organizer)
-        const attendeeOAuthToken = await new GoogleApiService().checkValidOauth(
-          user
+        const organizerOAuthToken = await new GoogleApiService().checkValidOauth(
+          event.organizer
         )
+        const attendeeOAuthToken = await new GoogleApiService().checkValidOauth(user)
 
         const gCalRequestBody = {
           //attendees: [

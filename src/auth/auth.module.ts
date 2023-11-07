@@ -8,12 +8,13 @@ import { JwtStrategy } from "./strategies/jwt.strategy.js"
 import { ConfigService } from "@nestjs/config"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { UserEntity } from "../model/user.entity.js"
+import { DeviceCredentialEntity } from "../model/deviceCredential.entity.js"
 
 @Module({
   imports: [
     forwardRef(() => UsersModule),
     PassportModule,
-    TypeOrmModule.forFeature([UserEntity]),
+    TypeOrmModule.forFeature([UserEntity, DeviceCredentialEntity]),
     // ConfigModule is loaded async, wait for it to load with `registerAsync`
     JwtModule.registerAsync({
       inject: [ConfigService],

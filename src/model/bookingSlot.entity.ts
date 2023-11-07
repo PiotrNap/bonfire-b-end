@@ -6,9 +6,6 @@ import { UserEntity } from "./user.entity.js"
 
 @Entity()
 export class BookingSlotEntity extends BaseEntity {
-  @PrimaryGeneratedColumn("uuid")
-  id: string
-
   @Column("uuid")
   organizerId: string
 
@@ -54,4 +51,8 @@ export class BookingSlotEntity extends BaseEntity {
   // transaction hash (?)
   @Column({ type: "varchar", nullable: true })
   txHash: string
+
+  // cbor of outputId (helios type)
+  @Column({ type: "varchar", nullable: true })
+  outputId: string
 }

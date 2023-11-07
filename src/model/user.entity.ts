@@ -7,15 +7,6 @@ import { EventEntity } from "./event.entity.js"
 @Entity({ name: "user" })
 @TableInheritance({ column: { type: "varchar", name: "userType" } })
 export class UserEntity extends BaseEntity {
-  @Column({ type: "varchar", length: 100, nullable: true })
-  name: string // real name
-
-  @Column({ type: "bytea", nullable: true })
-  profileImage: Buffer
-
-  // @Column({ type: "varchar", length: 65535 })
-  // didDocument?: string; // reference to did-document
-
   @Column({
     name: "username",
     type: "varchar",
@@ -25,11 +16,14 @@ export class UserEntity extends BaseEntity {
   username: string
 
   @Column({
-    name: "publicKey",
+    name: "walletPublicKey",
     type: "varchar",
-    nullable: false,
+    nullable: true,
   })
-  publicKey: string
+  walletPublicKey: string // public key (hex) derived from user's root key
+
+  @Column({ type: "bytea", nullable: true })
+  profileImage: Buffer
 
   @Column({
     name: "googleApiCredentials",
@@ -58,11 +52,8 @@ export class UserEntity extends BaseEntity {
   })
   messagingToken?: string
 
-  @Column({ name: "profileType", type: "varchar", nullable: true })
-  profileType: "organizer" | "attendee"
-
   @Column({ name: "deepLinkingCallbackUri", type: "varchar", nullable: true })
-  deepLinkingCallbackUri: string
+  deepLinkingCallbackUri?: string
 
   @Column({ type: "json", nullable: true })
   userSettings?: UserSettings // user profile settings
@@ -70,11 +61,12 @@ export class UserEntity extends BaseEntity {
   @Column({ type: "varchar", nullable: true })
   timeZone?: string
 
-  @Column({ type: "json", nullable: true })
-  walletBaseAddress?: string
+  // wallet's base address - BIP39 account #0
+  @Column({ type: "varchar", nullable: true })
+  baseAddress?: string
 
   @Column({ name: "bio", type: "varchar", length: 250, nullable: true })
-  bio: string
+  bio?: string
 
   @Column({ name: "profession", type: "varchar", length: 100, nullable: true })
   profession?: string | string[]
@@ -86,7 +78,13 @@ export class UserEntity extends BaseEntity {
   skills?: string | string[]
 
   @Column({ name: "hourlyRateAda", type: "int", nullable: true })
-  hourlyRateAda: number
+  hourlyRateAda?: number
+
+  @OneToMany(
+    () => DeviceCredentialEntity,
+    (dc: DeviceCredentialEntity) => dc.userID
+  )
+  deviceCredentials: DeviceCredentialEntity[]
 
   // hosted events (events for sale)
   @OneToMany(() => EventEntity, (event: EventEntity) => event.organizer, {
@@ -118,6 +116,6 @@ export function isUserEntity(obj: any): obj is UserEntity {
   return (
     obj.name != "undefined" &&
     obj.username !== "undefined" &&
-    obj.publicKey !== "undefined"
+    obj.deviceCredentials !== "undefined"
   )
 }
