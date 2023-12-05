@@ -9,9 +9,10 @@ export async function logger(req: Request, res: Response, next: NextFunction) {
     eventID.length
   )}]`
   console.log(baseLog + " --> ", req.originalUrl, " | ", "Method: ", req.method)
+  // console.log("Auth Header: ", req.headers.authorization)
 
   if (req.method === "POST" || req.method === "PUT")
-    console.log("Request body: ", req.body)
+    console.log("RequestBody: ", req.body)
 
   res.on("finish", () => {
     console.log(baseLog + " <-- ", res.statusCode + " " + res.statusMessage)

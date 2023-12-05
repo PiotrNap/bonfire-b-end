@@ -49,7 +49,7 @@ export class UsersService {
     let user: any
 
     try {
-      user = this.userRepo.findOne(id)
+      user = await this.userRepo.findOne(id)
 
       if (typeof values === "object") {
         for (const key in values) {
@@ -73,6 +73,12 @@ export class UsersService {
 
   async challengeLogin(payload: ChallengeResponseDTO): Promise<UserDto> {
     const { signature, challenge, id, deviceID } = payload
+    if (!id) {
+      throw new HttpException(
+        "Missing user-id from challange payload",
+        HttpStatus.BAD_REQUEST
+      )
+    }
     const user: UserEntity = await this.userRepo.findOne(id)
     console.log(user)
 
@@ -138,7 +144,6 @@ export class UsersService {
     try {
       const {
         hourlyRateAda = 0,
-        timeZone,
         bio,
         profession,
         skills,
@@ -156,7 +161,6 @@ export class UsersService {
       newUser.profession = profession
       newUser.skills = skills
       newUser.jobTitle = jobTitle
-      newUser.timeZone = timeZone
       newUser.walletPublicKey = walletPublicKey
 
       newUser = await this.userRepo.save(newUser)
@@ -266,6 +270,7 @@ export class UsersService {
   //   return attendees
   // }
 
+  // @TODO in the future try to do database-level filtering
   async getCalendarEvents(id: string, date: Date): Promise<any | void> {
     const { bookedSlots, scheduledSlots, events }: UserEntity =
       await this.userRepo.findOne(id, {
@@ -276,13 +281,21 @@ export class UsersService {
       return entities.filter((entity) => {
         const searchYear = new Date(date).getFullYear()
         const searchMonth = new Date(date).getMonth()
+        const searchDate = new Date(searchYear, searchMonth)
 
-        const searchFrom = new Date(searchYear, searchMonth)
-        const searchTo = new Date(searchYear, new Date(date).getMonth() + 1, 0)
-        if (entity.bookedDate)
-          return entity.bookedDate > searchFrom && entity.bookedDate < searchTo
+        const entityFromYear = new Date(entity.fromDate).getFullYear()
+        const entityFromMonth = new Date(entity.fromDate).getMonth()
+        const entityFrom = new Date(entityFromYear, entityFromMonth)
 
-        return entity.fromDate > searchFrom
+        const entityToYear = new Date(
+          entity.toDate || new Date(entity.fromDate).getTime() + entity.duration
+        ).getFullYear()
+        const entityToMonth = new Date(
+          entity.toDate || new Date(entity.fromDate).getTime() + entity.duration
+        ).getMonth()
+        const entityTo = new Date(entityToYear, entityToMonth)
+
+        return entityFrom <= searchDate && searchDate <= entityTo
       })
     }
 
@@ -357,7 +370,18 @@ export class UsersService {
   async getUserBookingSlots(uuid: string) {
     return await this.userRepo
       .findOne(uuid, {
-        relations: ["bookedSlots"],
+        where: {
+          isActive: true,
+          organizerId: uuid,
+        },
+      })
+      .then((res) => res.bookedSlots)
+  }
+
+  async getUserScheduledSlots(uuid: string) {
+    return await this.userRepo
+      .findOne(uuid, {
+        relations: ["scheduledSlots"],
       })
       .then((res) => res.bookedSlots)
   }

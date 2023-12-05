@@ -21,14 +21,18 @@ export class BookingSlotEntity extends BaseEntity {
   @Column("uuid")
   eventId: string
 
-  @Column("varchar", { nullable: true })
+  @Column("varchar")
   eventTitle: string
 
   @Column("varchar", { nullable: true })
   eventDescription: string
 
-  @Column("real", { nullable: true })
-  durationCost: number | null
+  @Column("real")
+  duration: number
+
+  // payment tokens in JSON schema format
+  @Column("json")
+  cost: string
 
   @ManyToOne(() => EventEntity, (event: EventEntity) => event.bookedSlots)
   event: EventEntity
@@ -41,18 +45,26 @@ export class BookingSlotEntity extends BaseEntity {
   })
   organizer: Relation<UserEntity>
 
-  // duration in milliseconds
-  @Column({ type: "int" })
-  bookedDuration: number
+  @Column({ type: "timestamptz" })
+  fromDate: string
 
   @Column({ type: "timestamptz" })
-  bookedDate: Date
+  toDate: string
 
-  // transaction hash (?)
   @Column({ type: "varchar", nullable: true })
   txHash: string
 
-  // cbor of outputId (helios type)
   @Column({ type: "varchar", nullable: true })
-  outputId: string
+  unlockingTxHash: string
+
+  @Column({ type: "varchar", nullable: true })
+  lockingTxHash: string
+
+  //TODO remove 'nullable' before going live
+  @Column({ type: "varchar", nullable: true })
+  datumHash: string
+
+  // cbor of outputId (helios type)
+  // @Column({ type: "varchar", nullable: true })
+  // outputId: string
 }

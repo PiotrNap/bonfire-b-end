@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, OneToMany } from "typeorm"
 import { BaseEntity } from "./base.entity.js"
 import { BookingSlotEntity } from "./bookingSlot.entity.js"
-import { EventAvailability, SelectedDays } from "../events/events.interface.js"
+import { Cancellation, EventAvailability } from "../events/events.interface.js"
 import { UserEntity } from "./user.entity.js"
 import { Relation } from "typeorm/index.js"
 
@@ -10,44 +10,43 @@ export interface EventUser {
   userName?: string
 }
 
+export type EventVisibility = "private" | "public"
+
 @Entity()
 export class EventEntity extends BaseEntity {
-  //TODO remove nullable options for required fields
-  @Column({ type: "varchar", length: 150, nullable: false })
+  @Column({ type: "varchar", length: 150 })
   description: string
 
-  @Column({ type: "varchar", length: 40, nullable: false })
+  @Column({ type: "varchar", length: 40 })
   title: string
 
-  // in which time slots the event is available
+  // array of objects representing open time slots and their booking slots
   @Column({ type: "jsonb" })
   availabilities: EventAvailability[]
 
-  // on which days the event is available
   @Column({ type: "jsonb" })
-  selectedDays: SelectedDays
+  cancellation: Cancellation
 
-  // array used to feed UI calendar component
-  // @Column({ type: "jsonb", nullable: true })
-  // availableDays: any[];
+  // whether this event is fully booked or not
+  @Column({ type: "boolean" })
+  isAvailable: boolean
 
-  @Column({ type: "timestamptz", nullable: true })
+  @Column({ type: "timestamptz" })
   fromDate: Date
 
-  @Column({ type: "timestamptz", nullable: true })
+  @Column({ type: "timestamptz" })
   toDate: Date
 
-  @Column({ type: "simple-array" })
-  tags?: string[]
-
+  // payment tokens in JSON schema format
   @Column({ type: "json" })
   hourlyRate: any
 
+  // this has to be nullable because the image is updated right after new event creation
   @Column({ type: "bytea", nullable: true })
   eventCardImage?: Buffer
 
-  @Column({ type: "boolean" })
-  privateEvent: boolean
+  @Column({ type: "varchar" })
+  visibility: EventVisibility
 
   @Column({ type: "varchar" })
   eventCardColor: string
@@ -55,17 +54,14 @@ export class EventEntity extends BaseEntity {
   @Column({ type: "varchar" })
   eventTitleColor: string
 
-  @Column({ type: "varchar", nullable: false })
+  @Column({ type: "varchar" })
   organizerId: string
 
-  @Column({ type: "varchar", nullable: true })
+  @Column({ type: "varchar" })
+  organizerAddress: string
+
+  @Column({ type: "varchar" })
   organizerAlias: string
-
-  @Column("boolean", { default: true })
-  available: boolean
-
-  @Column("boolean", { default: false, nullable: true })
-  gCalEventsBooking: boolean
 
   @ManyToOne(() => UserEntity, (organizer: UserEntity) => organizer.events)
   organizer: Relation<UserEntity>

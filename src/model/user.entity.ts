@@ -58,9 +58,6 @@ export class UserEntity extends BaseEntity {
   @Column({ type: "json", nullable: true })
   userSettings?: UserSettings // user profile settings
 
-  @Column({ type: "varchar", nullable: true })
-  timeZone?: string
-
   // wallet's base address - BIP39 account #0
   @Column({ type: "varchar", nullable: true })
   baseAddress?: string
@@ -80,10 +77,7 @@ export class UserEntity extends BaseEntity {
   @Column({ name: "hourlyRateAda", type: "int", nullable: true })
   hourlyRateAda?: number
 
-  @OneToMany(
-    () => DeviceCredentialEntity,
-    (dc: DeviceCredentialEntity) => dc.userID
-  )
+  @OneToMany(() => DeviceCredentialEntity, (dc: DeviceCredentialEntity) => dc.userID)
   deviceCredentials: DeviceCredentialEntity[]
 
   // hosted events (events for sale)

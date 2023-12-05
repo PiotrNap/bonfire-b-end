@@ -7,14 +7,12 @@ export class CreateUserDto implements UserDto {
     publicKey: string,
     id: string,
     profileImage?: Buffer,
-    timeZone?: string,
     betaTesterCode?: string
   ) {
     this.username = username
     this.publicKey = publicKey
     this.id = id
     this.profileImage = profileImage
-    this.timeZone = timeZone
     this.betaTesterCode = betaTesterCode
   }
 
@@ -32,6 +30,5 @@ export class CreateUserDto implements UserDto {
   baseAddress: string
 
   profileImage?: Buffer
-  timeZone?: string
   betaTesterCode?: string
 }

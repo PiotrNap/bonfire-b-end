@@ -1,6 +1,5 @@
 import { IsBoolean, IsObject, IsString, MaxLength } from "class-validator"
-import { EventEntity } from "../../model/event.entity.js"
-import { SelectedDays } from "../events.interface.js"
+import { EventEntity, EventVisibility } from "../../model/event.entity.js"
 
 export class EventPaginationDto {
   constructor(event: EventEntity) {
@@ -8,11 +7,10 @@ export class EventPaginationDto {
       id,
       title,
       description,
-      privateEvent,
+      visibility,
       eventCardColor,
       eventCardImage,
       eventTitleColor,
-      selectedDays,
       organizerId,
     } = event
 
@@ -20,10 +18,9 @@ export class EventPaginationDto {
     this.title = title
     this.description = description
     this.eventCardImage = eventCardImage
-    this.privateEvent = privateEvent
+    this.visibility = visibility
     this.eventCardColor = eventCardColor
     this.eventTitleColor = eventTitleColor
-    this.selectedDays = selectedDays
     this.organizerId = organizerId
   }
 
@@ -41,17 +38,14 @@ export class EventPaginationDto {
   @IsString()
   eventCardImage?: Buffer
 
-  @IsBoolean()
-  privateEvent: boolean
+  @IsString()
+  visibility: EventVisibility
 
   @IsString()
   eventCardColor: string
 
   @IsString()
   eventTitleColor: string
-
-  @IsObject()
-  selectedDays: SelectedDays
 
   @IsString()
   organizerId: string

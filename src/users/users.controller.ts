@@ -169,7 +169,6 @@ export class UsersController {
     @Param("uuid", ParseUUIDPipe) uuid: string,
     @Req() req: any
   ): Promise<any> {
-    console.log(req.user)
     const { user } = req
     checkIfAuthorized(user.id, uuid)
 
@@ -193,7 +192,6 @@ export class UsersController {
     @Req() req: any
   ): Promise<any> {
     const { user } = req
-    console.log(user, uuid)
     checkIfAuthorized(user.id, uuid)
 
     const events = await this.usersService.getCalendarEvents(
@@ -204,6 +202,20 @@ export class UsersController {
     if (!events) throw new UnprocessableEntityException()
 
     return events
+  }
+
+  @Get(":uuid/schedulings")
+  public async getUserScheduledSlots(
+    @Param("uuid", ParseUUIDPipe) uuid: string,
+    @Req() req: any
+  ) {
+    const { user } = req
+    checkIfAuthorized(user.id, uuid)
+    const slots = await this.usersService.getUserScheduledSlots(uuid)
+
+    if (!slots) throw new UnprocessableEntityException()
+
+    return slots
   }
 
   @Get(":uuid/booking")

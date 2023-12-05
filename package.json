@@ -2,13 +2,11 @@
   "name": "bonfire-backend",
   "version": "0.0.1",
   "description": "",
-  "author":  
-    {
-      "name": "Piotr",
-      "email": "piotr.napierala94@gmail.com",
-      "url": "https://github.com/PiotrNap"
-    }
-  ,
+  "author": {
+    "name": "Piotr",
+    "email": "piotr.napierala94@gmail.com",
+    "url": "https://github.com/PiotrNap"
+  },
   "private": true,
   "license": "UNLICENSED",
   "type": "module",
@@ -48,7 +46,7 @@
     "@nestjs/platform-express": "^8.0.0",
     "@nestjs/platform-socket.io": "^8.0.6",
     "@nestjs/swagger": "^5.0.4",
-    "@nestjs/typeorm": "^8.0.1",
+    "@nestjs/typeorm": "^10.0.0",
     "@nestjs/websockets": "^8.0.6",
     "@tensorflow/tfjs-node": "^3.17.0",
     "axios": "^0.21.1",

@@ -11,7 +11,6 @@ export class UserDto {
   createdOn?: Date
   calendarToken?: string | null
   refreshToken?: string | null
-  timeZone?: any
   bio?: string
   profession?: string
   jobTitle?: string
@@ -22,6 +21,7 @@ export class JWTUserDto {
   id: string
   username: string
   deviceID: string
+  isActive: boolean // whether or not user profile is still active
   iat: number
   exp: number
 }

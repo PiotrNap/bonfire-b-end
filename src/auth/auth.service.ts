@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  HttpException,
-  HttpStatus,
-  forwardRef,
-  Inject,
-} from "@nestjs/common"
+import { Injectable, HttpException, HttpStatus, forwardRef, Inject } from "@nestjs/common"
 import { UsersService } from "../users/users.service.js"
 import { LoginStatus } from "./interfaces/login-status.interface.js"
 import { UserDto } from "../users/dto/user.dto.js"
@@ -28,10 +22,7 @@ export class AuthService {
   ) {}
 
   private badCredentialsError() {
-    throw new HttpException(
-      "Invalid credential provided.",
-      HttpStatus.BAD_REQUEST
-    )
+    throw new HttpException("Invalid credential provided.", HttpStatus.BAD_REQUEST)
   }
 
   async createChallenge(deviceID: string): Promise<ChallengeDTO> {
@@ -43,9 +34,7 @@ export class AuthService {
       })
       if (!deviceCredential) throw NotFoundError
 
-      const challengeDTO = new ChallengeDTO(deviceCredential.publicKey)
-      console.log("here ?", challengeDTO)
-      return challengeDTO
+      return new ChallengeDTO(deviceCredential.publicKey)
     } catch (e) {
       if (e.message && e.status) throw new HttpException(e.message, e.status)
     }
@@ -61,7 +50,6 @@ export class AuthService {
       id: user.id,
       profileImage: user.profileImage,
       hourlyRateAda: user.hourlyRateAda,
-      timeZone: user.timeZone,
       ...token,
     }
   }

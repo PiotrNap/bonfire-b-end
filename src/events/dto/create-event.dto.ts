@@ -1,16 +1,14 @@
 import {
-  IsArray,
   IsBoolean,
   IsDate,
   IsJSON,
   IsNumber,
   IsObject,
-  IsOptional,
   IsString,
   MaxLength,
 } from "class-validator"
-import { EventUser } from "src/model/event.entity.js"
-import { EventAvailability, SelectedDays } from "../events.interface.js"
+import { EventUser, EventVisibility } from "src/model/event.entity.js"
+import { Cancellation, EventAvailability, SelectedDates } from "../events.interface.js"
 
 export class CreateEventDto {
   @IsString()
@@ -22,10 +20,10 @@ export class CreateEventDto {
   description: string
 
   @IsJSON()
-  availabilities: EventAvailability
+  availabilities: EventAvailability[]
 
   @IsObject()
-  selectedDays: SelectedDays
+  selectedDates: string[]
 
   @IsDate()
   fromDate: Date
@@ -33,15 +31,14 @@ export class CreateEventDto {
   @IsDate()
   toDate: Date
 
-  @IsOptional()
-  @IsArray()
-  tags?: string[]
+  @IsNumber()
+  timeZoneOffset?: number
 
   @IsNumber()
   hourlyRate: number
 
   @IsBoolean()
-  privateEvent: boolean
+  visibility: EventVisibility
 
   @IsString()
   eventCardColor: string
@@ -54,4 +51,7 @@ export class CreateEventDto {
 
   @IsBoolean()
   gCalEventsBooking: boolean
+
+  @IsObject()
+  cancellation: Cancellation
 }

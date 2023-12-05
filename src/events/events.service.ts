@@ -2,10 +2,11 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
-import { Equal, FindManyOptions, ILike, Repository } from "typeorm"
+import { Repository, MoreThan, LessThan } from "typeorm"
 import { EventEntity } from "../model/event.entity.js"
 import { BookingSlotEntity } from "../model/bookingSlot.entity.js"
 import { EventStatistics } from "../model/eventStatistics.entity.js"
@@ -17,8 +18,7 @@ import { EventPaginationDto } from "./dto/event-pagination.dto.js"
 import { UpdateEventDto } from "./dto/update-event.dto.js"
 import { SuccessMessage } from "../auth/interfaces/payload.interface.js"
 import { EventBookingDto } from "./dto/event-booking.dto.js"
-import { GoogleApiService } from "../common/google/googleApiService.js"
-import dayjs from "dayjs"
+import { EventAvailability, EventSlot } from "./events.interface.js"
 
 @Injectable()
 export class EventsService {
@@ -38,16 +38,14 @@ export class EventsService {
       title,
       description,
       availabilities,
-      selectedDays,
-      tags,
       fromDate,
       toDate,
       hourlyRate,
-      privateEvent,
+      visibility,
       eventCardColor,
       eventTitleColor,
       organizer,
-      gCalEventsBooking,
+      cancellation,
     } = createEventDto
     try {
       const event: EventEntity = new EventEntity()
@@ -59,19 +57,19 @@ export class EventsService {
       /*
        * Create event record
        */
+      event.isAvailable = true
       event.description = description
       event.title = title
-      event.availabilities = availabilities as any
-      event.selectedDays = selectedDays
-      event.tags = tags
+      event.availabilities = availabilities
       event.fromDate = fromDate
       event.toDate = toDate
       event.hourlyRate = hourlyRate
-      event.privateEvent = privateEvent
+      event.visibility = visibility
       event.eventCardColor = eventCardColor
       event.eventTitleColor = eventTitleColor
       event.organizerAlias = user.username
-      event.gCalEventsBooking = gCalEventsBooking
+      event.organizerAddress = user.baseAddress
+      event.cancellation = cancellation
       user.events = [...user.events, event]
       await this.userRepository.save(user)
 
@@ -100,7 +98,7 @@ export class EventsService {
 
   async findAllWithPagination(
     paginationRequestDto: PaginationRequestDto,
-    options?: FindManyOptions<EventEntity>
+    userId?: string // ID of user who made the request
   ): Promise<PaginationResult<EventPaginationDto> | void> {
     try {
       let { limit, page } = paginationRequestDto
@@ -108,6 +106,8 @@ export class EventsService {
       limit = Math.abs(Number(limit))
       if (limit < 10) limit = 10
       const skip = (page - 1) * limit
+      const currentDate = new Date()
+      const usersOwnEvents = userId === paginationRequestDto.user_id
 
       const results = await this.eventsRepository.findAndCount({
         take: limit,
@@ -118,27 +118,32 @@ export class EventsService {
           "title",
           "fromDate",
           "toDate",
-          "privateEvent",
+          "visibility",
+          "cancellation",
           "eventCardColor",
           "eventTitleColor",
           "eventCardImage",
           "organizerId",
           "organizerAlias",
           "hourlyRate",
+          "createDateTime",
         ],
+        relations: ["bookedSlots"],
         order: {
-          createDateTime: "ASC",
+          createDateTime: "DESC",
         },
         // select only available events
         where: {
-          available: true,
+          isAvailable: true,
+          // for events that are still ongoing or the ones that will start in the future
+          toDate: MoreThan(currentDate),
           ...(paginationRequestDto?.user_id
             ? { organizerId: paginationRequestDto.user_id }
             : {}),
+          ...(!usersOwnEvents ? { visibility: "public" } : {}),
         },
         // default cache time = 1s
         cache: true,
-        ...options,
       })
 
       if (results == null) throw new Error()
@@ -158,21 +163,21 @@ export class EventsService {
   async findOne(id: string): Promise<any | void> {
     const event = await this.eventsRepository.findOne(id, {
       select: [
-        "privateEvent",
+        "visibility",
         "hourlyRate",
         "availabilities",
-        "selectedDays",
         "organizerAlias",
+        "organizerAddress",
+        "organizerId",
         "title",
         "description",
         "fromDate",
         "toDate",
-        "eventCardImage",
         "id",
-        "organizerId",
-        "organizerAlias",
+        "eventCardImage",
         "eventCardColor",
         "eventTitleColor",
+        "cancellation",
       ],
       relations: ["bookedSlots"],
     })
@@ -210,6 +215,7 @@ export class EventsService {
     try {
       const event = await this.eventsRepository.findOne(id, {
         relations: ["bookedSlots"],
+        where: { organizerId: userId },
       })
 
       // let bs = await this.bookingSlotRepository.findOne(event.bookedSlots[0].id)
@@ -217,7 +223,7 @@ export class EventsService {
       if (!event) return this.noEventError()
 
       // TODO this should be only allowed by an event owner
-      await this.eventsRepository.remove(event)
+      await this.eventsRepository.softDelete({ id: event.id })
       return {
         message: `Event removed successfully`,
         status: 201,
@@ -244,43 +250,54 @@ export class EventsService {
     user: UserEntity,
     eventBookingDto: EventBookingDto
   ): Promise<string | void> {
-    const {
-      txHash,
-      bookedDuration,
-      bookedDate,
-      eventId,
-      durationCost,
-      createGoogleCalEvent,
-    } = eventBookingDto
+    const { txHash, eventId, durationCost, duration, startDate, datumHash } =
+      eventBookingDto
 
     try {
-      const event = await this.eventsRepository.findOne({
+      let event = await this.eventsRepository.findOne({
         where: { id: eventId },
-        relations: ["organizer", "bookedSlots", "bookedSlots.attendee"],
+        relations: ["organizer"],
       })
+      if (!event) this.noEventError()
+
       user = await this.userRepository.findOne(user.id)
-
       if (!user) throw new HttpException("User not found", HttpStatus.UNAUTHORIZED)
-      if (event == undefined) this.noEventError()
 
-      let hasExistingSlotInTimeFrame: boolean = false
-
-      // prevent making new bookings at already scheduled time frame
-      event.bookedSlots.forEach((slot) => {
-        if (slot.attendee.id === user.id) {
+      let eventAvailabilityIdx = -1
+      let eventAvailability = (event.availabilities as EventAvailability[]).find(
+        (availability, idx) => {
           if (
-            slot.bookedDate === eventBookingDto.bookedDate &&
-            slot.bookedDuration >= eventBookingDto.bookedDuration
-          )
-            hasExistingSlotInTimeFrame = true
+            new Date(availability.from) <= new Date(startDate) &&
+            new Date(availability.to) >=
+              new Date(new Date(startDate).getTime() + duration)
+          ) {
+            eventAvailabilityIdx = idx
+            return availability
+          }
         }
-      })
+      )
+      // 1. check if given start time is available
+      // 2. check if given duration can be booked
+      let isAvailableToBook = true
+      let endDate = new Date(new Date(startDate).getTime() + duration)
 
-      if (hasExistingSlotInTimeFrame)
-        throw new HttpException(
-          "Booking slot with given time frame already exists",
-          HttpStatus.BAD_REQUEST
-        )
+      for (let [idx, slot] of eventAvailability.slots.entries()) {
+        let slotDate = new Date(slot.from)
+
+        if (slotDate >= endDate || slotDate < new Date(startDate)) continue
+
+        if (!slot.isAvailable) {
+          isAvailableToBook = false
+          continue
+        }
+
+        // it's pending for a new booking ID
+        eventAvailability.slots[idx].isAvailable = "pending"
+        continue
+      }
+
+      if (!isAvailableToBook)
+        throw new HttpException("Starting date is unavailable", HttpStatus.BAD_REQUEST)
 
       let bookingSlot = new BookingSlotEntity()
 
@@ -292,85 +309,111 @@ export class EventsService {
       bookingSlot.attendeeAlias = user.username
       bookingSlot.organizerAlias = event.organizer.username
       bookingSlot.organizerId = event.organizer.id
-      bookingSlot.bookedDuration = bookedDuration
-      bookingSlot.bookedDate = bookedDate
-      bookingSlot.durationCost = durationCost
+      bookingSlot.duration = duration
+      bookingSlot.fromDate = startDate
+      bookingSlot.toDate = new Date(
+        new Date(startDate).getTime() + duration
+      ).toISOString()
+      bookingSlot.cost = durationCost
       bookingSlot.txHash = txHash
+      bookingSlot.datumHash = datumHash
 
       bookingSlot = await this.bookingSlotRepository.save(bookingSlot)
 
-      console.log(user.googleApiCredentials, createGoogleCalEvent)
+      event.availabilities[eventAvailabilityIdx].slots = eventAvailability.slots.map(
+        (slot) => {
+          if (slot.isAvailable === "pending") {
+            slot.isAvailable = false
+            slot.bookingId = bookingSlot.id
+          }
+          return slot
+        }
+      )
+      const isFullyBookedAvailability = !eventAvailability.slots
+        .map((slot) => slot.isAvailable)
+        .filter((v) => v).length
+      if (isFullyBookedAvailability)
+        event.availabilities[eventAvailabilityIdx].isFullyBooked = true
+
+      // check if every availability slot is now fully booked or there are no future dates open
+      const isFullyBookedEvent = event.availabilities.every(
+        (availability) => availability.isFullyBooked
+      )
+      if (isFullyBookedEvent) event.isAvailable = false
+
+      await this.eventsRepository.save(event)
+      return bookingSlot.id
 
       // book event on organizers or/and attendee Gcal
-      if (user.googleApiCredentials || createGoogleCalEvent) {
-        const organizerOAuthToken = await new GoogleApiService().checkValidOauth(
-          event.organizer
-        )
-        const attendeeOAuthToken = await new GoogleApiService().checkValidOauth(user)
+      //if (user.googleApiCredentials || createGoogleCalEvent) {
+      //  const organizerOAuthToken = await new GoogleApiService().checkValidOauth(
+      //    event.organizer
+      //  )
+      //  const attendeeOAuthToken = await new GoogleApiService().checkValidOauth(user)
 
-        const gCalRequestBody = {
-          //attendees: [
-          //  {
-          //    displayName: user.username,
-          //    // id has to be alpanumeric only
-          //    //TODO add transactions id
-          //    comment: `txId: abc123, userId: ${user.id}`,
-          //  },
-          //],
-          summary: event.title,
-          description: event.description,
-          end: {
-            dateTime: dayjs(bookingSlot.bookedDate)
-              .add(bookingSlot.bookedDuration, "milliseconds")
-              .toISOString(),
-            timeZone: "UTC",
-          },
-          start: {
-            dateTime: bookingSlot.bookedDate,
-            timeZone: "UTC",
-          },
-          id: Buffer.from(bookingSlot.id).toString("hex"),
-          organizer: { displayName: event.organizerAlias },
-        }
+      //  const gCalRequestBody = {
+      //    //attendees: [
+      //    //  {
+      //    //    displayName: user.username,
+      //    //    // id has to be alpanumeric only
+      //    //    //TODO add transactions id
+      //    //    comment: `txId: abc123, userId: ${user.id}`,
+      //    //  },
+      //    //],
+      //    summary: event.title,
+      //    description: event.description,
+      //    end: {
+      //      dateTime: dayjs(bookingSlot.bookedDate)
+      //        .add(bookingSlot.bookedDuration, "milliseconds")
+      //        .toISOString(),
+      //      timeZone: "UTC",
+      //    },
+      //    start: {
+      //      dateTime: bookingSlot.bookedDate,
+      //      timeZone: "UTC",
+      //    },
+      //    id: Buffer.from(bookingSlot.id).toString("hex"),
+      //    organizer: { displayName: event.organizerAlias },
+      //  }
 
-        if (
-          organizerOAuthToken &&
-          typeof organizerOAuthToken === "string" &&
-          event.organizer.googleApiCredentials
-        ) {
-          const oldCred = JSON.parse(event.organizer.googleApiCredentials)
-          user.googleApiCredentials = JSON.stringify({
-            ...oldCred,
-            access_token: organizerOAuthToken,
-          })
-          const organizerCalRes =
-            await new GoogleApiService().createUserGoogleCalendarEvent(
-              organizerOAuthToken,
-              gCalRequestBody
-            )
-          console.log("google res organizer ", organizerCalRes)
-        }
-        if (
-          attendeeOAuthToken &&
-          typeof attendeeOAuthToken === "string" &&
-          createGoogleCalEvent &&
-          user.googleApiCredentials
-        ) {
-          if (createGoogleCalEvent) {
-            const oldCred = JSON.parse(user.googleApiCredentials)
-            user.googleApiCredentials = JSON.stringify({
-              ...oldCred,
-              access_token: attendeeOAuthToken,
-            })
-            const attendeeCalRes =
-              await new GoogleApiService().createUserGoogleCalendarEvent(
-                attendeeOAuthToken,
-                gCalRequestBody
-              )
-            console.log("google res attendee ", attendeeCalRes)
-          }
-        }
-      }
+      //  if (
+      //    organizerOAuthToken &&
+      //    typeof organizerOAuthToken === "string" &&
+      //    event.organizer.googleApiCredentials
+      //  ) {
+      //    const oldCred = JSON.parse(event.organizer.googleApiCredentials)
+      //    user.googleApiCredentials = JSON.stringify({
+      //      ...oldCred,
+      //      access_token: organizerOAuthToken,
+      //    })
+      //    const organizerCalRes =
+      //      await new GoogleApiService().createUserGoogleCalendarEvent(
+      //        organizerOAuthToken,
+      //        gCalRequestBody
+      //      )
+      //    console.log("google res organizer ", organizerCalRes)
+      //  }
+      //  if (
+      //    attendeeOAuthToken &&
+      //    typeof attendeeOAuthToken === "string" &&
+      //    createGoogleCalEvent &&
+      //    user.googleApiCredentials
+      //  ) {
+      //    if (createGoogleCalEvent) {
+      //      const oldCred = JSON.parse(user.googleApiCredentials)
+      //      user.googleApiCredentials = JSON.stringify({
+      //        ...oldCred,
+      //        access_token: attendeeOAuthToken,
+      //      })
+      //      const attendeeCalRes =
+      //        await new GoogleApiService().createUserGoogleCalendarEvent(
+      //          attendeeOAuthToken,
+      //          gCalRequestBody
+      //        )
+      //      console.log("google res attendee ", attendeeCalRes)
+      //    }
+      //  }
+      //}
 
       // if (event.organizer.messagingToken)
       //   await sendBookedEventMessage(
@@ -379,8 +422,6 @@ export class EventsService {
       //     event.title,
       //     event.id
       //   )
-
-      return bookingSlot.id
     } catch (e) {
       console.error(e)
       throw new HttpException(
@@ -390,27 +431,35 @@ export class EventsService {
     }
   }
 
+  // userId is the person making request
   public getResults(searchQuery: string, organizerId: string) {
-    const findParams = []
+    if (!searchQuery) return []
+    const now = new Date()
 
-    if (searchQuery)
-      findParams.push(
-        {
-          title: ILike(`%${searchQuery}%`),
-        },
-        {
-          description: ILike(`%${searchQuery}%`),
-        }
-      )
+    let queryBuilder = this.eventsRepository.createQueryBuilder("event_entity")
 
-    if (organizerId)
-      findParams.push({
-        organizerId: Equal(`${organizerId}`),
-      })
-
-    return this.eventsRepository.find({
-      where: [...findParams],
-    })
+    if (organizerId) {
+      return queryBuilder
+        .where("event_entity.organizerId = :organizerId", { organizerId })
+        .andWhere({ toDate: MoreThan(now) })
+        .andWhere("event_entity.title ILIKE :searchQuery", {
+          searchQuery: `%${searchQuery}%`,
+        })
+        .orWhere("event_entity.description ILIKE :searchQuery", {
+          searchQuery: `%${searchQuery}%`,
+        })
+        .getMany()
+    } else {
+      return queryBuilder
+        .where("event_entity.title ILIKE :searchQuery", {
+          searchQuery: `%${searchQuery}%`,
+        })
+        .andWhere({ toDate: MoreThan(now) })
+        .orWhere("event_entity.description ILIKE :searchQuery", {
+          searchQuery: `%${searchQuery}%`,
+        })
+        .getMany()
+    }
   }
 
   public async updateEventImage(
@@ -427,8 +476,36 @@ export class EventsService {
     })
   }
 
-  public getBookingSlotById(uuid: string) {
-    return this.bookingSlotRepository.findOneOrFail(uuid)
+  public async getBookingSlotById(uuid: string) {
+    return await this.bookingSlotRepository.findOneOrFail(uuid)
+  }
+
+  public async updateBookingSlotById(uuid: string, userId, updateDTO) {
+    let newSlot = await this.bookingSlotRepository.findOneOrFail(uuid)
+    if (newSlot) throw new NotFoundException("Booking slot with a given ID do not exist.")
+    if (newSlot.organizerId !== userId)
+      throw new UnauthorizedException("You're not allowed to update this record")
+
+    for (let k of updateDTO) {
+      newSlot[k] = updateDTO[k]
+    }
+
+    console.log("newSlot >", newSlot)
+    return await this.bookingSlotRepository.save(newSlot)
+  }
+
+  public async getBookingsByUserId(userId: string) {
+    return await this.bookingSlotRepository.find({
+      where: [{ attendee: userId }, { organizer: userId }],
+    })
+  }
+
+  // this returns bookings that are meant to be used for payouts withdraw
+  public async getPastBookingsByUserId(userId) {
+    const now = new Date()
+    return await this.bookingSlotRepository.find({
+      where: { organizerId: userId, toDate: LessThan(now) },
+    })
   }
 
   public async getEventBookings(uuid: string, userId: string) {

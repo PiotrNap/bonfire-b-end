@@ -3,7 +3,7 @@ import {
   Body,
   Post,
   Get,
-Req,
+  Req,
   Query,
   Res,
   BadRequestException,
@@ -23,9 +23,7 @@ export class AuthController {
   @Public()
   @Post("challenge")
   public async getChallangeByPayload(@Body() body: any): Promise<ChallengeDTO> {
-    const { deviceID } = body
-    console.log("device ??", deviceID)
-    return await this.authService.createChallenge(deviceID)
+    return await this.authService.createChallenge(body.deviceID)
   }
 
   @Public()
@@ -64,11 +62,7 @@ export class AuthController {
     // )
     //   throw new UnauthorizedException()
 
-    const authUrl = await new GoogleApiService().generateAuthUrl(
-      user,
-      uri,
-      scopes
-    )
+    const authUrl = await new GoogleApiService().generateAuthUrl(user, uri, scopes)
 
     if (authUrl) {
       return { authUrl }

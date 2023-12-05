@@ -5,5 +5,4 @@ export interface LoginStatus {
   expiresIn: number
   profileImage: string
   hourlyRateAda: number
-  timeZone: string
 }

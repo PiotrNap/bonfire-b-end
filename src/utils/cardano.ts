@@ -52,9 +52,7 @@ console.log("escrow script hash: ", escrowScriptHash.hex)
 console.log("minting policy hash: ", mintingPolicyHash.hex)
 /***/
 
-/**
- * ---- Helper functions ----
- */
+// ---- Helper functions ----
 function getProjectConfig() {
   return {
     networkType: process.env.CARDANO_NETWORK as "mainnet" | "preprod",
@@ -67,12 +65,11 @@ function getHeliosNetworkParams(networkType: Network): NetworkParams {
   const fileData = fs.readFileSync(chainConfigPath, "utf8")
   return new NetworkParams(JSON.parse(fileData))
 }
-
-function schemaToPaymentTokens(schema) {
   function bytesToText(bytes) {
     return String.fromCharCode(...bytes.match(/.{2}/g).map((byte) => parseInt(byte, 16)))
   }
 
+function schemaToPaymentTokens(schema) {
   const paymentTokenAssetsArray = []
   let paymentLovelace = 0
 
@@ -95,14 +92,12 @@ function schemaToPaymentTokens(schema) {
   const paymentTokenAssets = new Assets(paymentTokenAssetsArray)
   return new Value(paymentLovelace, paymentTokenAssets)
 }
-/**
- * --- End Helper Functions ---
- */
+//------------
 
 /**
  * Creates unlocking transaction from Escrow SC
  */
-export async function createUntx(
+export async function createUnlockingTransaction(
   organizer: UserDto,
   attendee: UserDto,
   redeemerType: Redeemer,
@@ -125,6 +120,8 @@ export async function createUntx(
     "addr_test1qqtd83qaffaczz26lruytuygqc2fx396h45t6x9lxpq7k6v39lqt9m00ckwzlhczj8w8fspaqrtgzhaxagtuxpun9xyqzz09rk"
   )
   redeemerType = "Cancel"
+
+  // Use this to store the payment-tokens information
   //@ts-ignore
   lockedValueSchema = {
     map: [
@@ -203,8 +200,8 @@ export async function mintBetaTesterToken(
   tokenIdx: number
 ): Promise<string | void> {
   try {
-    const privKeyArray = Array.from(Buffer.from(walletKeys.accountKeyHex, "hex"))
     // should work for signing a tx with utxos at baseAddress
+    const privKeyArray = Array.from(Buffer.from(walletKeys.accountKeyHex, "hex"))
     const privKey = new Bip32PrivateKey(privKeyArray).derive(0).derive(0)
     const pubKey = privKey.derivePubKey().pubKeyHash
 
@@ -213,7 +210,7 @@ export async function mintBetaTesterToken(
     const params = getHeliosNetworkParams(networkType)
     const treasuryAddress = new Address(process.env.TREASURY_ADDRESS)
     const treasuryUtxos = await blockfrost.getUtxos(treasuryAddress)
-    debugger
+
     const nftTokenName = ByteArrayData.fromString(`BetaTester#${tokenIdx}`).toHex()
     const tokens: [number[], bigint][] = [[hexToBytes(nftTokenName), BigInt(1)]]
     const betaTesterToken = new Assets([[mintingPolicyHash, tokens]])
@@ -238,7 +235,6 @@ export async function mintBetaTesterToken(
     let signature = privKey.sign(tx.bodyHash)
     tx.addSignature(signature)
 
-    // return tx hex
     return (await blockfrost.submitTx(tx)).hex
   } catch (e) {
     throw e

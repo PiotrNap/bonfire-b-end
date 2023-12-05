@@ -1,4 +1,4 @@
-import { IsBoolean, IsNumber, IsString, IsUUID } from "class-validator"
+import { IsNumber, IsString, IsUUID } from "class-validator"
 
 export class EventBookingDto {
   @IsUUID()
@@ -8,17 +8,20 @@ export class EventBookingDto {
   attendeeId: string
 
   @IsString()
-  txHash?: string
+  txHash: string
+
+  @IsString()
+  datumHash: string
 
   @IsNumber()
-  bookedDate: Date
+  startDate: string
 
   @IsNumber()
   bookedDuration: number
 
   @IsNumber()
-  durationCost: number
+  durationCost: string
 
-  @IsBoolean()
-  createGoogleCalEvent: boolean
+  @IsNumber()
+  duration: number
 }
