@@ -54,4 +54,7 @@ export class CreateEventDto {
 
   @IsObject()
   cancellation: Cancellation
+
+  @IsString()
+  note: string
 }

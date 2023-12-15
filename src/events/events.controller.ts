@@ -17,11 +17,13 @@ import {
 } from "@nestjs/common"
 import { FileInterceptor } from "@nestjs/platform-express"
 import { isNSFW } from "../common/utils.js"
-import { PaginationRequestDto } from "../pagination/pagination-request.dto.js"
+import {
+  BookingPaginationDto,
+  PaginationRequestDto,
+} from "../pagination/pagination-request.dto.js"
 import { CreateEventDto } from "./dto/create-event.dto.js"
 import { EventBookingDto } from "./dto/event-booking.dto.js"
 import { EventsService } from "./events.service.js"
-import { NotFoundError } from "rxjs"
 
 @Controller("events")
 export class EventsController {
@@ -30,7 +32,10 @@ export class EventsController {
   @Get()
   public async getEvents(@Query() query: PaginationRequestDto, @Req() req: any) {
     const { user } = req
-    let events = await this.eventsService.findAllWithPagination(query, user.id)
+    if (query.user_id && query.user_id !== user.id)
+      throw new UnauthorizedException("You're not allowed to fetch events for this user")
+
+    let events = await this.eventsService.findAllWithPagination(query)
 
     if (!events) {
       throw new NotFoundException()
@@ -73,18 +78,24 @@ export class EventsController {
    * This will return all bookings for a given user ID
    */
   @Get("bookings")
-  public async getBookingByQuery(@Query() query: any, @Req() req: any) {
+  public async getBookingByQuery(@Query() query: BookingPaginationDto, @Req() req: any) {
     const { user } = req
     let eventsRepoResults
 
-    if (!query.user_id || !user || user.id !== query.user_id)
+    if (user.id !== (query.organizer_id || query.attendee_id))
       throw new UnauthorizedException("You are not allowed to access this resources")
 
     if (query.past_bookings) {
-      eventsRepoResults = await this.eventsService.getPastBookingsByUserId(query.user_id)
+      // this returns bookings that are meant to be used for payouts withdraw
+      eventsRepoResults = await this.eventsService.getPastBookingsByUserId(
+        query.organizer_id
+      )
     } else {
-      eventsRepoResults = await this.eventsService.getBookingsByUserId(query.user_id)
+      // this returns bookings used to be displayed on user main page
+      eventsRepoResults = await this.eventsService.getBookingsByUserIdPaginated(query)
     }
+
+    console.log("results is >", eventsRepoResults)
 
     if (!eventsRepoResults) {
       throw new UnprocessableEntityException()
@@ -109,7 +120,8 @@ export class EventsController {
     @Body() bookingUpdateDTO: any
   ) {
     const { user } = req
-    if (bookingUpdateDTO.id !== uuid) throw new NotFoundException()
+    if (bookingUpdateDTO.id !== uuid)
+      throw new NotFoundException("Missing booking slot ID")
 
     const updated = await this.eventsService.updateBookingSlotById(
       uuid,
@@ -125,14 +137,31 @@ export class EventsController {
   @Delete("booking/:uuid")
   public async removeEventBooking(
     @Param("uuid", new ParseUUIDPipe()) uuid: string,
-    @Req() req: any
+    @Req() req: any,
+    @Query() query: any
   ): Promise<any> {
-    return await this.eventsService.removeBookedEventSlot(uuid, req.user)
+    const { organizer_id, attendee_id, txHash } = query
+    if ((!organizer_id && !attendee_id) || (organizer_id && attendee_id) || !txHash)
+      throw new UnprocessableEntityException("Missing or too much query paramaters")
+
+    const queryingUserId = organizer_id ?? attendee_id
+    if (queryingUserId !== req.user.id) throw new UnauthorizedException()
+
+    return await this.eventsService.removeBookedEventSlot(
+      uuid,
+      req.user.id,
+      txHash, // unlocking transaction
+      !!organizer_id ? true : false // last param is to check who exactly is the user
+    )
   }
 
   @Get(":uuid")
   public async getEventById(@Param("uuid", new ParseUUIDPipe()) uuid: string) {
-    return await this.eventsService.findOne(uuid)
+    const event = await this.eventsService.findOne(uuid)
+
+    if (!event) new NotFoundException("No event found for a given ID")
+
+    return event
   }
 
   @Post()

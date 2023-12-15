@@ -1,9 +1,11 @@
 import {
+  ConflictException,
   HttpException,
   HttpStatus,
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  UnprocessableEntityException,
 } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository, MoreThan, LessThan } from "typeorm"
@@ -12,7 +14,10 @@ import { BookingSlotEntity } from "../model/bookingSlot.entity.js"
 import { EventStatistics } from "../model/eventStatistics.entity.js"
 import { UserEntity } from "../model/user.entity.js"
 import { CreateEventDto } from "./dto/create-event.dto.js"
-import { PaginationRequestDto } from "../pagination/pagination-request.dto.js"
+import {
+  BookingPaginationDto,
+  PaginationRequestDto,
+} from "../pagination/pagination-request.dto.js"
 import { PaginationResult } from "../pagination/pagination-result.interface.js"
 import { EventPaginationDto } from "./dto/event-pagination.dto.js"
 import { UpdateEventDto } from "./dto/update-event.dto.js"
@@ -46,6 +51,7 @@ export class EventsService {
       eventTitleColor,
       organizer,
       cancellation,
+      note,
     } = createEventDto
     try {
       const event: EventEntity = new EventEntity()
@@ -70,6 +76,7 @@ export class EventsService {
       event.organizerAlias = user.username
       event.organizerAddress = user.baseAddress
       event.cancellation = cancellation
+      event.note = note
       user.events = [...user.events, event]
       await this.userRepository.save(user)
 
@@ -97,8 +104,7 @@ export class EventsService {
   }
 
   async findAllWithPagination(
-    paginationRequestDto: PaginationRequestDto,
-    userId?: string // ID of user who made the request
+    paginationRequestDto: PaginationRequestDto
   ): Promise<PaginationResult<EventPaginationDto> | void> {
     try {
       let { limit, page } = paginationRequestDto
@@ -107,7 +113,6 @@ export class EventsService {
       if (limit < 10) limit = 10
       const skip = (page - 1) * limit
       const currentDate = new Date()
-      const usersOwnEvents = userId === paginationRequestDto.user_id
 
       const results = await this.eventsRepository.findAndCount({
         take: limit,
@@ -128,22 +133,17 @@ export class EventsService {
           "hourlyRate",
           "createDateTime",
         ],
-        relations: ["bookedSlots"],
         order: {
           createDateTime: "DESC",
         },
-        // select only available events
         where: {
           isAvailable: true,
           // for events that are still ongoing or the ones that will start in the future
           toDate: MoreThan(currentDate),
           ...(paginationRequestDto?.user_id
             ? { organizerId: paginationRequestDto.user_id }
-            : {}),
-          ...(!usersOwnEvents ? { visibility: "public" } : {}),
+            : { visibility: "public" }),
         },
-        // default cache time = 1s
-        cache: true,
       })
 
       if (results == null) throw new Error()
@@ -161,7 +161,7 @@ export class EventsService {
   }
 
   async findOne(id: string): Promise<any | void> {
-    const event = await this.eventsRepository.findOne(id, {
+    return await this.eventsRepository.findOne(id, {
       select: [
         "visibility",
         "hourlyRate",
@@ -179,12 +179,7 @@ export class EventsService {
         "eventTitleColor",
         "cancellation",
       ],
-      relations: ["bookedSlots"],
     })
-    //TODO based on `bookedSlots` calculate which days are still available for booking
-
-    if (!event) this.noEventError()
-    return { ...event, numOfBookedSlots: event.bookedSlots.length }
   }
 
   async update(
@@ -236,21 +231,55 @@ export class EventsService {
 
   async removeBookedEventSlot(
     eventBookingId: string,
-    userId: string
+    userId: string,
+    unlockingTxHash: string,
+    isOrganizer: boolean
   ): Promise<any | void> {
-    const event = await this.bookingSlotRepository.findOneOrFail(eventBookingId)
+    // remove booking and make the availability be available again
+    const bookingSlot: BookingSlotEntity = await this.bookingSlotRepository.findOneOrFail(
+      eventBookingId
+    )
 
-    if (!event) return this.noEventError()
-    if (event.attendeeId !== userId) throw new UnauthorizedException()
+    if (isOrganizer) {
+      if (bookingSlot.organizerId !== userId)
+        throw new UnauthorizedException("You're not allowed to change this record")
+    } else {
+      if (bookingSlot.attendeeId !== userId)
+        throw new UnauthorizedException("You're not allowed to change this record")
+    }
 
-    return
+    bookingSlot.isActive = false
+    bookingSlot.unlockingTxHash = unlockingTxHash
+
+    const event = await this.eventsRepository.findOneOrFail(bookingSlot.eventId)
+    event.availabilities = event.availabilities.map((availability: EventAvailability) => {
+      // check which availability object contains current booking date
+      if (
+        new Date(availability.from) <= new Date(bookingSlot.fromDate) &&
+        new Date(availability.to) >= new Date(bookingSlot.toDate)
+      ) {
+        availability.slots.map((slot) => {
+          if (slot.bookingId === eventBookingId) {
+            slot.isAvailable = true
+            slot.bookingId = ""
+          }
+          return slot
+        })
+      }
+      return availability
+    })
+
+    const newEvent = await this.eventsRepository.save(event)
+    const newBookingSlot = await this.bookingSlotRepository.save(bookingSlot)
+
+    return !!newEvent && !!newBookingSlot
   }
 
   async bookEvent(
     user: UserEntity,
     eventBookingDto: EventBookingDto
   ): Promise<string | void> {
-    const { txHash, eventId, durationCost, duration, startDate, datumHash } =
+    const { lockingTxHash, eventId, durationCost, duration, startDate, datumHash } =
       eventBookingDto
 
     try {
@@ -259,6 +288,8 @@ export class EventsService {
         relations: ["organizer"],
       })
       if (!event) this.noEventError()
+      if (!event.isAvailable)
+        throw new UnprocessableEntityException("This event is no longer available")
 
       user = await this.userRepository.findOne(user.id)
       if (!user) throw new HttpException("User not found", HttpStatus.UNAUTHORIZED)
@@ -315,11 +346,13 @@ export class EventsService {
         new Date(startDate).getTime() + duration
       ).toISOString()
       bookingSlot.cost = durationCost
-      bookingSlot.txHash = txHash
+      bookingSlot.lockingTxHash = lockingTxHash
       bookingSlot.datumHash = datumHash
+      bookingSlot.cancellation = event.cancellation
 
       bookingSlot = await this.bookingSlotRepository.save(bookingSlot)
 
+      /** Check if the event is fully booked **/
       event.availabilities[eventAvailabilityIdx].slots = eventAvailability.slots.map(
         (slot) => {
           if (slot.isAvailable === "pending") {
@@ -494,17 +527,36 @@ export class EventsService {
     return await this.bookingSlotRepository.save(newSlot)
   }
 
-  public async getBookingsByUserId(userId: string) {
-    return await this.bookingSlotRepository.find({
-      where: [{ attendee: userId }, { organizer: userId }],
-    })
+  public async getBookingsByUserIdPaginated(query: BookingPaginationDto) {
+    const { limit, page, organizer_id, attendee_id } = query
+    if (!organizer_id && !attendee_id)
+      throw new UnprocessableEntityException(
+        "Missing one of the required user-id parameter"
+      )
+
+    const userIdOption = organizer_id
+      ? { organizerId: organizer_id }
+      : { attendeeId: attendee_id }
+
+    return await this.bookingSlotRepository
+      .createQueryBuilder("bookingSlot")
+      .leftJoinAndSelect("bookingSlot.organizer", "organizer")
+      .leftJoinAndSelect("bookingSlot.attendee", "attendee")
+      .select([
+        "bookingSlot", // select all fields from bookingSlot
+        "organizer.baseAddress", // select only baseAddress from organizer
+        "attendee.baseAddress", // select only baseAddress from attendee
+      ])
+      .where({ ...userIdOption, toDate: MoreThan(new Date()), isActive: true })
+      .take(limit)
+      .skip((page - 1) * limit)
+      .getManyAndCount()
   }
 
-  // this returns bookings that are meant to be used for payouts withdraw
   public async getPastBookingsByUserId(userId) {
     const now = new Date()
-    return await this.bookingSlotRepository.find({
-      where: { organizerId: userId, toDate: LessThan(now) },
+    return await this.bookingSlotRepository.findAndCount({
+      where: { organizerId: userId, toDate: LessThan(now), isActive: true },
     })
   }
 

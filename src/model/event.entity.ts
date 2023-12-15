@@ -41,6 +41,9 @@ export class EventEntity extends BaseEntity {
   @Column({ type: "json" })
   hourlyRate: any
 
+  @Column("varchar", { nullable: true })
+  note: string
+
   // this has to be nullable because the image is updated right after new event creation
   @Column({ type: "bytea", nullable: true })
   eventCardImage?: Buffer

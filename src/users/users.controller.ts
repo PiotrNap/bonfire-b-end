@@ -34,30 +34,28 @@ import { UsersService } from "./users.service.js"
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // TODO This SHOULD NOT be public
-  @Public()
-  @Get()
-  async getUsers(
-    @Query() query: PaginationRequestDto,
-    @Body() body: any
-  ): Promise<PaginationResult<UserEntity> | UserEntity[] | void> {
-    let users: any
+  // @Get()
+  // async getUsers(
+  // @Query() query: PaginationRequestDto,
+  //   @Body() body: any
+  // ): Promise<PaginationResult<UserEntity> | UserEntity[] | void> {
+  //   let users: any
 
-    if (Object.keys(query).length) {
-      users = await this.usersService.getWithPagination(query)
-    }
+  //   if (Object.keys(query).length) {
+  //     users = await this.usersService.getWithPagination(query)
+  //   }
 
-    if (Object.keys(body).length) {
-      users = await this.usersService.findByPayload(body)
-    }
+  //   if (Object.keys(body).length) {
+  //     users = await this.usersService.findByPayload(body)
+  //   }
 
-    // TODO this shouldn't be in production
-    users = await this.usersService.getAll()
+  //   // TODO this shouldn't be in production
+  //   users = await this.usersService.getAll()
 
-    if (!users) throw new NotFoundException()
+  //   if (!users) throw new NotFoundException()
 
-    return users
-  }
+  //   return users
+  // }
 
   @Public()
   @Post("register")
@@ -85,14 +83,8 @@ export class UsersController {
   @Public()
   @Get("check-publickey")
   async checkPublicKey(@Query("publickey") username: string) {
-    const res = await this.usersService.getUserByPublicKey(username)
-    if (!res)
-      throw new HttpException(
-        "No user exists for a given wallet credentials.",
-        HttpStatus.NOT_FOUND
-      )
-
-    return res // returns only baseAddress + username to complete sign-in on front-end
+    //  if found returns only baseAddress + username to complete sign-in on front-end
+    return await this.usersService.getUserByPublicKey(username)
   }
 
   @Public()
@@ -204,21 +196,7 @@ export class UsersController {
     return events
   }
 
-  @Get(":uuid/schedulings")
-  public async getUserScheduledSlots(
-    @Param("uuid", ParseUUIDPipe) uuid: string,
-    @Req() req: any
-  ) {
-    const { user } = req
-    checkIfAuthorized(user.id, uuid)
-    const slots = await this.usersService.getUserScheduledSlots(uuid)
-
-    if (!slots) throw new UnprocessableEntityException()
-
-    return slots
-  }
-
-  @Get(":uuid/booking")
+  @Get(":uuid/bookings")
   public async getUserBookingSlots(
     @Param("uuid", ParseUUIDPipe) uuid: string,
     @Req() req: any

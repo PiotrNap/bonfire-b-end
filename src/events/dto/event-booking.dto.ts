@@ -8,7 +8,7 @@ export class EventBookingDto {
   attendeeId: string
 
   @IsString()
-  txHash: string
+  lockingTxHash: string
 
   @IsString()
   datumHash: string

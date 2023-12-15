@@ -3,6 +3,7 @@ import { Relation } from "typeorm/index.js"
 import { BaseEntity } from "./base.entity.js"
 import { EventEntity } from "./event.entity.js"
 import { UserEntity } from "./user.entity.js"
+import { Cancellation } from "src/events/events.interface.js"
 
 @Entity()
 export class BookingSlotEntity extends BaseEntity {
@@ -52,19 +53,14 @@ export class BookingSlotEntity extends BaseEntity {
   toDate: string
 
   @Column({ type: "varchar", nullable: true })
-  txHash: string
-
-  @Column({ type: "varchar", nullable: true })
   unlockingTxHash: string
 
-  @Column({ type: "varchar", nullable: true })
+  @Column({ type: "varchar" })
   lockingTxHash: string
 
-  //TODO remove 'nullable' before going live
-  @Column({ type: "varchar", nullable: true })
-  datumHash: string
+  @Column({ type: "jsonb", nullable: true })
+  cancellation: Cancellation
 
-  // cbor of outputId (helios type)
-  // @Column({ type: "varchar", nullable: true })
-  // outputId: string
+  @Column({ type: "varchar" })
+  datumHash: string
 }

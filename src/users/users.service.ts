@@ -6,7 +6,7 @@ import {
   UnauthorizedException,
 } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
-import { FindManyOptions, Repository } from "typeorm"
+import { FindManyOptions, Repository, MoreThan } from "typeorm"
 import { AddDeviceDTO } from "./dto/add-device.dto.js"
 import { UserEntity } from "../model/user.entity.js"
 import { DeviceCredentialEntity } from "../model/deviceCredential.entity.js"
@@ -16,12 +16,9 @@ import { ChallengeResponseDTO } from "./dto/challenge-response.dto.js"
 import { ChallengeResponseValidation } from "../common/challengeValidation.js"
 import { PaginationRequestDto } from "../pagination/pagination-request.dto.js"
 import { PaginationResult } from "../pagination/pagination-result.interface.js"
-import * as helios from "@hyperionbt/helios"
 import { EventEntity } from "../model/event.entity.js"
 import { BetaTestersEntity } from "../model/betaTesters.entity.js"
 import { mintBetaTesterToken } from "../utils/cardano.js"
-
-const { Signature } = helios
 
 @Injectable()
 export class UsersService {
@@ -254,22 +251,6 @@ export class UsersService {
     return users
   }
 
-  // async getAllOrganizers(): Promise<OrganizerEntity[]> {
-  //   const organizers = await this.organizerRepo.find({
-  //     relations: ["events", "bookedSlots", "scheduledSlots"],
-  //   })
-
-  //   return organizers
-  // }
-
-  // async getAllAttendees(): Promise<AttendeeEntity[]> {
-  //   const attendees = await this.attendeeRepo.find({
-  //     relations: ["bookedSlots"],
-  //   })
-
-  //   return attendees
-  // }
-
   // @TODO in the future try to do database-level filtering
   async getCalendarEvents(id: string, date: Date): Promise<any | void> {
     const { bookedSlots, scheduledSlots, events }: UserEntity =
@@ -370,9 +351,10 @@ export class UsersService {
   async getUserBookingSlots(uuid: string) {
     return await this.userRepo
       .findOne(uuid, {
+        relations: ["bookedSlots"],
         where: {
           isActive: true,
-          organizerId: uuid,
+          toDate: MoreThan(Date.now()),
         },
       })
       .then((res) => res.bookedSlots)
@@ -382,7 +364,11 @@ export class UsersService {
     return await this.userRepo
       .findOne(uuid, {
         relations: ["scheduledSlots"],
+        where: {
+          isActive: true,
+          toDate: MoreThan(Date.now()),
+        },
       })
-      .then((res) => res.bookedSlots)
+      .then((res) => res.scheduledSlots)
   }
 }
