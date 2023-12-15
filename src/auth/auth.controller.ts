@@ -32,63 +32,63 @@ export class AuthController {
     return await this.authService.login(body)
   }
 
-  @Public()
-  @Get("google-oauth-callback")
-  public async oauthGoogleCallback(@Res() res: any, @Query() query: any) {
-    const result = await new GoogleApiService().handleGoogleOauthCallback(query)
-    if (!result) {
-      throw new UnprocessableEntityException()
-    }
-    return res.redirect(result)
-  }
+  // @Public()
+  // @Get("google-oauth-callback")
+  // public async oauthGoogleCallback(@Res() res: any, @Query() query: any) {
+  //   const result = await new GoogleApiService().handleGoogleOauthCallback(query)
+  //   if (!result) {
+  //     throw new UnprocessableEntityException()
+  //   }
+  //   return res.redirect(result)
+  // }
 
-  @Get("google-oauth-url")
-  public async getGoogleAuthUrl(
-    @Req() req: any,
-    @Query() query: { scopes: string; uri: string }
-  ): Promise<any> {
-    const { scopes, uri } = query
-    const { user } = req
+  // @Get("google-oauth-url")
+  // public async getGoogleAuthUrl(
+  //   @Req() req: any,
+  //   @Query() query: { scopes: string; uri: string }
+  // ): Promise<any> {
+  //   const { scopes, uri } = query
+  //   const { user } = req
 
-    // we don't allow attendees to be redirected to events creation screen
-    // if (
-    //   user.profileType === "attendee" &&
-    //   uri.includes(
-    //     combineUrlPaths([
-    //       DEEP_LINKING_PATHS.Navigation,
-    //       DEEP_LINKING_PATHS["Available Days Selection"],
-    //     ])
-    //   )
-    // )
-    //   throw new UnauthorizedException()
+  //   // we don't allow attendees to be redirected to events creation screen
+  //   // if (
+  //   //   user.profileType === "attendee" &&
+  //   //   uri.includes(
+  //   //     combineUrlPaths([
+  //   //       DEEP_LINKING_PATHS.Navigation,
+  //   //       DEEP_LINKING_PATHS["Available Days Selection"],
+  //   //     ])
+  //   //   )
+  //   // )
+  //   //   throw new UnauthorizedException()
 
-    const authUrl = await new GoogleApiService().generateAuthUrl(user, uri, scopes)
+  //   const authUrl = await new GoogleApiService().generateAuthUrl(user, uri, scopes)
 
-    if (authUrl) {
-      return { authUrl }
-    } else {
-      throw new BadRequestException()
-    }
-  }
+  //   if (authUrl) {
+  //     return { authUrl }
+  //   } else {
+  //     throw new BadRequestException()
+  //   }
+  // }
 
-  @Get("google-oauth-valid")
-  public async checkForValidGoogleOauth(@Req() req: any) {
-    const { user } = req
-    return await new GoogleApiService().checkValidOauth(user)
-  }
+  // @Get("google-oauth-valid")
+  // public async checkForValidGoogleOauth(@Req() req: any) {
+  //   const { user } = req
+  //   return await new GoogleApiService().checkValidOauth(user)
+  // }
 
   //TODO this shouldn't be public
-  @Public()
-  @Get("google-cal-events")
-  public async getEvents(@Query() query: any, @Req() req: any) {
-    const { user } = req.user
-    const events = await new GoogleApiService().getUserGoogleCalendarEvents(
-      query,
-      user.id
-    )
+  // @Public()
+  // @Get("google-cal-events")
+  // public async getEvents(@Query() query: any, @Req() req: any) {
+  //   const { user } = req.user
+  //   const events = await new GoogleApiService().getUserGoogleCalendarEvents(
+  //     query,
+  //     user.id
+  //   )
 
-    if (!events) throw new BadRequestException()
+  //   if (!events) throw new BadRequestException()
 
-    return events
-  }
+  //   return events
+  // }
 }
