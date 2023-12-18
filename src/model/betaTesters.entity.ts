@@ -11,6 +11,9 @@ export class BetaTestersEntity extends BaseEntity {
   @Column()
   redeemed: boolean
 
-  @Column({ nullable: true })
-  txHash: string
+  @Column()
+  txHashMainnet: string
+
+  @Column()
+  txHashTestnet: string
 }

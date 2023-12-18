@@ -9,55 +9,71 @@ import {
   Program,
   Tx,
   TxOutput,
-  TxOutputId,
   Value,
   hexToBytes,
 } from "@hyperionbt/helios"
 import { cwd } from "process"
 import { UserDto } from "../users/dto/user.dto.js"
-import EC from "../on-chain/EscrowContract.js"
-import MC from "../on-chain/MintingContract.js"
 import { walletKeys } from "../../keys/walletKeys.js"
+import { NetworkId } from "./types.js"
+// import EC from "../on-chain/EscrowContract.js"
 import * as fs from "fs"
 
 /** Miscellaneous **/
 const fiveMinutes = 1000 * 60 * 5
-// const isTestnet = process.env.CARDANO_NETWORK !== "mainnet"
 type Network = "mainnet" | "preprod" | "preview"
 type Redeemer = "Cancel" | "Complete" | "Recycle"
 
 /** Blockfrost API reference **/
-export function blockfrostApi(): BlockfrostV0 {
-  const { networkType, projectId } = getProjectConfig()
+export function blockfrostApi(
+  networkId: NetworkId,
+  networkType: "mainnet" | "preprod"
+): BlockfrostV0 {
+  const projectId =
+    networkId === "Mainnet"
+      ? process.env.BLOCKFROST_KEY_MAINNET
+      : process.env.BLOCKFROST_KEY_TESTNET
   return new BlockfrostV0(networkType, projectId)
 }
 
 /**
  * Contracts
  */
-const escrowProgram = Program.new(EC)
-const compiledEscrowScript = escrowProgram.compile(false)
-const escrowScriptHash = compiledEscrowScript.validatorHash
+// const escrowProgram = Program.new(EC)
+// const compiledEscrowScript = escrowProgram.compile(false)
+// const escrowScriptHash = compiledEscrowScript.validatorHash
 // Because of helios version change, contract addr can differ
-const escrowScriptAddress = Address.fromHash(escrowScriptHash).toBech32()
+// const escrowScriptAddress = Address.fromHash(escrowScriptHash).toBech32()
 
-const mintingProgram = Program.new(MC)
-const compiledMintingScript = mintingProgram.compile(false)
-const mintingPolicyHash = compiledMintingScript.mintingPolicyHash
+export function getMintingContract(pubKeyHash: string) {
+  const validator = `
+minting signed
+
+const OWNER: PubKeyHash = PubKeyHash::new(#${pubKeyHash})
+
+func main(_, ctx: ScriptContext) -> Bool {
+    ctx.tx.is_signed_by(OWNER)
+}`
+
+  const mintingProgram = Program.new(validator)
+  const compiledMintingScript = mintingProgram.compile(false)
+  const mintingPolicyHash = compiledMintingScript.mintingPolicyHash
+
+  return { mintingScript: compiledMintingScript, mintingPolicyHash }
+}
+
 // const mintingScriptAddress = Address.fromHash(mintingPolicyHash, isTestnet).toBech32()
 
-console.log("escrow script addr: ", escrowScriptAddress)
-console.log("escrow script hash: ", escrowScriptHash.hex)
+// console.log("escrow script addr: ", escrowScriptAddress)
+// console.log("escrow script hash: ", escrowScriptHash.hex)
 // console.log("minting script addr: ", mintingScriptAddress)
-console.log("minting policy hash: ", mintingPolicyHash.hex)
+// console.log("minting policy hash: ", mintingPolicyHash.hex)
 /***/
 
 // ---- Helper functions ----
-function getProjectConfig() {
-  return {
-    networkType: process.env.CARDANO_NETWORK as "mainnet" | "preprod",
-    projectId: process.env.BLOCKFROST_KEY,
-  }
+
+function getNetworkType(networkId: NetworkId) {
+  return networkId === "Mainnet" ? "mainnet" : "preprod"
 }
 
 function getHeliosNetworkParams(networkType: Network): NetworkParams {
@@ -65,9 +81,9 @@ function getHeliosNetworkParams(networkType: Network): NetworkParams {
   const fileData = fs.readFileSync(chainConfigPath, "utf8")
   return new NetworkParams(JSON.parse(fileData))
 }
-  function bytesToText(bytes) {
-    return String.fromCharCode(...bytes.match(/.{2}/g).map((byte) => parseInt(byte, 16)))
-  }
+function bytesToText(bytes) {
+  return String.fromCharCode(...bytes.match(/.{2}/g).map((byte) => parseInt(byte, 16)))
+}
 
 function schemaToPaymentTokens(schema) {
   const paymentTokenAssetsArray = []
@@ -104,8 +120,8 @@ export async function createUnlockingTransaction(
   outputIdCborHex: string,
   lockedValueSchema: string
 ) {
-  const { networkType } = getProjectConfig()
-  const params = getHeliosNetworkParams(networkType)
+  // const { networkType } = getProjectConfig()
+  // const params = getHeliosNetworkParams(networkType)
   // ! First check if it's possible to construct tx and send it to f-end for signing,
   // then worry about e-thing else
 
@@ -143,52 +159,45 @@ export async function createUnlockingTransaction(
   try {
     // const orgAddr = new Address(organizer.baseAddress)
     // const attAddr = new Address(attendee.baseAddress)
-
     // I need :
     // - benefactor / beneficiary addr
-
     // - value to unlock + utxos for tx fee
     // {
     //   txId: TxId | TxIdProps;
     //   utxoId: HInt | HIntProps;
     // };
-
-    const blockfrost = blockfrostApi()
-    const txOutId = TxOutputId.fromCbor(outputIdCborHex)
-    const feeUtxos = await blockfrost.getUtxos(orgAddr)
-    const foo = await blockfrost.getUtxos(new Address(escrowScriptAddress))
-    debugger
-    const escrowLockedUTxO = await blockfrost.getUtxo(txOutId)
-    const lockedValue = new Value(schemaToPaymentTokens(lockedValueSchema))
-    const unlockedTxOut = new TxOutput(attAddr, lockedValue)
-    const params = await blockfrost.getParameters()
-    const epoch = await blockfrost.getLatestEpoch()
-
-    // construct redeemer
-    let redeemer: any
-    if (redeemerType === "Cancel") {
-      redeemer = new escrowProgram.types.Redeemer[redeemerType](
-        escrowLockedUTxO.outputId.txId,
-        escrowLockedUTxO.outputId.utxoIdx
-      )
-    } else if (redeemerType === "Complete") {
-    } else if (redeemerType === "Recycle") {
-    } else throw new Error(`Unknow redeemer type: ${redeemerType}`)
-
-    const now = Date.now()
-    const tx = new Tx()
-      .attachScript(compiledEscrowScript)
-      .addInputs([escrowLockedUTxO], redeemer)
-      .addInputs(feeUtxos)
-      .addOutput(unlockedTxOut)
-      .addOutput(new TxOutput(orgAddr, new Value({ lovelace: 1_500_000n })))
-      .validFrom(new Date(now))
-      .validTo(new Date(now + fiveMinutes))
-    debugger
-
-    await tx.finalize(params, attAddr)
-
-    return tx.toCborHex()
+    // // const blockfrost = blockfrostApi()
+    // const txOutId = TxOutputId.fromCbor(outputIdCborHex)
+    // const feeUtxos = await blockfrost.getUtxos(orgAddr)
+    // const foo = await blockfrost.getUtxos(new Address(escrowScriptAddress))
+    // debugger
+    // const escrowLockedUTxO = await blockfrost.getUtxo(txOutId)
+    // const lockedValue = new Value(schemaToPaymentTokens(lockedValueSchema))
+    // const unlockedTxOut = new TxOutput(attAddr, lockedValue)
+    // const params = await blockfrost.getParameters()
+    // const epoch = await blockfrost.getLatestEpoch()
+    // // construct redeemer
+    // let redeemer: any
+    // if (redeemerType === "Cancel") {
+    //   redeemer = new escrowProgram.types.Redeemer[redeemerType](
+    //     escrowLockedUTxO.outputId.txId,
+    //     escrowLockedUTxO.outputId.utxoIdx
+    //   )
+    // } else if (redeemerType === "Complete") {
+    // } else if (redeemerType === "Recycle") {
+    // } else throw new Error(`Unknow redeemer type: ${redeemerType}`)
+    // const now = Date.now()
+    // const tx = new Tx()
+    //   .attachScript(compiledEscrowScript)
+    //   .addInputs([escrowLockedUTxO], redeemer)
+    //   .addInputs(feeUtxos)
+    //   .addOutput(unlockedTxOut)
+    //   .addOutput(new TxOutput(orgAddr, new Value({ lovelace: 1_500_000n })))
+    //   .validFrom(new Date(now))
+    //   .validTo(new Date(now + fiveMinutes))
+    // debugger
+    // await tx.finalize(params, attAddr)
+    // return tx.toCborHex()
   } catch (e) {
     console.error(e)
     throw e
@@ -197,21 +206,30 @@ export async function createUnlockingTransaction(
 
 export async function mintBetaTesterToken(
   userAddress: string,
-  tokenIdx: number
+  tokenIdx: number,
+  networkId: NetworkId
 ): Promise<string | void> {
   try {
+    // ... get the treasury keys ...
     // should work for signing a tx with utxos at baseAddress
-    const privKeyArray = Array.from(Buffer.from(walletKeys.accountKeyHex, "hex"))
+    const privKeyArray = Array.from(
+      Buffer.from(walletKeys[networkId].accountKeyHex, "hex")
+    )
     const privKey = new Bip32PrivateKey(privKeyArray).derive(0).derive(0)
-    const pubKey = privKey.derivePubKey().pubKeyHash
+    const pubKeyHash = privKey.derivePubKey().pubKeyHash
 
-    const blockfrost = blockfrostApi()
-    const { networkType } = getProjectConfig()
+    const networkType = getNetworkType(networkId)
+    const blockfrost = blockfrostApi(networkId, networkType)
     const params = getHeliosNetworkParams(networkType)
-    const treasuryAddress = new Address(process.env.TREASURY_ADDRESS)
+    const treasuryAddress = new Address(
+      networkId === "Mainnet"
+        ? process.env.TREASURY_ADDRESS_MAINNET
+        : process.env.TREASURY_ADDRESS_TESTNET
+    )
     const treasuryUtxos = await blockfrost.getUtxos(treasuryAddress)
+    const { mintingPolicyHash, mintingScript } = getMintingContract(pubKeyHash.hex)
 
-    const nftTokenName = ByteArrayData.fromString(`BetaTester#${tokenIdx}`).toHex()
+    const nftTokenName = ByteArrayData.fromString(`Beta_Tester#${tokenIdx}`).toHex()
     const tokens: [number[], bigint][] = [[hexToBytes(nftTokenName), BigInt(1)]]
     const betaTesterToken = new Assets([[mintingPolicyHash, tokens]])
 
@@ -222,14 +240,14 @@ export async function mintBetaTesterToken(
 
     const now = Date.now()
     const tx = new Tx()
-      .attachScript(compiledMintingScript)
+      .attachScript(mintingScript)
       // redeemer is always needed even if we don't use it (?)
       .mintTokens(mintingPolicyHash, tokens, new IntData(1n))
       .addInputs(treasuryUtxos)
       .addOutput(output)
       .validFrom(new Date(now - fiveMinutes))
       .validTo(new Date(now + fiveMinutes))
-      .addSigner(pubKey)
+      .addSigner(pubKeyHash)
 
     await tx.finalize(params, new Address(walletKeys.baseAddress), treasuryUtxos)
     let signature = privKey.sign(tx.bodyHash)
@@ -240,33 +258,3 @@ export async function mintBetaTesterToken(
     throw e
   }
 }
-
-// export async function finalizePlutusTx(body, user: UserDto) {
-//   const network = process.env.CARDANO_NETWORK
-//   console.log("body ?", body)
-//   console.log("network ?", network)
-//   console.log("user ?", user)
-//   try {
-//     const chainConfig = await readFile(
-//       cwd() + `/src/config/cardano/${network}.json`
-//     ).then((res) => res.toString())
-//     const params = new NetworkParams(chainConfig)
-//     const { txCbor, txInputs, escrowProgramCbor } = body
-//     if (!txCbor) throw new Error("Missing txCbor from request payload")
-//     if (!escrowProgramCbor) throw new Error("Missing Cbor of escrow program")
-//     debugger
-//     // let txBody = TxBody.fromCbor(txCbor)
-//     let _txInputs = txInputs.map((cbor) => TxInput.fromCbor(cbor))
-//     debugger
-//     let tx = Tx.fromCbor(txCbor).addInputs(_txInputs)
-//     let address = new Address(user.baseAddress)
-//     debugger
-//     // let escrowProgram = UplcProgram.fromCbor(escrowProgramCbor)
-//     // tx.attachScript(escrowProgram)
-//     tx.finalize(params, address)
-//     // should return Cbor of transaction
-//     return tx.toCbor()
-//   } catch (e) {
-//     console.error(e)
-//   }
-// }

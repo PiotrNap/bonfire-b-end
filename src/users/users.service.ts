@@ -19,6 +19,7 @@ import { PaginationResult } from "../pagination/pagination-result.interface.js"
 import { EventEntity } from "../model/event.entity.js"
 import { BetaTestersEntity } from "../model/betaTesters.entity.js"
 import { mintBetaTesterToken } from "../utils/cardano.js"
+import { NetworkId } from "src/utils/types.js"
 
 @Injectable()
 export class UsersService {
@@ -218,17 +219,27 @@ export class UsersService {
         HttpStatus.UNPROCESSABLE_ENTITY
       )
 
-    const txHash = await mintBetaTesterToken(baseAddress, claimedTokens.length + 1)
-    if (!txHash)
+    const txHashMainnet = await mintBetaTesterToken(
+      baseAddress,
+      claimedTokens.length + 1,
+      "Mainnet"
+    )
+    const txHashTestnet = await mintBetaTesterToken(
+      baseAddress,
+      claimedTokens.length + 1,
+      "Testnet"
+    )
+    if (!txHashMainnet || !txHashTestnet)
       throw new HttpException(
         "Something went wrong on our end. Please reach out for further help.",
         HttpStatus.CONFLICT
       )
 
     currentlyClaiming.redeemed = true
-    currentlyClaiming.txHash = txHash
+    currentlyClaiming.txHashMainnet = txHashMainnet
+    currentlyClaiming.txHashTestnet = txHashTestnet
     currentlyClaiming = await this.betaTestersRepo.save(currentlyClaiming)
-    return { ...currentlyClaiming, txHash }
+    return { ...currentlyClaiming, txHash: txHashMainnet }
   }
 
   async deactivateUser(uuid: string) {
