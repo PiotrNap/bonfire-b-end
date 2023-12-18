@@ -25,32 +25,32 @@ export class UserEntity extends BaseEntity {
   @Column({ type: "bytea", nullable: true })
   profileImage: Buffer
 
-  @Column({
-    name: "googleApiCredentials",
-    type: "json",
-    nullable: true,
-  })
-  googleApiCredentials: string
+  ////TODO when user can use multiple devices, this has to be an array of tokens
+  //@Column("varchar", {
+  //  name: "messagingToken",
+  //  nullable: true,
+  //})
+  //messagingToken?: string
 
-  @Column({
-    name: "lastUsedRefreshToken",
-    type: "timestamptz",
-    nullable: true,
-  })
-  lastUsedRefreshToken: Date
+  // @Column({
+  //   name: "googleApiCredentials",
+  //   type: "json",
+  //   nullable: true,
+  // })
+  // googleApiCredentials: string
+
+  // @Column({
+  //   name: "lastUsedRefreshToken",
+  //   type: "timestamptz",
+  //   nullable: true,
+  // })
+  // lastUsedRefreshToken: Date
 
   @Column("varchar", {
     name: "verificationNonce",
     nullable: true,
   })
   verificationNonce?: string
-
-  //TODO when user can use multiple devices, this has to be an array of tokens
-  @Column("varchar", {
-    name: "messagingToken",
-    nullable: true,
-  })
-  messagingToken?: string
 
   @Column({ name: "deepLinkingCallbackUri", type: "varchar", nullable: true })
   deepLinkingCallbackUri?: string
@@ -62,10 +62,10 @@ export class UserEntity extends BaseEntity {
   @Column({ type: "varchar", nullable: true })
   baseAddress: string
 
-  @Column({ type: "varchar", nullable: true })
+  @Column({ type: "varchar" })
   mainnetBaseAddress: string
 
-  @Column({ type: "varchar", nullable: true })
+  @Column({ type: "varchar" })
   testnetBaseAddress: string
 
   @Column({ name: "bio", type: "varchar", length: 250, nullable: true })
