@@ -23,9 +23,10 @@ class ConfigService {
     return this.getValue("PORT", true)
   }
 
-  public isProduction() {
+  public sslConfig() {
     const mode = this.getValue("MODE", false)
-    return mode != "DEV"
+    // this Certificate Authoritiy comes from Render
+    return mode === "DEV" ? false : { ca: process.env.TLS_CHACHA20_POLY1305_SHA256 }
   }
   public getTypeOrmConfig(): TypeOrmModuleOptions {
     return {
@@ -43,7 +44,7 @@ class ConfigService {
       cli: {
         migrationsDir: "src/migration",
       },
-      ssl: this.isProduction(),
+      ssl: this.sslConfig(),
       logging: !!parseInt(process.env.LOGGING),
     }
   }
