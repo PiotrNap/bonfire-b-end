@@ -2,6 +2,8 @@ import { TypeOrmModuleOptions } from "@nestjs/typeorm"
 import * as dotenv from "dotenv"
 dotenv.config()
 
+console.log(process.env)
+
 class ConfigService {
   constructor(private env: { [k: string]: string | undefined }) {}
 
@@ -23,11 +25,6 @@ class ConfigService {
     return this.getValue("PORT", true)
   }
 
-  public sslConfig() {
-    const mode = this.getValue("MODE", false)
-    // this Certificate Authoritiy comes from Render
-    return mode === "DEV" ? false : { ca: process.env.TLS_CHACHA20_POLY1305_SHA256 }
-  }
   public getTypeOrmConfig(): TypeOrmModuleOptions {
     return {
       type: "postgres",
@@ -44,7 +41,7 @@ class ConfigService {
       cli: {
         migrationsDir: "src/migration",
       },
-      ssl: this.sslConfig(),
+      ssl: false,
       logging: !!parseInt(process.env.LOGGING),
     }
   }
