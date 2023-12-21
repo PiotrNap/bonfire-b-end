@@ -19,7 +19,6 @@ import { PaginationResult } from "../pagination/pagination-result.interface.js"
 import { EventEntity } from "../model/event.entity.js"
 import { BetaTestersEntity } from "../model/betaTesters.entity.js"
 import { mintBetaTesterToken } from "../utils/cardano.js"
-import { NetworkId } from "src/utils/types.js"
 
 @Injectable()
 export class UsersService {
@@ -147,14 +146,16 @@ export class UsersService {
         skills,
         jobTitle,
         username,
-        baseAddress,
+        mainnetBaseAddress,
+        testnetBaseAddress,
         walletPublicKey,
         publicKey,
       } = newUserDto
       let newUser = new UserEntity()
       newUser.username = username
       newUser.hourlyRateAda = hourlyRateAda ? Number(hourlyRateAda) : 0
-      newUser.baseAddress = baseAddress
+      newUser.mainnetBaseAddress = mainnetBaseAddress
+      newUser.testnetBaseAddress = testnetBaseAddress
       newUser.bio = bio
       newUser.profession = profession
       newUser.skills = skills
@@ -171,7 +172,7 @@ export class UsersService {
       deviceCredential = await this.deviceCredentialsRepo.save(deviceCredential)
       this.userRepo.findOne
 
-      return { username, id: newUser.id, deviceID: deviceCredential.id, baseAddress }
+      return { username, id: newUser.id, deviceID: deviceCredential.id }
     } catch (e) {
       console.error(e)
       throw new HttpException(
@@ -202,7 +203,8 @@ export class UsersService {
     return !!(await this.betaTestersRepo.find({ where: { redeemed: false } })).length
   }
 
-  async registerBetaTester(betaTesterCode: string, baseAddress: string) {
+  async registerBetaTester(betaTesterCode: string, userId: string) {
+    const user = await this.userRepo.findOne(userId)
     const allTokens: BetaTestersEntity[] = await this.betaTestersRepo.find() // returns all records
     const claimedTokens = allTokens.filter((t) => t.redeemed === true)
     let currentlyClaiming = allTokens.find((t) => t.key === betaTesterCode)
@@ -215,17 +217,17 @@ export class UsersService {
 
     if (currentlyClaiming.redeemed)
       throw new HttpException(
-        "This beta-tester code was already claimed!",
+        "This beta-tester has been already claimed!",
         HttpStatus.UNPROCESSABLE_ENTITY
       )
 
     const txHashMainnet = await mintBetaTesterToken(
-      baseAddress,
+      user.mainnetBaseAddress,
       claimedTokens.length + 1,
       "Mainnet"
     )
     const txHashTestnet = await mintBetaTesterToken(
-      baseAddress,
+      user.testnetBaseAddress,
       claimedTokens.length + 1,
       "Testnet"
     )
@@ -239,7 +241,8 @@ export class UsersService {
     currentlyClaiming.txHashMainnet = txHashMainnet
     currentlyClaiming.txHashTestnet = txHashTestnet
     currentlyClaiming = await this.betaTestersRepo.save(currentlyClaiming)
-    return { ...currentlyClaiming, txHash: txHashMainnet }
+
+    return true
   }
 
   async deactivateUser(uuid: string) {

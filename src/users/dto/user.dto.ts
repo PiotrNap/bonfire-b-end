@@ -2,7 +2,8 @@ export class UserDto {
   id: string
   username: string
   deviceID?: string
-  baseAddress?: string
+  testnetBaseAddress?: string
+  mainnetBaseAddress?: string
   publicKey?: string
   walletPublicKey?: string
   profileImage?: Buffer

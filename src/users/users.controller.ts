@@ -60,15 +60,7 @@ export class UsersController {
   @Public()
   @Post("register")
   public async registerUser(@Body() body: CreateUserDto): Promise<UserDto> {
-    let newUser = await this.usersService.register(body)
-    let betaTesterRecord: any
-    if (body.betaTesterCode) {
-      betaTesterRecord = await this.usersService.registerBetaTester(
-        body.betaTesterCode,
-        newUser.baseAddress
-      )
-    }
-    return { ...newUser, ...betaTesterRecord }
+    return await this.usersService.register(body)
   }
 
   // used during new account registration
@@ -94,25 +86,9 @@ export class UsersController {
   }
 
   @Public()
-  @Get("beta-tokens/:betaTesterCode/:baseAddress")
-  public async registerBetaTester(
-    @Param("betaTesterCode") betaTesterCode: string,
-    @Param("baseAddress") baseAddress: string
-  ) {
-    return await this.usersService.registerBetaTester(betaTesterCode, baseAddress)
-  }
-
-  @Public()
   @Post("register-device")
   public async registerDevice(@Body() body: AddDeviceDTO): Promise<string> {
     return await this.usersService.registerDevice(body)
-  }
-
-  //TODO is it good that it's public??
-  @Public()
-  @Get("base-address/:baseAddress")
-  public async getUserByBaseAddress(@Param("baseAddress") baseAddress: string) {
-    return await this.usersService.findOne({ baseAddress }, true)
   }
 
   @Post("files/profile-image")
@@ -175,6 +151,18 @@ export class UsersController {
     checkIfAuthorized(user.id, uuid)
 
     return this.usersService.deactivateUser(uuid)
+  }
+
+  @Get(":uuid/beta-tester-registration/:betaTesterCode")
+  public async registerBetaTester(
+    @Param("uuid", ParseUUIDPipe) uuid: string,
+    @Param("betaTesterCode") betaTesterCode: string,
+    @Req() req: any
+  ) {
+    const { user } = req
+    checkIfAuthorized(user.id, uuid)
+
+    return await this.usersService.registerBetaTester(betaTesterCode, uuid)
   }
 
   @Get(":uuid/events")

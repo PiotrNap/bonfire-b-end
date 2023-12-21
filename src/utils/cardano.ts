@@ -33,6 +33,7 @@ export function blockfrostApi(
     networkId === "Mainnet"
       ? process.env.BLOCKFROST_KEY_MAINNET
       : process.env.BLOCKFROST_KEY_TESTNET
+
   return new BlockfrostV0(networkType, projectId)
 }
 
@@ -247,7 +248,7 @@ export async function mintBetaTesterToken(
       .validTo(new Date(now + fiveMinutes))
       .addSigner(pubKeyHash)
 
-    await tx.finalize(params, new Address(walletKeys.baseAddress), treasuryUtxos)
+    await tx.finalize(params, treasuryAddress)
     let signature = privKey.sign(tx.bodyHash)
     tx.addSignature(signature)
 
