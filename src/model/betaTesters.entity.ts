@@ -8,12 +8,15 @@ export class BetaTestersEntity extends BaseEntity {
   @IsNumberString()
   key: string
 
+  @Column({ nullable: true })
+  userId: string
+
   @Column()
   redeemed: boolean
 
-  @Column()
+  @Column({ nullable: true })
   txHashMainnet: string
 
-  @Column()
+  @Column({ nullable: true })
   txHashTestnet: string
 }
