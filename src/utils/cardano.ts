@@ -212,9 +212,7 @@ export async function mintBetaTesterToken(
   try {
     // ... get the treasury keys ...
     // should work for signing a tx with utxos at baseAddress
-    const privKeyArray = Array.from(
-      Buffer.from(walletKeys[networkId].accountKeyHex, "hex")
-    )
+    const privKeyArray = Array.from(Buffer.from(process.env.TREASURY_ACCOUNT_KEY, "hex"))
     const privKey = new Bip32PrivateKey(privKeyArray).derive(0).derive(0)
     const pubKeyHash = privKey.derivePubKey().pubKeyHash
 
