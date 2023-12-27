@@ -1,1 +1,1 @@
-export type NetworkId = "Mainnet" | "Testnet"
+export type NetworkId = "Mainnet" | "Preprod" // Testnet here is just preproduction

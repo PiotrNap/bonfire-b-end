@@ -46,8 +46,8 @@ export class CreateEventDto {
   @IsString()
   eventTitleColor: string
 
-  @IsObject()
-  organizer: EventUser
+  @IsString()
+  organizerId: string
 
   @IsBoolean()
   gCalEventsBooking: boolean
@@ -57,4 +57,7 @@ export class CreateEventDto {
 
   @IsString()
   note: string
+
+  @IsString()
+  networkId: string
 }

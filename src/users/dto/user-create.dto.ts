@@ -26,9 +26,6 @@ export class CreateUserDto implements UserDto {
   @IsNotEmpty({ message: "Id cannot be empty" })
   id: string
 
-  @IsNotEmpty({ message: "Base address cannot empty" })
-  baseAddress: string
-
   profileImage?: Buffer
   betaTesterCode?: string
 }

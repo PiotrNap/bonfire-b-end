@@ -1,12 +1,21 @@
 export const toUserDto = (data: any) => {
-  const { id, username, name, profileImage, hourlyRateAda, baseAddress } = data
+  const {
+    id,
+    username,
+    name,
+    profileImage,
+    hourlyRateAda,
+    mainnetBaseAddress,
+    testnetBaseAddress,
+  } = data
   const user = {
     id,
     name,
     username,
     profileImage,
     hourlyRateAda,
-    baseAddress,
+    mainnetBaseAddress,
+    testnetBaseAddress,
   }
 
   return {

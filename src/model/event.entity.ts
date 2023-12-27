@@ -66,6 +66,9 @@ export class EventEntity extends BaseEntity {
   @Column({ type: "varchar" })
   organizerAlias: string
 
+  @Column({ type: "varchar" })
+  networkId: string
+
   @ManyToOne(() => UserEntity, (organizer: UserEntity) => organizer.events)
   organizer: Relation<UserEntity>
 

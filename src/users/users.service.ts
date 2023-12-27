@@ -187,11 +187,9 @@ export class UsersService {
     return !user
   }
 
-  async getUserByPublicKey(
-    publickey: string
-  ): Promise<{ username: string; baseAddress: string } | void> {
+  async getUserByPublicKey(publickey: string): Promise<{ username: string } | void> {
     return await this.userRepo.findOne({
-      select: ["username", "baseAddress"],
+      select: ["username"],
       where: {
         walletPublicKey: publickey,
       },
@@ -229,7 +227,7 @@ export class UsersService {
     const txHashTestnet = await mintBetaTesterToken(
       user.testnetBaseAddress,
       claimedTokens.length + 1,
-      "Testnet"
+      "Preprod"
     )
     if (!txHashMainnet || !txHashTestnet)
       throw new HttpException(

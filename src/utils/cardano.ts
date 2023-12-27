@@ -14,7 +14,6 @@ import {
 } from "@hyperionbt/helios"
 import { cwd } from "process"
 import { UserDto } from "../users/dto/user.dto.js"
-import { walletKeys } from "../../keys/walletKeys.js"
 import { NetworkId } from "./types.js"
 // import EC from "../on-chain/EscrowContract.js"
 import * as fs from "fs"

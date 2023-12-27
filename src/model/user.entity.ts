@@ -59,9 +59,6 @@ export class UserEntity extends BaseEntity {
   userSettings?: UserSettings // user profile settings
 
   // wallet's base address - BIP39 account #0
-  @Column({ type: "varchar", nullable: true })
-  baseAddress: string
-
   @Column({ type: "varchar" })
   mainnetBaseAddress: string
 

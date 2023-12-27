@@ -24,6 +24,7 @@ import { UpdateEventDto } from "./dto/update-event.dto.js"
 import { SuccessMessage } from "../auth/interfaces/payload.interface.js"
 import { EventBookingDto } from "./dto/event-booking.dto.js"
 import { EventAvailability, EventSlot } from "./events.interface.js"
+import { NetworkId } from "src/utils/types.js"
 
 @Injectable()
 export class EventsService {
@@ -49,14 +50,15 @@ export class EventsService {
       visibility,
       eventCardColor,
       eventTitleColor,
-      organizer,
+      organizerId,
       cancellation,
       note,
+      networkId,
     } = createEventDto
     try {
       const event: EventEntity = new EventEntity()
       const user: UserEntity = await this.userRepository.findOne({
-        where: { id: organizer.id },
+        where: { id: organizerId },
         relations: ["events"],
       })
 
@@ -74,9 +76,11 @@ export class EventsService {
       event.eventCardColor = eventCardColor
       event.eventTitleColor = eventTitleColor
       event.organizerAlias = user.username
-      event.organizerAddress = user.baseAddress
+      event.organizerAddress =
+        networkId === "Mainnet" ? user.mainnetBaseAddress : user.testnetBaseAddress
       event.cancellation = cancellation
       event.note = note
+      event.networkId = networkId
       user.events = [...user.events, event]
       await this.userRepository.save(user)
 
@@ -528,12 +532,14 @@ export class EventsService {
   }
 
   public async getBookingsByUserIdPaginated(query: BookingPaginationDto) {
-    const { limit, page, organizer_id, attendee_id } = query
+    const { limit, page, organizer_id, attendee_id, network_id } = query
     if (!organizer_id && !attendee_id)
       throw new UnprocessableEntityException(
         "Missing one of the required user-id parameter"
       )
 
+    const networkBasedAddress =
+      network_id === "Mainnet" ? "mainnetBaseAddress" : "testnetBaseAddress"
     const userIdOption = organizer_id
       ? { organizerId: organizer_id }
       : { attendeeId: attendee_id }
@@ -544,8 +550,8 @@ export class EventsService {
       .leftJoinAndSelect("bookingSlot.attendee", "attendee")
       .select([
         "bookingSlot", // select all fields from bookingSlot
-        "organizer.baseAddress", // select only baseAddress from organizer
-        "attendee.baseAddress", // select only baseAddress from attendee
+        `organizer.${networkBasedAddress}`,
+        `attendee.${networkBasedAddress}`,
       ])
       .where({ ...userIdOption, toDate: MoreThan(new Date()), isActive: true })
       .take(limit)
@@ -553,10 +559,10 @@ export class EventsService {
       .getManyAndCount()
   }
 
-  public async getPastBookingsByUserId(userId) {
+  public async getPastBookingsByUserId(userId, networkId: NetworkId) {
     const now = new Date()
     return await this.bookingSlotRepository.findAndCount({
-      where: { organizerId: userId, toDate: LessThan(now), isActive: true },
+      where: { organizerId: userId, toDate: LessThan(now), isActive: true, networkId },
     })
   }
 

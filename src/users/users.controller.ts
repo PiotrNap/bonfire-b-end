@@ -21,11 +21,7 @@ import { Express } from "express"
 import { checkIfAuthorized } from "../auth/auth.helpers.js"
 import { Public } from "../common/decorators/public.decorator.js"
 import { isNSFW } from "../common/utils.js"
-import { UserEntity } from "../model/user.entity.js"
-import { PaginationRequestDto } from "../pagination/pagination-request.dto.js"
-import { PaginationResult } from "../pagination/pagination-result.interface.js"
 import { AddDeviceDTO } from "./dto/add-device.dto.js"
-import { CreateUserDto } from "./dto/user-create.dto.js"
 import { UpdateUserDto } from "./dto/user-update.dto.js"
 import { UserDto } from "./dto/user.dto.js"
 import { UsersService } from "./users.service.js"
@@ -59,7 +55,7 @@ export class UsersController {
 
   @Public()
   @Post("register")
-  public async registerUser(@Body() body: CreateUserDto): Promise<UserDto> {
+  public async registerUser(@Body() body: UserDto): Promise<UserDto> {
     return await this.usersService.register(body)
   }
 

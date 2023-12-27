@@ -4,11 +4,15 @@ import { BaseEntity } from "./base.entity.js"
 import { EventEntity } from "./event.entity.js"
 import { UserEntity } from "./user.entity.js"
 import { Cancellation } from "src/events/events.interface.js"
+import { NetworkId } from "src/utils/types.js"
 
 @Entity()
 export class BookingSlotEntity extends BaseEntity {
   @Column("uuid")
   organizerId: string
+
+  @Column("varchar")
+  networkId: NetworkId
 
   @Column("varchar")
   organizerAlias: string

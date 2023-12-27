@@ -84,11 +84,14 @@ export class EventsController {
 
     if (user.id !== (query.organizer_id || query.attendee_id))
       throw new UnauthorizedException("You are not allowed to access this resources")
+    if (query.network_id !== "Mainnet" && query.network_id !== "Preprod")
+      throw new UnprocessableEntityException("Network ID is wrong or missing")
 
     if (query.past_bookings) {
       // this returns bookings that are meant to be used for payouts withdraw
       eventsRepoResults = await this.eventsService.getPastBookingsByUserId(
-        query.organizer_id
+        query.organizer_id,
+        query.network_id
       )
     } else {
       // this returns bookings used to be displayed on user main page
