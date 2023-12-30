@@ -8,7 +8,7 @@ import {
   UnprocessableEntityException,
 } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
-import { Repository, MoreThan, LessThan } from "typeorm"
+import { Repository, MoreThan, LessThan, Brackets, Not } from "typeorm"
 import { EventEntity } from "../model/event.entity.js"
 import { BookingSlotEntity } from "../model/bookingSlot.entity.js"
 import { EventStatistics } from "../model/eventStatistics.entity.js"
@@ -108,10 +108,11 @@ export class EventsService {
   }
 
   async findAllWithPagination(
+    userId: string,
     paginationRequestDto: PaginationRequestDto
   ): Promise<PaginationResult<EventPaginationDto> | void> {
     try {
-      let { limit, page } = paginationRequestDto
+      let { limit, page, network_id } = paginationRequestDto
       page = Math.abs(Number(page))
       limit = Math.abs(Number(limit))
       if (limit < 10) limit = 10
@@ -142,11 +143,12 @@ export class EventsService {
         },
         where: {
           isAvailable: true,
+          networkId: network_id,
           // for events that are still ongoing or the ones that will start in the future
           toDate: MoreThan(currentDate),
           ...(paginationRequestDto?.user_id
             ? { organizerId: paginationRequestDto.user_id }
-            : { visibility: "public" }),
+            : { visibility: "public", organizerId: Not(userId) }),
         },
       })
 
@@ -469,7 +471,7 @@ export class EventsService {
   }
 
   // userId is the person making request
-  public getResults(searchQuery: string, organizerId: string) {
+  public getResults(searchQuery: string, userId: string, organizerId: string) {
     if (!searchQuery) return []
     const now = new Date()
 
@@ -487,15 +489,37 @@ export class EventsService {
         })
         .getMany()
     } else {
-      return queryBuilder
-        .where("event_entity.title ILIKE :searchQuery", {
-          searchQuery: `%${searchQuery}%`,
-        })
-        .andWhere({ toDate: MoreThan(now) })
-        .orWhere("event_entity.description ILIKE :searchQuery", {
-          searchQuery: `%${searchQuery}%`,
-        })
-        .getMany()
+      return (
+        queryBuilder
+          .where("event_entity.title ILIKE :searchQuery", {
+            searchQuery: `%${searchQuery}%`,
+          })
+          // Grouping the conditions related to the same entity for clarity
+          .andWhere(
+            new Brackets((qb) => {
+              qb.where("event_entity.organizerId != :userId", { userId }).andWhere(
+                "event_entity.toDate > :now",
+                { now }
+              )
+            })
+          )
+          // Handle the OR condition separately and ensure it's properly grouped
+          .orWhere("event_entity.description ILIKE :searchQuery", {
+            searchQuery: `%${searchQuery}%`,
+          })
+          .getMany()
+      )
+
+      // return queryBuilder
+      //   .where("event_entity.title ILIKE :searchQuery", {
+      //     searchQuery: `%${searchQuery}%`,
+      //   })
+      //   .andWhere("event_entity.organizerId != :userId", { userId })
+      //   .andWhere({ toDate: MoreThan(now) })
+      //   .orWhere("event_entity.description ILIKE :searchQuery", {
+      //     searchQuery: `%${searchQuery}%`,
+      //   })
+      //   .getMany()
     }
   }
 
@@ -527,7 +551,6 @@ export class EventsService {
       newSlot[k] = updateDTO[k]
     }
 
-    console.log("newSlot >", newSlot)
     return await this.bookingSlotRepository.save(newSlot)
   }
 

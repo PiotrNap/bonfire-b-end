@@ -4,6 +4,7 @@ export interface PaginationRequestDto {
   limit: number
   page: number
   user_id: string
+  network_id: NetworkId
 }
 
 export interface BookingPaginationDto extends PaginationRequestDto {

@@ -34,12 +34,15 @@ export class EventsController {
     const { user } = req
     if (query.user_id && query.user_id !== user.id)
       throw new UnauthorizedException("You're not allowed to fetch events for this user")
+    if (query.network_id !== "Mainnet" && query.network_id !== "Preprod")
+      throw new UnprocessableEntityException("Network ID is wrong or missing")
 
-    let events = await this.eventsService.findAllWithPagination(query)
+    let events = await this.eventsService.findAllWithPagination(user.id, query)
 
     if (!events) {
       throw new NotFoundException()
     }
+
     return events
   }
 
@@ -52,7 +55,11 @@ export class EventsController {
       throw new UnauthorizedException("You are not allowed to fetch this user events.")
 
     try {
-      const result = await this.eventsService.getResults(search_query, organizer_id)
+      const result = await this.eventsService.getResults(
+        search_query,
+        user.id,
+        organizer_id
+      )
 
       return {
         result,
@@ -98,8 +105,6 @@ export class EventsController {
       eventsRepoResults = await this.eventsService.getBookingsByUserIdPaginated(query)
     }
 
-    console.log("results is >", eventsRepoResults)
-
     if (!eventsRepoResults) {
       throw new UnprocessableEntityException()
     }
@@ -110,7 +115,6 @@ export class EventsController {
   @Get("booking/:uuid")
   public async getBookingSlotById(@Param("uuid", ParseUUIDPipe) uuid: string) {
     const slot = await this.eventsService.getBookingSlotById(uuid)
-    console.log(slot)
     if (!slot) throw new NotFoundException()
 
     return slot
