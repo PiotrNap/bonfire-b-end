@@ -22,7 +22,7 @@ import {
   PaginationRequestDto,
 } from "../pagination/pagination-request.dto.js"
 import { CreateEventDto } from "./dto/create-event.dto.js"
-import { EventBookingDto } from "./dto/event-booking.dto.js"
+import { EventBookingReservationDto } from "./dto/event-booking.dto.js"
 import { EventsService } from "./events.service.js"
 
 @Controller("events")
@@ -70,9 +70,33 @@ export class EventsController {
   }
 
   @Post("booking")
-  public async bookEvent(@Body() eventBookingDto: EventBookingDto, @Req() req: any) {
+  public async reserveEventBookingSlot(
+    @Body() reservation: EventBookingReservationDto,
+    @Req() req: any
+  ) {
     const { user } = req
-    const confirmation = await this.eventsService.bookEvent(user, eventBookingDto)
+    const reservedInfo = await this.eventsService.reserveEventBookingSlot(
+      user,
+      reservation
+    )
+
+    if (!reservedInfo) {
+      throw new UnprocessableEntityException()
+    }
+
+    return reservedInfo
+  }
+
+  @Put("booking")
+  public async bookEventBookingSlot(
+    @Body() eventBookingDto: EventBookingReservationDto,
+    @Req() req: any
+  ) {
+    const { user } = req
+    const confirmation = await this.eventsService.reserveEventBookingSlot(
+      user,
+      eventBookingDto
+    )
 
     if (!confirmation) {
       throw new UnprocessableEntityException()

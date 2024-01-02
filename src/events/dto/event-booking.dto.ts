@@ -1,17 +1,11 @@
 import { IsNumber, IsString, IsUUID } from "class-validator"
 
-export class EventBookingDto {
+export class EventBookingReservationDto {
   @IsUUID()
   eventId: string
 
   @IsUUID()
   attendeeId: string
-
-  @IsString()
-  lockingTxHash: string
-
-  @IsString()
-  datumHash: string
 
   @IsNumber()
   startDate: string
@@ -24,4 +18,15 @@ export class EventBookingDto {
 
   @IsNumber()
   duration: number
+}
+
+export class EventBookingTxInfoDto {
+  @IsUUID()
+  id: string // id of the booking slot
+
+  @IsString()
+  lockingTxHash: string
+
+  @IsString()
+  datumHash: string
 }

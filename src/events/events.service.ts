@@ -22,7 +22,7 @@ import { PaginationResult } from "../pagination/pagination-result.interface.js"
 import { EventPaginationDto } from "./dto/event-pagination.dto.js"
 import { UpdateEventDto } from "./dto/update-event.dto.js"
 import { SuccessMessage } from "../auth/interfaces/payload.interface.js"
-import { EventBookingDto } from "./dto/event-booking.dto.js"
+import { EventBookingReservationDto } from "./dto/event-booking.dto.js"
 import { EventAvailability, EventSlot } from "./events.interface.js"
 import { NetworkId } from "src/utils/types.js"
 
@@ -281,12 +281,11 @@ export class EventsService {
     return !!newEvent && !!newBookingSlot
   }
 
-  async bookEvent(
+  async reserveEventBookingSlot(
     user: UserEntity,
-    eventBookingDto: EventBookingDto
+    eventBookingDto: EventBookingReservationDto
   ): Promise<string | void> {
-    const { lockingTxHash, eventId, durationCost, duration, startDate, datumHash } =
-      eventBookingDto
+    const { eventId, durationCost, duration, startDate } = eventBookingDto
 
     try {
       let event = await this.eventsRepository.findOne({
@@ -352,9 +351,10 @@ export class EventsService {
         new Date(startDate).getTime() + duration
       ).toISOString()
       bookingSlot.cost = durationCost
-      bookingSlot.lockingTxHash = lockingTxHash
-      bookingSlot.datumHash = datumHash
       bookingSlot.cancellation = event.cancellation
+      bookingSlot.networkId = event.networkId
+      bookingSlot.reservedAt = Date.now()
+      bookingSlot.status = "reserved"
 
       bookingSlot = await this.bookingSlotRepository.save(bookingSlot)
 
@@ -382,6 +382,8 @@ export class EventsService {
 
       await this.eventsRepository.save(event)
       return bookingSlot.id
+
+      ////////////////////////
 
       // book event on organizers or/and attendee Gcal
       //if (user.googleApiCredentials || createGoogleCalEvent) {

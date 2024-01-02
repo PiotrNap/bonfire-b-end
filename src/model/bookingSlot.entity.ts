@@ -8,6 +8,12 @@ import { NetworkId } from "src/utils/types.js"
 
 @Entity()
 export class BookingSlotEntity extends BaseEntity {
+  @Column("varchar")
+  status: "reserved" | "booked"
+
+  @Column('real')
+  reservedAt: number
+
   @Column("uuid")
   organizerId: string
 
@@ -59,12 +65,12 @@ export class BookingSlotEntity extends BaseEntity {
   @Column({ type: "varchar", nullable: true })
   unlockingTxHash: string
 
-  @Column({ type: "varchar" })
+  @Column({ type: "varchar", nullable: true })
   lockingTxHash: string
 
   @Column({ type: "jsonb", nullable: true })
   cancellation: Cancellation
 
-  @Column({ type: "varchar" })
+  @Column({ type: "varchar", nullable: true })
   datumHash: string
 }
