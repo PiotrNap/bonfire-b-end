@@ -21,3 +21,4 @@ export interface Cancellation {
   fee: number // fee % based off of ADA cost
   window: number // cancellation window before event start date in hours
 }
+export type NetworkId = "Mainnet" | "Preprod"

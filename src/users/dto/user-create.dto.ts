@@ -1,5 +1,6 @@
 import { IsNotEmpty, MaxLength } from "class-validator"
-import { UserDto } from "./user.dto.js"
+import type { UserDto } from "./user.dto.js"
+import type { Addresses } from "src/model/user.entity.js"
 
 export class CreateUserDto implements UserDto {
   constructor(
@@ -25,6 +26,9 @@ export class CreateUserDto implements UserDto {
 
   @IsNotEmpty({ message: "Id cannot be empty" })
   id: string
+
+  @IsNotEmpty({ message: "Base address cannot empty" })
+  baseAddresses: Addresses
 
   profileImage?: Buffer
   betaTesterCode?: string

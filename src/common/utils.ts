@@ -12,8 +12,9 @@ import bcrypt from "bcrypt"
 import crypto from "crypto"
 
 export const loadModel = async () => {
-  // needs to be loaded only once
-  // tf.enableProdMode() TODO enable this in prod
+  if (process.env.NODE_ENV !== "dev") {
+    tf.enableProdMode()
+  }
   MODEL = await nsfw.load("file://./src/model/tf/", { size: 299 })
 }
 
@@ -123,12 +124,8 @@ export const toPromise = <T>(data: T): Promise<T> => {
   })
 }
 
-export const getDbConnectionOptions = async (
-  connectionName: string = "default"
-) => {
-  const options = await getConnectionOptions(
-    process.env.NODE_ENV || "development"
-  )
+export const getDbConnectionOptions = async (connectionName: string = "default") => {
+  const options = await getConnectionOptions(process.env.NODE_ENV || "development")
   return {
     ...options,
     name: connectionName,
@@ -177,8 +174,7 @@ export const isNSFW = async (file: Express.Multer.File): Promise<boolean> => {
   const values = new Int32Array(numPixels * numChannels)
 
   for (let i = 0; i < numPixels; i++)
-    for (let c = 0; c < numChannels; c++)
-      values[i * numChannels + c] = data[i * 4 + c]
+    for (let c = 0; c < numChannels; c++) values[i * numChannels + c] = data[i * 4 + c]
 
   const tfImg = tf.tensor3d(values, [height, width, numChannels], "int32")
   const predictions = await MODEL.classify(tfImg)

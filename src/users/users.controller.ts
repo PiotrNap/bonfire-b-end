@@ -32,7 +32,7 @@ export class UsersController {
 
   // @Get()
   // async getUsers(
-  // @Query() query: PaginationRequestDto,
+  //   @Query() query: PaginationRequestDto,
   //   @Body() body: any
   // ): Promise<PaginationResult<UserEntity> | UserEntity[] | void> {
   //   let users: any
@@ -55,7 +55,7 @@ export class UsersController {
 
   @Public()
   @Post("register")
-  public async registerUser(@Body() body: UserDto): Promise<UserDto> {
+  public async registerUser(@Body() body: CreateUserDto): Promise<UserDto> {
     return await this.usersService.register(body)
   }
 
@@ -71,7 +71,7 @@ export class UsersController {
   @Public()
   @Get("check-publickey")
   async checkPublicKey(@Query("publickey") username: string) {
-    //  if found returns only baseAddress + username to complete sign-in on front-end
+    // returns only baseAddress + username to complete sign-in on front-end
     return await this.usersService.getUserByPublicKey(username)
   }
 
@@ -149,18 +149,6 @@ export class UsersController {
     return this.usersService.deactivateUser(uuid)
   }
 
-  @Get(":uuid/beta-tester-registration/:betaTesterCode")
-  public async registerBetaTester(
-    @Param("uuid", ParseUUIDPipe) uuid: string,
-    @Param("betaTesterCode") betaTesterCode: string,
-    @Req() req: any
-  ) {
-    const { user } = req
-    checkIfAuthorized(user.id, uuid)
-
-    return await this.usersService.registerBetaTester(betaTesterCode, uuid)
-  }
-
   @Get(":uuid/events")
   public async getCalendarEvents(
     @Param("uuid", ParseUUIDPipe) uuid: string,
@@ -220,5 +208,13 @@ export class UsersController {
 
     //@ts-ignore
     return await createUnlockingTx(user)
+  }
+
+  @Get(":uuid/beta-tester-registration/:betaTesterCode")
+  public async registerBetaTester(
+    @Param("uuid") uuid: string,
+    @Param("betaTesterCode") betaTesterCode: string
+  ) {
+    return await this.usersService.registerBetaTester(betaTesterCode, uuid)
   }
 }

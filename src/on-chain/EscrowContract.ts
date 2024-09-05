@@ -2,6 +2,8 @@
 export default `
 spending escrow_contract
 
+import { tx } from ScriptContext
+
 struct Datum {
     beneficiaryPkh : PubKeyHash
     benefactorPkh : PubKeyHash
@@ -63,8 +65,7 @@ func checkInputForBetaTesterToken(txIn: TxInput) -> Bool {
 *  7. Allow to recycle UTxOs older than 1 year by the treasury
 */
 
-func main(datum: Datum, redeemer: Redeemer, ctx: ScriptContext) -> Bool {
-    tx: Tx = ctx.tx;
+func main(datum: Datum, redeemer: Redeemer) -> Bool {
     benefactorPkh: PubKeyHash = datum.benefactorPkh;
     beneficiaryPkh: PubKeyHash = datum.beneficiaryPkh;
     now: Time = tx.time_range.start;

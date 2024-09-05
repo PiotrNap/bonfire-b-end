@@ -8,7 +8,7 @@ import {
   MaxLength,
 } from "class-validator"
 import { EventUser, EventVisibility } from "src/model/event.entity.js"
-import { Cancellation, EventAvailability, SelectedDates } from "../events.interface.js"
+import type { Cancellation, EventAvailability, NetworkId } from "../events.interface.js"
 
 export class CreateEventDto {
   @IsString()
@@ -59,5 +59,5 @@ export class CreateEventDto {
   note: string
 
   @IsString()
-  networkId: string
+  networkId: NetworkId
 }

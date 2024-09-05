@@ -58,12 +58,8 @@ export class UserEntity extends BaseEntity {
   @Column({ type: "json", nullable: true })
   userSettings?: UserSettings // user profile settings
 
-  // wallet's base address - BIP39 account #0
-  @Column({ type: "varchar" })
-  mainnetBaseAddress: string
-
-  @Column({ type: "varchar" })
-  testnetBaseAddress: string
+  @Column({ type: "json", nullable: true })
+  baseAddresses: Addresses // mainnet + testnet (PreProd)
 
   @Column({ name: "bio", type: "varchar", length: 250, nullable: true })
   bio?: string
@@ -107,6 +103,11 @@ export class UserEntity extends BaseEntity {
 export type UserSettings = {
   eventCreationHintHidden: boolean
   showPastCalendarEvents: boolean
+}
+
+export type Addresses = {
+  mainnet: string
+  testnet: string
 }
 
 export function isUserEntity(obj: any): obj is UserEntity {

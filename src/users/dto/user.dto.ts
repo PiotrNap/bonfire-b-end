@@ -1,9 +1,10 @@
+import type { Addresses } from "src/model/user.entity.js"
+
 export class UserDto {
   id: string
   username: string
   deviceID?: string
-  testnetBaseAddress?: string
-  mainnetBaseAddress?: string
+  baseAddresses?: Addresses
   publicKey?: string
   walletPublicKey?: string
   profileImage?: Buffer

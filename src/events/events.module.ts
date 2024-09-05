@@ -1,6 +1,5 @@
 import { Module } from "@nestjs/common"
 import { EventsService } from "./events.service.js"
-import { EventsGateway } from "./events.gateway.js"
 import { EventsController } from "./events.controller.js"
 import { EventEntity } from "../model/event.entity.js"
 import { TypeOrmModule } from "@nestjs/typeorm"
@@ -18,7 +17,7 @@ import { EventStatistics } from "../model/eventStatistics.entity.js"
     ]),
   ],
   controllers: [EventsController],
-  providers: [EventsGateway, EventsService],
+  providers: [EventsService],
   exports: [EventsService],
 })
 export class EventsModule {}

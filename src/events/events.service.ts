@@ -61,6 +61,7 @@ export class EventsService {
         where: { id: organizerId },
         relations: ["events"],
       })
+      const { mainnet: mainnetAddr, testnet: testnetAddr } = user.baseAddresses
 
       /*
        * Create event record
@@ -76,10 +77,10 @@ export class EventsService {
       event.eventCardColor = eventCardColor
       event.eventTitleColor = eventTitleColor
       event.organizerAlias = user.username
-      event.organizerAddress =
-        networkId === "Mainnet" ? user.mainnetBaseAddress : user.testnetBaseAddress
       event.cancellation = cancellation
       event.note = note
+      event.organizerAddress = networkId === "Mainnet" ? mainnetAddr : testnetAddr
+      event.cancellation = cancellation
       event.networkId = networkId
       user.events = [...user.events, event]
       await this.userRepository.save(user)

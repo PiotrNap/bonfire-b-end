@@ -1,7 +1,11 @@
 import { Entity, Column, ManyToOne, OneToMany } from "typeorm"
 import { BaseEntity } from "./base.entity.js"
 import { BookingSlotEntity } from "./bookingSlot.entity.js"
-import { Cancellation, EventAvailability } from "../events/events.interface.js"
+import type {
+  Cancellation,
+  EventAvailability,
+  NetworkId,
+} from "../events/events.interface.js"
 import { UserEntity } from "./user.entity.js"
 import { Relation } from "typeorm/index.js"
 
@@ -50,6 +54,9 @@ export class EventEntity extends BaseEntity {
 
   @Column({ type: "varchar" })
   visibility: EventVisibility
+
+  @Column({ type: "varchar" })
+  networkId: NetworkId
 
   @Column({ type: "varchar" })
   eventCardColor: string

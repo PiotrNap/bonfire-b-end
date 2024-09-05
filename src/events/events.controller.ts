@@ -17,12 +17,9 @@ import {
 } from "@nestjs/common"
 import { FileInterceptor } from "@nestjs/platform-express"
 import { isNSFW } from "../common/utils.js"
-import {
-  BookingPaginationDto,
-  PaginationRequestDto,
-} from "../pagination/pagination-request.dto.js"
+import { PaginationRequestDto } from "../pagination/pagination-request.dto.js"
 import { CreateEventDto } from "./dto/create-event.dto.js"
-import { EventBookingReservationDto } from "./dto/event-booking.dto.js"
+import { EventBookingDto } from "./dto/event-booking.dto.js"
 import { EventsService } from "./events.service.js"
 
 @Controller("events")
@@ -32,17 +29,11 @@ export class EventsController {
   @Get()
   public async getEvents(@Query() query: PaginationRequestDto, @Req() req: any) {
     const { user } = req
-    if (query.user_id && query.user_id !== user.id)
-      throw new UnauthorizedException("You're not allowed to fetch events for this user")
-    if (query.network_id !== "Mainnet" && query.network_id !== "Preprod")
-      throw new UnprocessableEntityException("Network ID is wrong or missing")
-
-    let events = await this.eventsService.findAllWithPagination(user.id, query)
+    let events = await this.eventsService.findAllWithPagination(query, user.id)
 
     if (!events) {
       throw new NotFoundException()
     }
-
     return events
   }
 
@@ -55,11 +46,7 @@ export class EventsController {
       throw new UnauthorizedException("You are not allowed to fetch this user events.")
 
     try {
-      const result = await this.eventsService.getResults(
-        search_query,
-        user.id,
-        organizer_id
-      )
+      const result = await this.eventsService.getResults(search_query, organizer_id)
 
       return {
         result,
@@ -70,33 +57,9 @@ export class EventsController {
   }
 
   @Post("booking")
-  public async reserveEventBookingSlot(
-    @Body() reservation: EventBookingReservationDto,
-    @Req() req: any
-  ) {
+  public async bookEvent(@Body() eventBookingDto: EventBookingDto, @Req() req: any) {
     const { user } = req
-    const reservedInfo = await this.eventsService.reserveEventBookingSlot(
-      user,
-      reservation
-    )
-
-    if (!reservedInfo) {
-      throw new UnprocessableEntityException()
-    }
-
-    return reservedInfo
-  }
-
-  @Put("booking")
-  public async bookEventBookingSlot(
-    @Body() eventBookingDto: EventBookingReservationDto,
-    @Req() req: any
-  ) {
-    const { user } = req
-    const confirmation = await this.eventsService.reserveEventBookingSlot(
-      user,
-      eventBookingDto
-    )
+    const confirmation = await this.eventsService.bookEvent(user, eventBookingDto)
 
     if (!confirmation) {
       throw new UnprocessableEntityException()
@@ -109,24 +72,21 @@ export class EventsController {
    * This will return all bookings for a given user ID
    */
   @Get("bookings")
-  public async getBookingByQuery(@Query() query: BookingPaginationDto, @Req() req: any) {
+  public async getBookingByQuery(@Query() query: any, @Req() req: any) {
     const { user } = req
+    const { attendee_id, organizer_id } = query
+    const oneOf = user.id === attendee_id || user.id === organizer_id
+    const type = attendee_id ? "attendee" : organizer_id ? "organizer" : undefined
     let eventsRepoResults
+    console.log(oneOf, attendee_id, organizer_id, type)
 
-    if (user.id !== (query.organizer_id || query.attendee_id))
+    if (!oneOf || !type)
       throw new UnauthorizedException("You are not allowed to access this resources")
-    if (query.network_id !== "Mainnet" && query.network_id !== "Preprod")
-      throw new UnprocessableEntityException("Network ID is wrong or missing")
 
     if (query.past_bookings) {
-      // this returns bookings that are meant to be used for payouts withdraw
-      eventsRepoResults = await this.eventsService.getPastBookingsByUserId(
-        query.organizer_id,
-        query.network_id
-      )
+      eventsRepoResults = await this.eventsService.getPastBookingsByUserId(user.id, type)
     } else {
-      // this returns bookings used to be displayed on user main page
-      eventsRepoResults = await this.eventsService.getBookingsByUserIdPaginated(query)
+      eventsRepoResults = await this.eventsService.getBookingsByUserId(user.id, type)
     }
 
     if (!eventsRepoResults) {
@@ -139,6 +99,7 @@ export class EventsController {
   @Get("booking/:uuid")
   public async getBookingSlotById(@Param("uuid", ParseUUIDPipe) uuid: string) {
     const slot = await this.eventsService.getBookingSlotById(uuid)
+    console.log(slot)
     if (!slot) throw new NotFoundException()
 
     return slot
@@ -151,8 +112,7 @@ export class EventsController {
     @Body() bookingUpdateDTO: any
   ) {
     const { user } = req
-    if (bookingUpdateDTO.id !== uuid)
-      throw new NotFoundException("Missing booking slot ID")
+    if (bookingUpdateDTO.id !== uuid) throw new NotFoundException()
 
     const updated = await this.eventsService.updateBookingSlotById(
       uuid,
@@ -168,31 +128,14 @@ export class EventsController {
   @Delete("booking/:uuid")
   public async removeEventBooking(
     @Param("uuid", new ParseUUIDPipe()) uuid: string,
-    @Req() req: any,
-    @Query() query: any
+    @Req() req: any
   ): Promise<any> {
-    const { organizer_id, attendee_id, txHash } = query
-    if ((!organizer_id && !attendee_id) || (organizer_id && attendee_id) || !txHash)
-      throw new UnprocessableEntityException("Missing or too much query paramaters")
-
-    const queryingUserId = organizer_id ?? attendee_id
-    if (queryingUserId !== req.user.id) throw new UnauthorizedException()
-
-    return await this.eventsService.removeBookedEventSlot(
-      uuid,
-      req.user.id,
-      txHash, // unlocking transaction
-      !!organizer_id ? true : false // last param is to check who exactly is the user
-    )
+    return await this.eventsService.removeBookedEventSlot(uuid, req.user)
   }
 
   @Get(":uuid")
   public async getEventById(@Param("uuid", new ParseUUIDPipe()) uuid: string) {
-    const event = await this.eventsService.findOne(uuid)
-
-    if (!event) new NotFoundException("No event found for a given ID")
-
-    return event
+    return await this.eventsService.findOne(uuid)
   }
 
   @Post()

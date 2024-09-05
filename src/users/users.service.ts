@@ -4,6 +4,7 @@ import {
   HttpStatus,
   NotFoundException,
   UnauthorizedException,
+  UnprocessableEntityException,
 } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { FindManyOptions, Repository, MoreThan } from "typeorm"
@@ -146,16 +147,14 @@ export class UsersService {
         skills,
         jobTitle,
         username,
-        mainnetBaseAddress,
-        testnetBaseAddress,
+        baseAddresses,
         walletPublicKey,
         publicKey,
       } = newUserDto
       let newUser = new UserEntity()
       newUser.username = username
       newUser.hourlyRateAda = hourlyRateAda ? Number(hourlyRateAda) : 0
-      newUser.mainnetBaseAddress = mainnetBaseAddress
-      newUser.testnetBaseAddress = testnetBaseAddress
+      newUser.baseAddresses = { ...baseAddresses } // mainnet + testnet (PreProd)
       newUser.bio = bio
       newUser.profession = profession
       newUser.skills = skills
@@ -202,45 +201,51 @@ export class UsersService {
   }
 
   async registerBetaTester(betaTesterCode: string, userId: string) {
-    const user = await this.userRepo.findOne(userId)
-    const allTokens: BetaTestersEntity[] = await this.betaTestersRepo.find() // returns all records
-    const claimedTokens = allTokens.filter((t) => t.redeemed === true)
-    let currentlyClaiming = allTokens.find((t) => t.key === betaTesterCode)
+    const user = await this.userRepo.findOne({ id: userId })
+    if (!user) {
+      throw new HttpException("User not found", HttpStatus.UNAUTHORIZED)
+    }
 
-    if (!currentlyClaiming)
+    const allTokens: BetaTestersEntity[] = await this.betaTestersRepo.find({
+      code: betaTesterCode,
+    }) // returns all records
+    const freeTokens = allTokens.filter((t) => !t.redeemed)
+    let tokenToMintIdx = allTokens.length - freeTokens.length + 1
+    let tokenToMint = freeTokens.find((t) => t.key === betaTesterCode)
+
+    if (!tokenToMint)
+      throw new UnprocessableEntityException("This beta-tester code does not exist.")
+
+    console.log(freeTokens, tokenToMintIdx, tokenToMint)
+
+    if (tokenToMintIdx === -1)
       throw new HttpException(
-        "This beta-tester code doesn't exists!",
+        "This beta-tester code doesn't exists.",
         HttpStatus.UNPROCESSABLE_ENTITY
       )
 
-    if (currentlyClaiming.redeemed)
+    if (freeTokens[tokenToMintIdx].txHash)
       throw new HttpException(
-        "This beta-tester has been already claimed!",
+        "This beta-tester code has been already claimed.",
         HttpStatus.UNPROCESSABLE_ENTITY
       )
 
-    const txHashMainnet = await mintBetaTesterToken(
-      user.mainnetBaseAddress,
-      claimedTokens.length + 1,
-      "Mainnet"
-    )
-    const txHashTestnet = await mintBetaTesterToken(
-      user.testnetBaseAddress,
-      claimedTokens.length + 1,
-      "Preprod"
-    )
-    if (!txHashMainnet || !txHashTestnet)
+    const network = process.env.CARDANO_NETWORK
+    const userAddress =
+      network === "mainnet" ? user.baseAddresses.mainnet : user.baseAddresses.testnet
+    const txHash = await mintBetaTesterToken(userAddress, tokenToMintIdx)
+    if (!txHash)
       throw new HttpException(
         "Something went wrong on our end. Please reach out for further help.",
         HttpStatus.CONFLICT
       )
 
-    currentlyClaiming.redeemed = true
-    currentlyClaiming.txHashMainnet = txHashMainnet
-    currentlyClaiming.txHashTestnet = txHashTestnet
-    currentlyClaiming = await this.betaTestersRepo.save(currentlyClaiming)
+    tokenToMint.redeemed = true
+    tokenToMint.txHash = txHash
+    await this.betaTestersRepo.save(tokenToMint)
 
-    return true
+    console.log("Registered a new Beta Tester: ", txHash)
+    return { ...tokenToMint, tx: txHash }
   }
 
   async deactivateUser(uuid: string) {
