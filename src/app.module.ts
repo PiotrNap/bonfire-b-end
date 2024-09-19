@@ -11,8 +11,10 @@ import { HttpModule } from "@nestjs/axios"
 import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common"
 import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard.js"
 import { APP_GUARD } from "@nestjs/core"
+import { ThrottlerModule } from "@nestjs/throttler"
 import { EventsModule } from "./events/events.module.js"
 import { ConfigModule } from "@nestjs/config"
+import { UploadModule } from "./upload/uplaod.module.js"
 
 @Module({
   imports: [
@@ -24,8 +26,15 @@ import { ConfigModule } from "@nestjs/config"
     HttpModule,
     AuthModule,
     UsersModule,
+    UploadModule,
     EventsModule,
     TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 25,
+      },
+    ]),
   ],
   controllers: [AppController],
   // enable jwt & roles guards globally
