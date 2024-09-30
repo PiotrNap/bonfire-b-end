@@ -211,11 +211,12 @@ export class UsersController {
     return await createUnlockingTx(user)
   }
 
-  @Get(":uuid/beta-tester-registration/:betaTesterCode")
+  @Get(":uuid/beta-tester-registration/:betaTesterCode/:network")
   public async registerBetaTester(
     @Param("uuid") uuid: string,
-    @Param("betaTesterCode") betaTesterCode: string
+    @Param("betaTesterCode") betaTesterCode: string,
+    @Param("network") network: "mainnet" | "preprod"
   ) {
-    return await this.usersService.registerBetaTester(betaTesterCode, uuid)
+    return await this.usersService.registerBetaTester(betaTesterCode, uuid, network)
   }
 }

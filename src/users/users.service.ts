@@ -20,6 +20,7 @@ import { PaginationResult } from "../pagination/pagination-result.interface.js"
 import { EventEntity } from "../model/event.entity.js"
 import { BetaTestersEntity } from "../model/betaTesters.entity.js"
 import { mintBetaTesterToken } from "../utils/cardano.js"
+import { NetworkId } from "src/events/events.interface.js"
 
 @Injectable()
 export class UsersService {
@@ -200,7 +201,11 @@ export class UsersService {
     return !!(await this.betaTestersRepo.find({ where: { redeemed: false } })).length
   }
 
-  async registerBetaTester(betaTesterCode: string, userId: string) {
+  async registerBetaTester(
+    betaTesterCode: string,
+    userId: string,
+    network: "mainnet" | "preprod"
+  ) {
     const user = await this.userRepo.findOne({ id: userId })
     if (!user) {
       throw new HttpException("User not found", HttpStatus.UNAUTHORIZED)
@@ -230,7 +235,6 @@ export class UsersService {
         HttpStatus.UNPROCESSABLE_ENTITY
       )
 
-    const network = process.env.CARDANO_NETWORK
     const userAddress =
       network === "mainnet" ? user.baseAddresses.mainnet : user.baseAddresses.testnet
     const txHash = await mintBetaTesterToken(userAddress, tokenToMintIdx)
