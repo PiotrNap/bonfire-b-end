@@ -22,9 +22,9 @@ import { PaginationResult } from "../pagination/pagination-result.interface.js"
 import { EventPaginationDto } from "./dto/event-pagination.dto.js"
 import { UpdateEventDto } from "./dto/update-event.dto.js"
 import { SuccessMessage } from "../auth/interfaces/payload.interface.js"
-import { EventBookingReservationDto } from "./dto/event-booking.dto.js"
 import { EventAvailability, EventSlot } from "./events.interface.js"
 import { NetworkId } from "src/utils/types.js"
+import { EventBookingDto } from "./dto/event-booking.dto.js"
 
 @Injectable()
 export class EventsService {
@@ -50,7 +50,7 @@ export class EventsService {
       visibility,
       eventCardColor,
       eventTitleColor,
-      organizerId,
+      organizer: { id },
       cancellation,
       note,
       networkId,
@@ -58,9 +58,10 @@ export class EventsService {
     try {
       const event: EventEntity = new EventEntity()
       const user: UserEntity = await this.userRepository.findOne({
-        where: { id: organizerId },
+        where: { id },
         relations: ["events"],
       })
+      console.log("user ", user)
       const { mainnet: mainnetAddr, testnet: testnetAddr } = user.baseAddresses
 
       /*
@@ -214,26 +215,22 @@ export class EventsService {
   }
 
   async removeEvent(id: string, userId: string): Promise<any> {
-    try {
-      const event = await this.eventsRepository.findOne(id, {
-        relations: ["bookedSlots"],
-        where: { organizerId: userId },
-      })
+    const event = await this.eventsRepository.findOne(id, {
+      relations: ["bookedSlots"],
+      where: { organizerId: userId },
+    })
 
-      // let bs = await this.bookingSlotRepository.findOne(event.bookedSlots[0].id)
-      // await this.bookingSlotRepository.remove(bs)
-      if (!event) return this.noEventError()
+    // let bs = await this.bookingSlotRepository.findOne(event.bookedSlots[0].id)
+    // await this.bookingSlotRepository.remove(bs)
+    if (!event) return this.noEventError()
+    if (event.bookedSlots.length) return this.eventDeletionNotAllowed()
 
-      // TODO this should be only allowed by an event owner
-      await this.eventsRepository.softDelete({ id: event.id })
+    const res = await this.eventsRepository.softDelete({ id: event.id })
+    if (res)
       return {
         message: `Event removed successfully`,
         status: 201,
       }
-    } catch (e) {
-      console.error(e)
-      if (e.response && e.status) throw new HttpException(e.response, e.status)
-    }
   }
 
   async removeBookedEventSlot(
@@ -282,11 +279,12 @@ export class EventsService {
     return !!newEvent && !!newBookingSlot
   }
 
-  async reserveEventBookingSlot(
+  async bookEvent(
     user: UserEntity,
-    eventBookingDto: EventBookingReservationDto
+    eventBookingDto: EventBookingDto
   ): Promise<string | void> {
-    const { eventId, durationCost, duration, startDate } = eventBookingDto
+    const { eventId, durationCost, duration, startDate, lockingTxHash, datumHash } =
+      eventBookingDto
 
     try {
       let event = await this.eventsRepository.findOne({
@@ -346,6 +344,8 @@ export class EventsService {
       bookingSlot.attendeeAlias = user.username
       bookingSlot.organizerAlias = event.organizer.username
       bookingSlot.organizerId = event.organizer.id
+      bookingSlot.cancellation = event.cancellation
+      bookingSlot.lockingTxHash = lockingTxHash
       bookingSlot.duration = duration
       bookingSlot.fromDate = startDate
       bookingSlot.toDate = new Date(
@@ -356,6 +356,11 @@ export class EventsService {
       bookingSlot.networkId = event.networkId
       bookingSlot.reservedAt = Date.now()
       bookingSlot.status = "reserved"
+      bookingSlot.lockingTxHash = lockingTxHash
+      bookingSlot.datumHash = datumHash
+      bookingSlot.cancellation = event.cancellation
+      bookingSlot.datumHash = datumHash
+      bookingSlot.networkId = event.networkId
 
       bookingSlot = await this.bookingSlotRepository.save(bookingSlot)
 
@@ -545,16 +550,15 @@ export class EventsService {
   }
 
   public async updateBookingSlotById(uuid: string, userId, updateDTO) {
-    let newSlot = await this.bookingSlotRepository.findOneOrFail(uuid)
-    if (newSlot) throw new NotFoundException("Booking slot with a given ID do not exist.")
-    if (newSlot.organizerId !== userId)
+    let slot = await this.bookingSlotRepository.findOneOrFail(uuid)
+    if (!slot) throw new NotFoundException("Booking slot with a given ID do not exist.")
+    if (slot.organizerId !== userId)
       throw new UnauthorizedException("You're not allowed to update this record")
 
-    for (let k of updateDTO) {
-      newSlot[k] = updateDTO[k]
-    }
+    slot.isActive = false
+    slot.unlockingTxHash = updateDTO.unlockingTxHash
 
-    return await this.bookingSlotRepository.save(newSlot)
+    return await this.bookingSlotRepository.save(slot)
   }
 
   public async getBookingsByUserIdPaginated(query: BookingPaginationDto) {
@@ -564,22 +568,30 @@ export class EventsService {
         "Missing one of the required user-id parameter"
       )
 
-    const networkBasedAddress =
-      network_id === "Mainnet" ? "mainnetBaseAddress" : "testnetBaseAddress"
+    const networkBasedAddress = network_id === "Mainnet" ? "mainnet" : "testnet"
     const userIdOption = organizer_id
       ? { organizerId: organizer_id }
       : { attendeeId: attendee_id }
+
+    console.log("option ", userIdOption)
 
     return await this.bookingSlotRepository
       .createQueryBuilder("bookingSlot")
       .leftJoinAndSelect("bookingSlot.organizer", "organizer")
       .leftJoinAndSelect("bookingSlot.attendee", "attendee")
+      .leftJoinAndSelect("bookingSlot.event", "event")
       .select([
         "bookingSlot", // select all fields from bookingSlot
-        `organizer.${networkBasedAddress}`,
-        `attendee.${networkBasedAddress}`,
+        `organizer.baseAddresses`,
+        `attendee.baseAddresses`,
+        "event.note",
       ])
-      .where({ ...userIdOption, toDate: MoreThan(new Date()), isActive: true })
+      .where({
+        ...userIdOption,
+        toDate: MoreThan(new Date()),
+        isActive: true,
+        networkId: network_id,
+      })
       .take(limit)
       .skip((page - 1) * limit)
       .getManyAndCount()
@@ -615,6 +627,13 @@ export class EventsService {
 
   private noEventError() {
     throw new HttpException("Event does not exists.", HttpStatus.NOT_FOUND)
+  }
+
+  private eventDeletionNotAllowed() {
+    throw new HttpException(
+      "This event can't be removed as it has been already booked.",
+      HttpStatus.FORBIDDEN
+    )
   }
 
   private notAllowedError() {

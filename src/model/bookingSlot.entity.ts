@@ -3,21 +3,20 @@ import { Relation } from "typeorm/index.js"
 import { BaseEntity } from "./base.entity.js"
 import { EventEntity } from "./event.entity.js"
 import { UserEntity } from "./user.entity.js"
-import { Cancellation } from "src/events/events.interface.js"
-import { NetworkId } from "src/utils/types.js"
+import type { Cancellation, NetworkId } from "src/events/events.interface.js"
 
 @Entity()
 export class BookingSlotEntity extends BaseEntity {
-  @Column("varchar")
+  @Column("varchar", { nullable: true })
   status: "reserved" | "booked"
 
-  @Column('real')
+  @Column("real", { nullable: true })
   reservedAt: number
 
   @Column("uuid")
   organizerId: string
 
-  @Column("varchar")
+  @Column("varchar", { nullable: true })
   networkId: NetworkId
 
   @Column("varchar")
@@ -45,6 +44,9 @@ export class BookingSlotEntity extends BaseEntity {
   @Column("json")
   cost: string
 
+  @Column({ type: "jsonb", nullable: true })
+  cancellation: Cancellation
+
   @ManyToOne(() => EventEntity, (event: EventEntity) => event.bookedSlots)
   event: EventEntity
 
@@ -68,9 +70,6 @@ export class BookingSlotEntity extends BaseEntity {
   @Column({ type: "varchar", nullable: true })
   lockingTxHash: string
 
-  @Column({ type: "jsonb", nullable: true })
-  cancellation: Cancellation
-
-  @Column({ type: "varchar", nullable: true })
+  @Column({ type: "varchar" })
   datumHash: string
 }

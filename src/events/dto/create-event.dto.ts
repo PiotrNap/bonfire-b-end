@@ -47,7 +47,7 @@ export class CreateEventDto {
   eventTitleColor: string
 
   @IsString()
-  organizerId: string
+  organizer: { id: string }
 
   @IsBoolean()
   gCalEventsBooking: boolean

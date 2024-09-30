@@ -1,5 +1,3 @@
-//@TODO adjust the pubkeyhash for mainnet
-
 // PubKeyHash checked at 27Aug2024
 export default `
 minting signed

@@ -25,6 +25,7 @@ import { AddDeviceDTO } from "./dto/add-device.dto.js"
 import { UpdateUserDto } from "./dto/user-update.dto.js"
 import { UserDto } from "./dto/user.dto.js"
 import { UsersService } from "./users.service.js"
+import { CreateUserDto } from "./dto/user-create.dto.js"
 
 @Controller("users")
 export class UsersController {

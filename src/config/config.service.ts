@@ -31,8 +31,7 @@ class ConfigService {
       username: this.getValue("POSTGRES_USER"),
       password: this.getValue("POSTGRES_PASSWORD"),
       database: this.getValue("POSTGRES_DATABASE"),
-      //@TODO: remove for production
-      synchronize: true,
+      synchronize: process.env.NODE_ENV !== "dev" ? false : true,
       entities: ["dist/model/*.entity.js"],
       migrationsTableName: "migration",
       migrations: ["dist/migration/*.js"],
