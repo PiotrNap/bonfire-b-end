@@ -235,9 +235,12 @@ export class UsersService {
         HttpStatus.UNPROCESSABLE_ENTITY
       )
 
-    const userAddress =
-      network === "mainnet" ? user.baseAddresses.mainnet : user.baseAddresses.testnet
-    const txHash = await mintBetaTesterToken(userAddress, tokenToMintIdx)
+    const isMainnet = network === "mainnet"
+    const userAddress = isMainnet
+      ? user.baseAddresses.mainnet
+      : user.baseAddresses.testnet
+
+    const txHash = await mintBetaTesterToken(userAddress, tokenToMintIdx, isMainnet)
     if (!txHash)
       throw new HttpException(
         "Something went wrong on our end. Please reach out for further help.",

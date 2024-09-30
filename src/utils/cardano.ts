@@ -21,22 +21,26 @@ import type { AssetsLike } from "@helios-lang/ledger-babbage/types/money/Assets.
 import { setEra } from "@helios-lang/era"
 setEra("Conway")
 
-import MC from "../on-chain/MintingContract.js"
-
-/** Miscellaneous **/
-const fiveMinutes = 1000 * 60 * 5
-type Network = "mainnet" | "preprod" | "preview"
-type Redeemer = "Cancel" | "Complete" | "Recycle"
-const networkType = process.env.CARDANO_NETWORK as Network
-const isMainnet = networkType === "mainnet"
-
 /** Blockfrost API reference **/
-export function blockfrostApi(): BlockfrostV0 {
-  const { networkType, projectId } = getProjectConfig()
+export function blockfrostApi(isMainnet: boolean): BlockfrostV0 {
+  const networkType = isMainnet ? "mainnet" : "preprod"
+  const projectId = process.env[`BLOCKFROST_KEY_${networkType.toUpperCase()}`]
+
   return new BlockfrostV0(networkType, projectId)
 }
 
-const mintingProgram = new Program(MC)
+// PubKeyHash checked at 27Aug2024
+const program = `
+minting signed
+
+import { tx } from ScriptContext
+
+const OWNER: PubKeyHash = PubKeyHash::new(#84e6f5ca8f28b6401742a20119073c64685cd7d7c11b6504b5274075)
+
+func main(_) -> Bool {
+    tx.is_signed_by(OWNER)
+}`
+const mintingProgram = new Program(program)
 const compiledMintingScript = mintingProgram.compile(false)
 const mintingPolicyHash = new MintingPolicyHash<MintingContext<any, 1>>(
   compiledMintingScript.hash()
@@ -45,15 +49,6 @@ const mintingPolicyHash = new MintingPolicyHash<MintingContext<any, 1>>(
 // console.log("minting script addr: ", mintingScriptAddress)
 console.log("minting policy hash: ", mintingPolicyHash.toHex())
 /***/
-
-// ---- Helper functions ----
-function getProjectConfig() {
-  const k = `BLOCKFROST_KEY_${networkType.toUpperCase()}`
-  return {
-    networkType,
-    projectId: process.env[k],
-  }
-}
 
 function bytesToText(bytes) {
   return String.fromCharCode(...bytes.match(/.{2}/g).map((byte) => parseInt(byte, 16)))
@@ -85,10 +80,11 @@ function schemaToPaymentTokens(schema) {
 
 export async function mintBetaTesterToken(
   userAddress: string,
-  tokenIdx: number
+  tokenIdx: number,
+  isMainnet: boolean
 ): Promise<string | void> {
   try {
-    const blockfrost = blockfrostApi()
+    const blockfrost = blockfrostApi(isMainnet)
 
     const privKeyArray = Array.from(Buffer.from(process.env.TREASURY_ACCOUNT_KEY, "hex"))
     const privKey = new Bip32PrivateKey(privKeyArray).derive(0).derive(0)
