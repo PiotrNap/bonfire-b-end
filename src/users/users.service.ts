@@ -211,9 +211,7 @@ export class UsersService {
       throw new HttpException("User not found", HttpStatus.UNAUTHORIZED)
     }
 
-    const allTokens: BetaTestersEntity[] = await this.betaTestersRepo.find({
-      key: betaTesterKey,
-    }) // returns all records
+    const allTokens: BetaTestersEntity[] = await this.betaTestersRepo.find()
     const freeTokens = allTokens.filter((t) => !t.redeemed)
     let tokenToMintIdx = allTokens.length - freeTokens.length + 1
     let tokenToMint = freeTokens.find((t) => t.key === betaTesterKey)
