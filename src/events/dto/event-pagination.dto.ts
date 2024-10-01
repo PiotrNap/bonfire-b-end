@@ -32,7 +32,7 @@ export class EventPaginationDto {
   title: string
 
   @IsString()
-  @MaxLength(150, { message: "Description should be max 150 chars." })
+  @MaxLength(300, { message: "Description should be max 300 chars." })
   description: string
 
   @IsString()
