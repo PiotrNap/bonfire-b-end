@@ -202,7 +202,7 @@ export class UsersService {
   }
 
   async registerBetaTester(
-    betaTesterCode: string,
+    betaTesterKey: string,
     userId: string,
     network: "mainnet" | "preprod"
   ) {
@@ -212,26 +212,26 @@ export class UsersService {
     }
 
     const allTokens: BetaTestersEntity[] = await this.betaTestersRepo.find({
-      code: betaTesterCode,
+      key: betaTesterKey,
     }) // returns all records
     const freeTokens = allTokens.filter((t) => !t.redeemed)
     let tokenToMintIdx = allTokens.length - freeTokens.length + 1
-    let tokenToMint = freeTokens.find((t) => t.key === betaTesterCode)
+    let tokenToMint = freeTokens.find((t) => t.key === betaTesterKey)
 
     if (!tokenToMint)
-      throw new UnprocessableEntityException("This beta-tester code does not exist.")
+      throw new UnprocessableEntityException("This beta-tester key does not exist.")
 
     console.log(freeTokens, tokenToMintIdx, tokenToMint)
 
     if (tokenToMintIdx === -1)
       throw new HttpException(
-        "This beta-tester code doesn't exists.",
+        "This beta-tester key doesn't exists.",
         HttpStatus.UNPROCESSABLE_ENTITY
       )
 
     if (freeTokens[tokenToMintIdx].txHash)
       throw new HttpException(
-        "This beta-tester code has been already claimed.",
+        "This beta-tester key has been already claimed.",
         HttpStatus.UNPROCESSABLE_ENTITY
       )
 
