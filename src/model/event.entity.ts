@@ -18,7 +18,7 @@ export type EventVisibility = "private" | "public"
 
 @Entity()
 export class EventEntity extends BaseEntity {
-  @Column({ type: "varchar", length: 150 })
+  @Column({ type: "varchar", length: 300 })
   description: string
 
   @Column({ type: "varchar", length: 40 })
