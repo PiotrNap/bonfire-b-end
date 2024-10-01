@@ -219,8 +219,6 @@ export class UsersService {
     if (!tokenToMint)
       throw new UnprocessableEntityException("This beta-tester key does not exist.")
 
-    console.log(freeTokens, tokenToMintIdx, tokenToMint)
-
     if (tokenToMintIdx === -1)
       throw new HttpException(
         "This beta-tester key doesn't exists.",
