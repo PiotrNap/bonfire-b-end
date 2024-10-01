@@ -8,6 +8,8 @@ import xss from "xss-clean"
 import * as dotenv from "dotenv"
 import { getConnection } from "typeorm/globals.js"
 
+import "./polyfills.js"
+
 dotenv.config()
 
 async function bootstrap() {
