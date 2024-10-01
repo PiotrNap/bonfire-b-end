@@ -6,6 +6,7 @@ import { loadModel } from "./common/utils.js"
 import cookieParser from "cookie-parser"
 import xss from "xss-clean"
 import * as dotenv from "dotenv"
+import { getConnection } from "typeorm/globals.js"
 
 dotenv.config()
 
@@ -21,6 +22,9 @@ async function bootstrap() {
   })
   await loadModel()
   initializeApp()
+
+  const connection = getConnection()
+  await connection.runMigrations()
 
   await app.listen(8000)
 }
