@@ -19,7 +19,7 @@ import { UploadModule } from "./upload/uplaod.module.js"
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: ".env.dev",
+      envFilePath: ".env",
       isGlobal: true,
     }),
     CryptoModule,
