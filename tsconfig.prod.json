@@ -1,15 +1,16 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
+    "module": "commonjs",
     "moduleResolution":"node",
     "esModuleInterop": true,
+    "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "target": "es2020",
-    "sourceMap": true,
+    "sourceMap": false, // disable source map for production
     "outDir": "./dist",
     "baseUrl": "./",
    "paths": {
