@@ -79,7 +79,6 @@ export class UsersService {
       )
     }
     const user: UserEntity = await this.userRepo.findOne(id)
-    console.log(user)
 
     if (!user) {
       throw new HttpException("User not found", HttpStatus.UNAUTHORIZED)
@@ -132,14 +131,10 @@ export class UsersService {
 
     deviceCredential = await this.deviceCredentialsRepo.save(deviceCredential)
 
-    console.log("added new device credential...")
-    console.log(deviceCredential)
-
     return { ...toUserDto(user), deviceID: deviceCredential.id }
   }
 
   async register(newUserDto: UserDto): Promise<UserDto> {
-    console.log("new user dto ", newUserDto)
     try {
       const {
         hourlyRateAda = 0,
@@ -247,7 +242,6 @@ export class UsersService {
     tokenToMint.txHash = txHash
     await this.betaTestersRepo.save(tokenToMint)
 
-    console.log("Registered a new Beta Tester: ", txHash)
     return { ...tokenToMint, tx: txHash }
   }
 

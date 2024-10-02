@@ -115,7 +115,6 @@ export class EventsController {
   @Get("booking/:uuid")
   public async getBookingSlotById(@Param("uuid", ParseUUIDPipe) uuid: string) {
     const slot = await this.eventsService.getBookingSlotById(uuid)
-    console.log(slot)
     if (!slot) throw new NotFoundException()
 
     return slot

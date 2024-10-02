@@ -61,7 +61,6 @@ export class EventsService {
         where: { id },
         relations: ["events"],
       })
-      console.log("user ", user)
       const { mainnet: mainnetAddr, testnet: testnetAddr } = user.baseAddresses
 
       /*
@@ -572,8 +571,6 @@ export class EventsService {
     const userIdOption = organizer_id
       ? { organizerId: organizer_id }
       : { attendeeId: attendee_id }
-
-    console.log("option ", userIdOption)
 
     return await this.bookingSlotRepository
       .createQueryBuilder("bookingSlot")
