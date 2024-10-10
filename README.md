@@ -30,7 +30,7 @@ yarn typeorm:migration:run
 ### Run it!  
 
 ```code
-yarn start:dev
+yarn dev
 ```
 
 ### Resources 
