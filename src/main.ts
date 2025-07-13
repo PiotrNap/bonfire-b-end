@@ -26,7 +26,9 @@ async function bootstrap() {
   initializeApp()
 
   const connection = getConnection()
-  await connection.runMigrations()
+  if (process.env.NODE_ENV != "dev") {
+    await connection.runMigrations()
+  }
 
   await app.listen(8000)
 }
