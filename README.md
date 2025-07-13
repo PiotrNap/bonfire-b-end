@@ -1,5 +1,5 @@
-# code is law
-![Alt text](https://avatars.githubusercontent.com/u/45433868?v=4)
+# Back End service with Database for Bonfire mobile dApp
+
 ### Getting Started
 
 The easiest way to manage node versions is with a version manager such as `nvm`.  
@@ -20,7 +20,7 @@ You may need to edit `src/scripts/start-db.sh` depending on your operating syste
 
 ### Generating the schema and migration  
 
-This only needs to be done when updates to the typeorm configurations occur.
+This only needs to be done when updates to the typeorm configurations occur. (
 
 ```code
 yarn typeorm:migration:generate -- init  # init can be any migration name
@@ -30,7 +30,7 @@ yarn typeorm:migration:run
 ### Run it!  
 
 ```code
-yarn start:dev
+yarn dev
 ```
 
 ### Resources 
