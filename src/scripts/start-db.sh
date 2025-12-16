@@ -38,8 +38,8 @@ mkdir -p $DBVOLUME
     -p $DBPORT:5432 \
     -e POSTGRES_PASSWORD=$PW \
     --name $CONTAINER \
-    --mount type=bind,source=$DBVOLUME,target=/var/lib/postgresql/data \
-    postgres    
+    --mount type=bind,source=$DBVOLUME,target=/var/lib/postgresql/$PG_VERSION \
+    postgres:$PG_VERSION
 }    
 
 echo "WAITING for pg-server [$CONTAINER] to start"
