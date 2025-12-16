@@ -102,7 +102,7 @@ curl -X POST http://localhost:8000/users/register \
     ],
     "walletPublicKey": "wallet_public_key_here",
     "publicKey": "public_key_here"
-  }
+  }'
 ```
 
 2. Create an event
