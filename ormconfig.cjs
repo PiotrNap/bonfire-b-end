@@ -5,7 +5,7 @@ module.exports = {
   username: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DATABASE,
-  synchronize: process.env.SYNCHRONIZE,
+  synchronize: false, // use "true" only for local tinkering
   entities: ["dist/model/*.entity.js"],
   migrationsTableName: "migration",
   migrations: ["dist/migration/*.js"],
