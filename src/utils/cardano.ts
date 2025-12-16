@@ -130,3 +130,39 @@ export async function mintBetaTesterToken(
     throw e
   }
 }
+
+export async function sendAda() {
+  try {
+    const blockfrost = blockfrostApi(true)
+
+    const privKeyArray = Array.from(Buffer.from(process.env.TREASURY_ACCOUNT_KEY, "hex"))
+    const privKey = new Bip32PrivateKey(privKeyArray).derive(0).derive(0)
+    const pubKey = privKey.derivePubKey().toHash()
+    const treasuryAddress = Address.fromHash(true, pubKey)
+    const treasuryUtxos = await blockfrost.getUtxos(treasuryAddress)
+
+    let receiverAddr = Address.fromBech32(
+      "addr1v99germutg25ju9vv6ssq247prwa0s6mee3rs3qe2r7c6tcqh6laq"
+    )
+    console.log(treasuryAddress.toBech32())
+    return ""
+
+    const tx = new TxBuilder({ isMainnet: true })
+      //@ts-ignore
+      .spend(treasuryUtxos)
+      //@ts-ignore
+      .pay(receiverAddr, new Value(455_000_000))
+
+    const readyTx = await tx.build({
+      changeAddress: treasuryAddress,
+      networkParams: DEFAULT_NETWORK_PARAMS(),
+    })
+
+    let signature = privKey.sign(readyTx.body.hash())
+    readyTx.addSignature(signature)
+
+    return (await blockfrost.submitTx(readyTx)).toHex()
+  } catch (e) {
+    console.error(e)
+  }
+}
